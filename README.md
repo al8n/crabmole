@@ -4,7 +4,7 @@
 <div align="center">
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/al8n/crabmole/main/art/crabmole.png" width="40%" height="auto" />
+  <img src="https://raw.githubusercontent.com/al8n/crabmole/main/art/crabmole.jpg" width="40%" height="auto" />
 </p>
 
 Porting some Go standard libraries in Rust
