@@ -1,9 +1,11 @@
 [package]
 name = "crabmole"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
-license = "MIT/Apache-2.0/BSD-3-Clause"
+license = "MIT OR Apache-2.0 OR BSD-3-Clause"
 description = "Porting Go standard library in Rust"
+documentation = "https://docs.rs/crabmole/"
+homepage = "https://github.com/al8n/crabmole"
 repository = "https://github.com/al8n/crabmole"
 
 [features]
@@ -14,9 +16,7 @@ alloc = []
 
 sort = []
 
-
 [dependencies]
-
 
 [package.metadata.docs.rs]
 all-features = true
