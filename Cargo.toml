@@ -10,13 +10,17 @@ repository = "https://github.com/al8n/crabmole"
 
 [features]
 default = ["std"]
-full = ["std", "sort"]
+full = ["encoding", "std", "sort"]
 std = ["alloc"]
 alloc = []
 
 sort = []
+encoding = []
 
 [dependencies]
+
+[dev-dependencies]
+rand = "0.8"
 
 [package.metadata.docs.rs]
 all-features = true

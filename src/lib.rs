@@ -14,3 +14,8 @@ extern crate alloc;
 #[cfg(feature = "sort")]
 #[cfg_attr(docsrs, doc(cfg(feature = "sort")))]
 pub mod sort;
+
+/// Go encoding library
+#[cfg(feature = "encoding")]
+#[cfg_attr(docsrs, doc(cfg(feature = "encoding")))]
+pub mod encoding;
