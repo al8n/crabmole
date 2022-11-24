@@ -173,6 +173,7 @@ const BASE: usize = 32;
 
 const ENCODE_STD: [u8; BASE] = *b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 const ENCODE_HEX: [u8; BASE] = *b"0123456789ABCDEFGHIJKLMNOPQRSTUV";
+const DECODE_MAP_INITIALIZE: [u8; 256] = [255; 256];
 
 /// Error
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -206,8 +207,6 @@ pub const NO_PADDING: Option<char> = None;
 /// Standard padding
 pub const STD_PADDING: Option<char> = Some('=');
 
-
-
 /// The standard base32 encoding, as defined in
 /// RFC 4648.
 pub const STD_ENCODING: Encoding = Encoding::new(ENCODE_STD);
@@ -220,7 +219,7 @@ pub const HEX_ENCODING: Encoding = Encoding::new(ENCODE_HEX);
 /// 32-character alphabet. The most common is the "base32" encoding
 /// introduced for SASL GSSAPI and standardized in RFC 4648.
 /// The alternate "base32hex" encoding is used in DNSSEC.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub struct Encoding {
     encode: [u8; BASE],
     decode_map: [u8; 256],
@@ -232,8 +231,40 @@ impl Encoding {
     /// which must be a 32-byte slice.
     #[inline]
     pub const fn new(encoder: [u8; BASE]) -> Self {
-        let mut decode_map = [0xff; 256];
+        let mut decode_map = DECODE_MAP_INITIALIZE;
         assign_32!(encoder, decode_map);
+        decode_map[encoder[0] as usize] = 0;
+        decode_map[encoder[1] as usize] = 1;
+        decode_map[encoder[2] as usize] = 2;
+        decode_map[encoder[3] as usize] = 3;
+        decode_map[encoder[4] as usize] = 4;
+        decode_map[encoder[5] as usize] = 5;
+        decode_map[encoder[6] as usize] = 6;
+        decode_map[encoder[7] as usize] = 7;
+        decode_map[encoder[8] as usize] = 8;
+        decode_map[encoder[9] as usize] = 9;
+        decode_map[encoder[10] as usize] = 10;
+        decode_map[encoder[11] as usize] = 11;
+        decode_map[encoder[12] as usize] = 12;
+        decode_map[encoder[13] as usize] = 13;
+        decode_map[encoder[14] as usize] = 14;
+        decode_map[encoder[15] as usize] = 15;
+        decode_map[encoder[16] as usize] = 16;
+        decode_map[encoder[17] as usize] = 17;
+        decode_map[encoder[18] as usize] = 18;
+        decode_map[encoder[19] as usize] = 19;
+        decode_map[encoder[20] as usize] = 20;
+        decode_map[encoder[21] as usize] = 21;
+        decode_map[encoder[22] as usize] = 22;
+        decode_map[encoder[23] as usize] = 23;
+        decode_map[encoder[24] as usize] = 24;
+        decode_map[encoder[25] as usize] = 25;
+        decode_map[encoder[26] as usize] = 26;
+        decode_map[encoder[27] as usize] = 27;
+        decode_map[encoder[28] as usize] = 28;
+        decode_map[encoder[29] as usize] = 29;
+        decode_map[encoder[30] as usize] = 30;
+        decode_map[encoder[31] as usize] = 31;
 
         Encoding {
             encode: encoder,
@@ -270,7 +301,20 @@ impl Encoding {
             decode_map,
             pad_char: None,
         })
-        
+    }
+
+    /// Returns an encoder
+    #[cfg(feature = "std")]
+    #[inline]
+    pub const fn encoder<W: std::io::Write>(&self, writer: W) -> Encoder<W> {
+        Encoder::new(*self, writer)
+    }
+
+    /// Returns an decoder
+    #[cfg(feature = "std")]
+    #[inline]
+    pub const fn decoder<R: std::io::Read>(&self, reader: R) -> Decoder<R> {
+        Decoder::new(*self, reader)
     }
 
     /// Creates a new encoding identical to enc except
@@ -312,8 +356,7 @@ impl Encoding {
     /// Returns the length in bytes of the base32 encoding
     /// of source slice.
     #[inline]
-    pub const fn encoded_len(&self, src: &[u8]) -> usize {
-        let n = src.len();
+    pub const fn encoded_len(&self, n: usize) -> usize {
         if self.pad_char.is_none() {
             return (n*8 + 4) / 5;
         }
@@ -431,7 +474,7 @@ impl Encoding {
     /// Returns the base32 encoding of src.
     #[cfg(feature = "alloc")]
     pub fn encode_to_vec(&self, src: &[u8]) -> alloc::vec::Vec<u8> {
-        let mut dst = alloc::vec![0; self.encoded_len(src)];
+        let mut dst = alloc::vec![0; self.encoded_len(src.len())];
         self.encode(src, &mut dst);
         dst
     }
@@ -451,7 +494,7 @@ impl Encoding {
     #[inline]
     #[cfg(feature = "alloc")]
     pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, DecodeError> {
-        let mut dst = alloc::vec![0; self.decode_len(src)];
+        let mut dst = src.to_vec();
         self.decode_in(src, &mut dst).map(|(n, _)| {
             dst.truncate(n);
             dst
@@ -484,17 +527,16 @@ impl Encoding {
             self.decode_without_newline(
                 &buf[..l], 
                 core::slice::from_raw_parts_mut(ptr, len)).map(|n| {
-                buf.truncate(n);
-                buf
-            }) 
+                    buf.truncate(n);
+                    buf
+                })
         }
     }
 
     /// Returns the maximum length in bytes of the decoded data
     /// corresponding to n bytes of base32-encoded data.
     #[inline]
-    pub const fn decode_len(&self, src: &[u8]) -> usize {
-        let n = src.len();
+    pub const fn decode_len(&self, n: usize) -> usize {
         if self.pad_char.is_none() {
             return n * 5 / 8;
         }
@@ -536,7 +578,6 @@ impl Encoding {
                     Some(padding) if padding == (in_ as char) && j >= 2 && src.len() < 8 => {
                         // We've reached the end and there's padding
                         if src.len() + j < 8 - 1 {
-
                             // not enough padding
                             return Err(DecodeError(olen));
                         }
@@ -570,8 +611,6 @@ impl Encoding {
                         j += 1;
                     },
                 }
-
-                
             }
         
             // Pack 8x 5-bit source blocks into 5 byte destination
@@ -652,3 +691,617 @@ impl core::fmt::Display for DecodeError {
 
 #[cfg(feature = "std")]
 impl std::error::Error for DecodeError {}
+
+/// Base32 encoder
+#[cfg(feature = "std")]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Encoder<W> {
+    enc: Encoding,
+    writer: W,
+    buf: [u8; 5],
+    nbuf: usize,
+    out: [u8; 1024],
+}
+
+#[cfg(feature = "std")]
+impl<W> Encoder<W> {
+    /// Returns a new base32 stream encoder. Data written to
+    /// the returned writer will be encoded using enc and then written to w.
+    /// Base32 encodings operate in 5-byte blocks; when finished
+    /// writing, the caller must **Flush** the returned encoder to flush any
+    /// partially written blocks.
+    #[inline]
+    pub const fn new(enc: Encoding, writer: W) -> Self {
+        Self {
+            enc,
+            writer,
+            buf: [0; 5],
+            nbuf: 0,
+            out: [0; 1024],
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<W: std::io::Write> std::io::Write for Encoder<W> {
+    fn write(&mut self, mut buf: &[u8]) -> std::io::Result<usize> {
+        let mut n = 0;
+
+        // leading fringe.
+        if self.nbuf > 0 {
+            let mut i = 0;
+            while i < buf.len() && self.nbuf < 5 {
+                self.buf[self.nbuf] = buf[i];
+                self.nbuf += 1;
+                i += 1;
+            }
+            n += i;
+            buf = &buf[i..];
+            if self.nbuf < 5 {
+                return Ok(n);
+            }
+            self.enc.encode(&self.buf, &mut self.out);
+            self.writer.write_all(&self.out[..8])?;
+            self.nbuf = 0;
+        }
+
+        // Large interior chunks.
+        while buf.len() >= 5 {
+            let mut nn = self.out.len() / 8 * 5;
+            if nn > buf.len() {
+                nn = buf.len();
+                nn -= nn % 5;
+            }
+
+            self.enc.encode(&buf[..nn], &mut self.out);
+            self.writer.write_all(&self.out[..nn / 5 * 8])?;
+            n += nn;
+            buf = &buf[nn..];
+        }
+
+        // Trailing fringe.
+        // Safety: buf.len() always less of equal to self.buf.len() 
+        unsafe { core::ptr::copy(buf.as_ptr(), self.buf.as_mut_ptr(), buf.len()); }
+        self.nbuf = buf.len();
+        n += buf.len();
+        Ok(n)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.enc.encode(&self.buf[..self.nbuf], &mut self.out);
+        let encoded_len = self.enc.encoded_len(self.nbuf);
+        self.nbuf = 0;
+        self.writer.write_all(&self.out[..encoded_len])
+    }
+}
+
+
+/// A reader wrapper can filter newline characters when decoding base32 stream.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+pub struct NewLineFilteringReader<R> {
+    wrapped: R,
+}
+
+impl<R: std::io::Read> std::io::Read for NewLineFilteringReader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        match self.wrapped.read(buf) {
+            Ok(mut n) => {
+                while n > 0 {
+                    let s = &mut buf[..n];
+                    let ptr = s.as_mut_ptr();
+                    let slen = s.len();
+                    let offset = unsafe { 
+                        strip_new_lines(s, core::slice::from_raw_parts_mut(ptr, slen))
+                    };
+
+                    if offset > 0 {
+                        return Ok(offset);
+                    }
+
+                    // Previous buffer entirely whitespace, read again
+                    n = self.wrapped.read(buf)?;
+                }
+                Ok(n)
+            },
+            Err(e) => Err(e),
+        }
+    }
+}
+
+#[inline]
+fn read_encoded_data(r: &mut impl std::io::Read,  buf: &mut [u8], min: usize, expects_padding: bool) -> std::io::Result<usize> {
+    let mut n = 0;
+    while n < min {
+        n += r.read(&mut buf[n..])?;
+        if n == 0 {
+            break;
+        }
+    }
+
+    // data was read, less than min bytes could be read
+    if n < min && n > 0 {
+        return Err(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "base32 decoder: data was read, less than min bytes could be read"));
+    }
+
+    // no data was read, the buffer already contains some data
+	// when padding is disabled this is not an error, as the message can be of
+	// any length
+    if expects_padding && min < 8 && n == 0 {
+        return Err(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "base32 decoder: no data was read, the buffer already contains some data"));
+    }
+    Ok(n)
+}
+
+
+/// Base32 decoder
+#[cfg(feature = "std")]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Decoder<R> {
+    enc: Encoding,
+    reader: R,
+    end: bool,
+    buf: [u8; 1024],
+    nbuf: usize,
+    out: std::vec::Vec<u8>,
+    out_buf: [u8; 1024 / 8 * 5],
+}
+
+#[cfg(feature = "std")]
+impl<R> Decoder<R> {
+    /// Constructs a new base32 stream decoder.
+    #[inline]
+    pub const fn new(enc: Encoding, reader: R) -> Self {
+        Self {
+            enc,
+            reader,
+            end: false,
+            buf: [0; 1024],
+            nbuf: 0,
+            out: std::vec::Vec::new(),
+            out_buf: [0; 1024 / 8 * 5],
+        }
+    }
+ 
+    /// Constructs a new base32 stream decoder.
+    #[inline]
+    pub const fn with_newline_filter(enc: Encoding, reader: R) -> Decoder<NewLineFilteringReader<R>> {
+        Decoder {
+            enc,
+            reader: NewLineFilteringReader { wrapped: reader },
+            end: false,
+            buf: [0; 1024],
+            nbuf: 0,
+            out: std::vec::Vec::new(),
+            out_buf: [0; 1024 / 8 * 5],
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R: std::io::Read> std::io::Read for Decoder<R> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let n ;
+        // Use leftover decoded output from last read.
+        if !self.out.is_empty() {
+            n = crate::copy(&self.out, buf);
+            self.out.drain(..self.out.len().min(n));
+            return Ok(n);
+        }
+
+        // Read a chunk
+        let mut nn = (buf.len() / 5 * 8).clamp(8, 1024);
+        
+        // Minimum amount of bytes that needs to be read each cycle
+        let (min, expects_padding) = match self.enc.pad_char {
+            Some(_) => (8 - self.nbuf, true),
+            None => (1, false),
+        };
+
+        nn = read_encoded_data(&mut self.reader, &mut self.buf[self.nbuf..nn], min, expects_padding)?;
+        self.nbuf += nn;
+        if self.nbuf < min {
+            return Err(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, DecodeError(0))); 
+        }
+
+        if nn > 0 && self.end {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, DecodeError(0)));
+        }
+
+        // Decode chunk into p, or d.out and then p if p is too small.
+        let nr = match self.enc.pad_char {
+            Some(_) => self.nbuf / 8 * 8,
+            None => self.nbuf,
+        };
+
+        let mut nw = self.enc.decode_len(self.nbuf);
+        if nw > buf.len() {
+            (nw, self.end) = self.enc.decode_in(&self.buf[..nr], &mut self.out_buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            self.out = self.out_buf[..nw].to_vec();
+            n = crate::copy(&self.out, buf);
+            self.out.drain(..n);
+        } else {
+            (n, self.end) = self.enc.decode_in(&self.buf[..nr], buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        }
+        self.nbuf -= nr;
+        for i in 0..self.nbuf {
+            self.buf[i] = self.buf[i + nr];
+        }
+
+        Ok(n)
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use std::io::{Write, Read};
+    use super::*;
+
+    struct TestPair {
+        decoded: String,
+        encoded: String,
+    }
+    
+    fn pairs() -> Vec<TestPair> {
+        vec![
+            // RFC 4648 examples
+            TestPair {
+                decoded: Default::default(),
+                encoded: Default::default(),
+            },
+            TestPair {
+                decoded: "f".to_string(),
+                encoded: "MY======".to_string(),
+            },
+            TestPair {
+                decoded: "fo".to_string(),
+                encoded: "MZXQ====".to_string(),
+            },
+            TestPair {
+                decoded: "foo".to_string(),
+                encoded: "MZXW6===".to_string(),
+            },
+            TestPair {
+                decoded: "foob".to_string(),
+                encoded: "MZXW6YQ=".to_string(),
+            },
+            TestPair {
+                decoded: "fooba".to_string(),
+                encoded: "MZXW6YTB".to_string(),
+            },
+            TestPair {
+                decoded: "foobar".to_string(),
+                encoded: "MZXW6YTBOI======".to_string(),
+            },
+    
+            // Wikipedia examples, converted to base32
+            TestPair {
+                decoded: "sure.".to_string(),
+                encoded: "ON2XEZJO".to_string(),
+            },
+            TestPair {
+                decoded: "sure".to_string(),
+                encoded: "ON2XEZI=".to_string(),
+            },
+            TestPair {
+                decoded: "sur".to_string(),
+                encoded: "ON2XE===".to_string(),
+            },
+            TestPair {
+                decoded: "su".to_string(),
+                encoded: "ON2Q====".to_string(),
+            },
+            TestPair {
+                decoded: "leasure.".to_string(),
+                encoded: "NRSWC43VOJSS4===".to_string(),
+            },
+            TestPair {
+                decoded: "easure.".to_string(),
+                encoded: "MVQXG5LSMUXA====".to_string(),
+            },
+            TestPair {
+                decoded: "asure.".to_string(),
+                encoded: "MFZXK4TFFY======".to_string(),
+            },
+            TestPair {
+                decoded: "sure.".to_string(),
+                encoded: "ON2XEZJO".to_string(),
+            },
+        ]
+    }
+    
+    fn big_test() -> TestPair {
+        TestPair {
+            decoded: "Twas brillig, and the slithy toves".to_string(),
+            encoded: "KR3WC4ZAMJZGS3DMNFTSYIDBNZSCA5DIMUQHG3DJORUHSIDUN53GK4Y=".to_string(),
+        }
+    }
+
+    #[test]
+    fn test_encode() {
+        for p in pairs() {
+            let got = STD_ENCODING.encode_to_vec(p.decoded.as_bytes());
+            assert_eq!(got, p.encoded.as_bytes());
+        }
+    }
+
+    #[test]
+    fn test_encoder() {
+        for p in pairs() {
+            let mut got = Vec::new();
+            let mut encoder = STD_ENCODING.encoder(&mut got);
+            let _ = encoder.write(p.decoded.as_bytes()).unwrap();
+            encoder.flush().unwrap();
+            assert_eq!(got, p.encoded.as_bytes());
+        }
+    }
+
+    #[test]
+    fn test_encoder_buffering() {
+        let input = big_test();
+        for bs in 1..=12 {
+            let mut bb = Vec::new();
+            let mut encoder = STD_ENCODING.encoder(&mut bb);
+            let mut pos = 0;
+            while pos < input.decoded.len() {
+                let mut end = pos + bs;
+                if end > input.decoded.len() {
+                    end = input.decoded.len();
+                }
+
+                let n = encoder.write(&input.decoded.as_bytes()[pos..end]).unwrap();
+                assert_eq!(n, end - pos);
+                pos += bs;
+            }
+
+            encoder.flush().unwrap();
+            assert_eq!(bb, input.encoded.as_bytes());
+        }
+    }
+
+    #[test]
+    fn test_decode() {
+        for p in pairs() {
+            let mut dbuf = vec![0; STD_ENCODING.decode_len(p.encoded.len())];
+            let (n, end) = STD_ENCODING.decode_in(p.encoded.as_bytes(), &mut dbuf).unwrap();
+            assert_eq!(n, p.decoded.len());
+            if !p.encoded.is_empty() {
+                assert_eq!(end, p.encoded.as_bytes()[p.encoded.len() - 1] == b'=');
+            }
+            assert_eq!(&dbuf[..n], p.decoded.as_bytes());
+
+            let dbuf = STD_ENCODING.decode_to_vec(p.encoded.as_bytes()).unwrap();
+            assert_eq!(dbuf, p.decoded.as_bytes());
+        }
+    }
+
+
+    #[test]
+    fn test_decoder() {
+        for p in pairs() {
+            let mut reader = p.encoded.as_bytes().to_vec();
+            let mut decoder = STD_ENCODING.decoder(std::io::Cursor::new(&mut reader));
+            let mut dbuf = vec![0; STD_ENCODING.decode_len(p.encoded.len())];
+            match decoder.read(&mut dbuf) {
+                Ok(n) => {
+                    assert_eq!(n, p.decoded.len());
+                    assert_eq!(&dbuf[..n], p.decoded.as_bytes());
+                },
+                Err(e) => {
+                    assert_eq!(e.kind(), std::io::ErrorKind::UnexpectedEof);
+                },
+            }
+        }
+    }
+
+    #[test]
+    fn test_decoder_buffering() {
+        let big = big_test();
+        for bs in 1..=12 {
+            let mut decoder = STD_ENCODING.decoder(std::io::Cursor::new(big.encoded.as_bytes()));
+            let mut buf = vec![0; big.decoded.len() + 12];
+            let mut total = 0;
+            while total < big.decoded.len() {
+                match decoder.read(&mut buf[total..total+bs]) {
+                    Ok(nn) => {
+                        total += nn;
+                    },
+                    Err(e) => {
+                        if e.kind() != std::io::ErrorKind::UnexpectedEof {
+                            panic!("unexpected error: {}", e);
+                        }
+                        break;
+                    },
+                }
+            }
+            assert_eq!(big.decoded.as_bytes(), &buf[..total]);
+        }
+    }
+
+    #[test]
+    fn test_decode_corrupt() {
+        struct Case {
+            input: &'static str,
+            offset: isize, // -1 means no corruption.
+        }
+
+        let cases = vec![
+            Case {
+                input: "",
+                offset: -1,
+            },
+            Case {
+                input: "!!!!",
+                offset: 0,
+            },
+            Case {
+                input: "x===",
+                offset: 0,
+            },
+            Case {
+                input: "AA=A====",
+                offset: 2,
+            },
+            Case {
+                input: "AAA=AAAA",
+                offset: 3,
+            },
+            Case {
+                input: "MMMMMMMMM",
+                offset: 8,
+            },
+            Case {
+                input: "MMMMMM",
+                offset: 0,
+            },
+            Case {
+                input: "A=",
+                offset: 1,
+            },
+            Case {
+                input: "AA=",
+                offset: 3,
+            },
+            Case {
+                input: "AA==",
+                offset: 4,
+            },
+            Case {
+                input: "AA===",
+                offset: 5,
+            },
+            Case {
+                input: "AAAA=",
+                offset: 5,
+            },
+            Case {
+                input: "AAAA==",
+                offset: 6,
+            },
+            Case {
+                input: "AAAAA=",
+                offset: 6,
+            },
+            Case {
+                input: "AAAAA==",
+                offset: 7,
+            },
+            Case {
+                input: "A=======",
+                offset: 1,
+            },
+            Case {
+                input: "AA======",
+                offset: -1,
+            },
+            Case {
+                input: "AAA=====",
+                offset: 3,
+            },
+            Case {
+                input: "AAAA====",
+                offset: -1,
+            },
+            Case {
+                input: "AAAAA===",
+                offset: -1,
+            },
+            Case {
+                input: "AAAAAA==",
+                offset: 6,
+            },
+            Case {
+                input: "AAAAAAA=",
+                offset: -1,
+            },
+            Case {
+                input: "AAAAAAAA",
+                offset: -1,
+            },
+        ];
+
+        for c in cases {
+            let mut dbuf = vec![0; STD_ENCODING.decode_len(c.input.len())];
+            let x = STD_ENCODING.decode(c.input.as_bytes(), &mut dbuf);
+            if c.offset == -1 {
+                assert!(x.is_ok());
+                continue;
+            }
+
+            assert!(x.is_err());
+        }
+    }
+
+    #[test]
+    fn test_big() {
+        let n = 3 * 1000 + 1;
+        let mut raw = vec![0; n];
+        const ALPHA: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for i in 0..n {
+            raw[i] = ALPHA[i % ALPHA.len()];
+        }
+        let mut encoded = vec![];
+        let mut w = STD_ENCODING.encoder(&mut encoded);
+        let _ = w.write(&raw).unwrap();
+        w.flush().unwrap();
+        eprintln!("encoded: {}", encoded.len());
+
+        let mut dst = String::new();
+        STD_ENCODING.decoder(std::io::Cursor::new(&encoded)).read_to_string(&mut dst);
+        assert_eq!(raw, dst.as_bytes());
+    }
+
+    struct BadReader {
+        data: Vec<u8>,
+        called: usize,
+        errs: Vec<Option<std::io::Error>>,
+        limit: usize,
+    }
+
+    impl std::io::Read for BadReader {
+        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+            let mut lim = buf.len();
+            if self.limit != 0 && self.limit < lim {
+                lim = self.limit;
+            }
+            if self.data.len() < lim {
+                lim = self.data.len();
+            }
+            let tmp = buf[..lim].to_vec();
+            for i in tmp {
+                buf[i as usize] = self.data[i as usize];
+            }
+
+            self.data.drain(..lim);
+            let mut err = Some(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "bad reader eof"));
+            if self.called < self.errs.len() {
+                err = self.errs[self.called].as_ref().map(|e| std::io::Error::new(e.kind(), "bad reader"));
+            }
+            self.called += 1;
+            match err {
+                Some(e) => Err(e),
+                None => Ok(lim),
+            }
+        }
+    }
+
+    #[test]
+    fn test_decoder_error() {
+        for err in [Some(std::io::Error::new(std::io::ErrorKind::UnexpectedEof, "test decoder error")), None] {
+            let input = "MZXW6YTb".to_string();
+            let mut dbuf = vec![0; STD_ENCODING.decode_len(input.len())];
+            let mut br = BadReader { 
+                data: input.as_bytes().to_vec(),
+                called: 0,
+                errs: vec![err],
+                limit: 0
+            };
+            let mut decoder = STD_ENCODING.decoder(&mut br);
+            let n = decoder.read(&mut dbuf).unwrap();
+            assert_eq!(n, 0);
+
+        }
+
+    }
+}

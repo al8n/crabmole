@@ -2,7 +2,7 @@
 
 use std::cell::{Cell, RefCell};
 
-use crabmole::sort::{IndexSort, SliceSortExt};
+use crabmole::sort::{Sort, SliceSortExt};
 use rand::Rng;
 
 const INTS: &[isize] = &[
@@ -31,34 +31,34 @@ const STRINGS: &[&str] = &["", "Hello", "foo", "bar", "foo", "f00", "%*&^*&^&", 
 #[test]
 fn test_sort_int_slice() {
     let mut data = INTS.to_vec();
-    IndexSort::sort(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort(&mut data);
+    assert!(Sort::is_sorted(&data));
 
     let mut data = INTS.to_vec();
-    IndexSort::sort_stable(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort_stable(&mut data);
+    assert!(Sort::is_sorted(&data));
 }
 
 #[test]
 fn test_sort_f64_slice() {
     let mut data = FLOATS.to_vec();
-    IndexSort::sort(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort(&mut data);
+    assert!(Sort::is_sorted(&data));
 
     let mut data = FLOATS.to_vec();
-    IndexSort::sort_stable(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort_stable(&mut data);
+    assert!(Sort::is_sorted(&data));
 }
 
 #[test]
 fn test_sort_string_slice() {
     let mut data = STRINGS.iter().map(|s| s.to_string()).collect::<Vec<_>>();
-    IndexSort::sort(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort(&mut data);
+    assert!(Sort::is_sorted(&data));
 
     let mut data = STRINGS.iter().map(|s| s.to_string()).collect::<Vec<_>>();
-    IndexSort::sort_stable(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort_stable(&mut data);
+    assert!(Sort::is_sorted(&data));
 }
 
 #[test]
@@ -81,14 +81,14 @@ fn test_sort_large_random() {
     let mut data = (0..1000000)
         .map(|_| rand::random::<isize>())
         .collect::<Vec<_>>();
-    IndexSort::sort(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort(&mut data);
+    assert!(Sort::is_sorted(&data));
 
     let mut data = (0..1000000)
         .map(|_| rand::random::<isize>())
         .collect::<Vec<_>>();
-    IndexSort::sort_stable(&mut data);
-    assert!(IndexSort::is_sorted(&data));
+    Sort::sort_stable(&mut data);
+    assert!(Sort::is_sorted(&data));
 }
 
 #[test]
@@ -96,8 +96,8 @@ fn test_reverse_sort_int_slice() {
     let mut data = INTS.to_vec();
     let mut data1 = INTS.to_vec();
 
-    IndexSort::sort(&mut data);
-    IndexSort::sort_reverse(&mut data1);
+    Sort::sort(&mut data);
+    Sort::sort_reverse(&mut data1);
     for i in 0..INTS.len() {
         assert_eq!(data[i], data1[INTS.len() - i - 1]);
         if i > data.len() / 2 {
@@ -109,7 +109,7 @@ fn test_reverse_sort_int_slice() {
 #[derive(Debug)]
 struct NonDeterministicTestingData;
 
-impl IndexSort for NonDeterministicTestingData {
+impl Sort for NonDeterministicTestingData {
     fn len(&self) -> usize {
         500
     }
@@ -132,7 +132,7 @@ impl IndexSort for NonDeterministicTestingData {
 #[test]
 fn test_non_deterministic_comparison() {
     for _ in 0..10 {
-        IndexSort::sort(&mut NonDeterministicTestingData);
+        Sort::sort(&mut NonDeterministicTestingData);
     }
 }
 
@@ -197,7 +197,7 @@ struct TestingData {
     nswap: usize,
 }
 
-impl IndexSort for TestingData {
+impl Sort for TestingData {
     fn len(&self) -> usize {
         self.data.len()
     }
@@ -385,7 +385,7 @@ struct AdversaryTestingData {
     gas: usize,
 }
 
-impl IndexSort for AdversaryTestingData {
+impl Sort for AdversaryTestingData {
     fn len(&self) -> usize {
         self.data.borrow().len()
     }
@@ -477,7 +477,7 @@ struct Pairs {
     data: Vec<Pair>,
 }
 
-impl IndexSort for Pairs {
+impl Sort for Pairs {
     fn len(&self) -> usize {
         self.data.len()
     }
