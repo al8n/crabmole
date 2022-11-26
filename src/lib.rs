@@ -1,9 +1,7 @@
 //! Porting Go standard library in Rust
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(missing_docs)]
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/al8n/crabmole/main/art/crabmole.jpg"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/al8n/crabmole/main/art/crabmole.jpg")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, allow(unused_attributes))]
 
@@ -20,8 +18,15 @@ pub mod sort;
 #[cfg_attr(docsrs, doc(cfg(feature = "encoding")))]
 pub mod encoding;
 
+/// Go io library
+#[cfg(feature = "io")]
+pub mod io;
 
-/// Copies elements from a source slice into a destination slice. (As a special case, it also will copy bytes from a string to a slice of bytes.) The source and destination may overlap. 
+/// Go io library async version
+#[cfg(feature = "async-io")]
+pub mod async_io;
+
+/// Copies elements from a source slice into a destination slice. (As a special case, it also will copy bytes from a string to a slice of bytes.) The source and destination may overlap.
 /// Copy returns the number of elements copied, which will be the minimum of `src.len()` and `dst.len()`.
 #[inline]
 pub fn copy<T: core::marker::Copy>(src: &[T], dst: &mut [T]) -> usize {

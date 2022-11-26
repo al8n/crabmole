@@ -2,7 +2,7 @@
 
 use std::cell::{Cell, RefCell};
 
-use crabmole::sort::{Sort, SliceSortExt};
+use crabmole::sort::{SliceSortExt, Sort};
 use rand::Rng;
 
 const INTS: &[isize] = &[

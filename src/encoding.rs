@@ -1,4 +1,3 @@
-
 /// Go encoding.binary library
 pub mod binary;
 
