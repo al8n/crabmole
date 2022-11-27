@@ -188,31 +188,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: file
-
-  publish_docs:
-    name: Publish Documentation
-    needs:
-      - rustfmt
-      - clippy
-      - stable
-      - nightly
-      - minrust
-      - cross
-      - sanitizer 
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Rust
-        run: rustup update stable && rustup default stable
-      - name: Build documentation
-        run: cargo doc --no-deps --all-features
-        env:
-          RUSTDOCFLAGS: --cfg docsrs
-      - name: Publish documentation
-        run: |
-          cd target/doc
-          git init
-          git add .
-          git -c user.name='ci' -c user.email='ci' commit -m 'Deploy zallocator API documentation'
-          git push -f -q https://git:${{ secrets.github_token }}@github.com/${{ github.repository }} HEAD:gh-pages
-        if: github.event_name == 'push' && github.event.ref == 'refs/heads/master' && github.repository == 'al8n/zallocator'

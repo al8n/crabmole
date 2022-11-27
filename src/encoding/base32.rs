@@ -508,8 +508,8 @@ impl Encoding {
     #[inline]
     #[cfg(feature = "alloc")]
     pub fn decode_without_newline(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
-        let mut buf = alloc::vec![0; src.len()];
-        let l = strip_new_lines(src, &mut buf);
+        let mut buf = src.to_vec();
+        let l = strip_new_lines_inplace(&mut buf);
         self.decode_in(&buf[..l], dst).map(|(n, _)| n)
     }
 
@@ -521,16 +521,134 @@ impl Encoding {
         src: &[u8],
     ) -> Result<alloc::vec::Vec<u8>, DecodeError> {
         let mut buf = src.to_vec();
-        let l = strip_new_lines(src, &mut buf);
-        let ptr = buf.as_mut_ptr();
-        let len = buf.len();
-        unsafe {
-            self.decode_without_newline(&buf[..l], core::slice::from_raw_parts_mut(ptr, len))
-                .map(|n| {
-                    buf.truncate(n);
-                    buf
-                })
+        let l = strip_new_lines_inplace(&mut buf);
+        self.decode_inplace(&mut buf, l).map(|(n, _)| {
+            buf.truncate(n);
+            buf
+        })
+    }
+
+    #[inline]
+    fn decode_inplace(&self, dst: &mut [u8], src_len: usize) -> Result<(usize, bool), DecodeError> {
+        let mut n = 0;
+        let mut end = false;
+        let mut dsti = 0;
+        let src = dst;
+        let olen = src_len;
+
+        let mut src_start = 0;
+        let src_end = src_len;
+        while !src[src_start..src_end].is_empty() && !end {
+            // Decode quantum using the base32 alphabet
+            let mut dbuf = [0; 8];
+            let mut dlen = 8;
+
+            let mut j = 0;
+            while j < 8 {
+                if src[src_start..src_end].is_empty() {
+                    if self.pad_char.is_some() {
+                        // We have reached the end and are missing padding
+                        return Err(DecodeError(olen - (src_end - src_start) - j));
+                    }
+                    // We have reached the end and are not expecting any padding
+                    (dlen, end) = (j, true);
+                    break;
+                }
+
+                let in_ = src[src_start];
+                // src = &mut src[src_start + 1..];
+                src_start += 1;
+
+                match self.pad_char {
+                    Some(padding)
+                        if padding == (in_ as char) && j >= 2 && (src_end - src_start) < 8 =>
+                    {
+                        // We've reached the end and there's padding
+                        if (src_end - src_start) + j < 8 - 1 {
+                            // not enough padding
+                            return Err(DecodeError(olen));
+                        }
+
+                        let mut k = 0;
+                        while k < 8 - 1 - j {
+                            if (src_end - src_start) > k && (src[src_start + k] as char) != padding
+                            {
+                                // incorrect padding
+                                return Err(DecodeError(olen - (src_end - src_start)));
+                            }
+                            k += 1;
+                        }
+
+                        (dlen, end) = (j, true);
+
+                        // 7, 5 and 2 are not valid padding lengths, and so 1, 3 and 6 are not
+                        // valid dlen values. See RFC 4648 Section 6 "Base 32 Encoding" listing
+                        // the five valid padding lengths, and Section 9 "Illustrations and
+                        // Examples" for an illustration for how the 1st, 3rd and 6th base32
+                        // src bytes do not yield enough information to decode a dst byte.
+                        if dlen == 1 || dlen == 3 || dlen == 6 {
+                            return Err(DecodeError(olen - (src_end - src_start) - 1));
+                        }
+                        break;
+                    }
+                    _ => {
+                        dbuf[j] = self.decode_map[in_ as usize];
+                        if dbuf[j] == 0xFF {
+                            return Err(DecodeError(olen - (src_end - src_start) - 1));
+                        }
+                        j += 1;
+                    }
+                }
+            }
+
+            // Pack 8x 5-bit source blocks into 5 byte destination
+            // quantum
+            match dlen {
+                8 => {
+                    src[dsti + 4] = dbuf[6] << 5 | dbuf[7];
+                    n += 1;
+                    src[dsti + 3] = dbuf[4] << 7 | dbuf[5] << 2 | dbuf[6] >> 3;
+                    n += 1;
+                    src[dsti + 2] = dbuf[3] << 4 | dbuf[4] >> 1;
+                    n += 1;
+                    src[dsti + 1] = dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4;
+                    n += 1;
+                    src[dsti] = dbuf[0] << 3 | dbuf[1] >> 2;
+                    n += 1;
+                }
+                7 => {
+                    src[dsti + 3] = dbuf[4] << 7 | dbuf[5] << 2 | dbuf[6] >> 3;
+                    n += 1;
+                    src[dsti + 2] = dbuf[3] << 4 | dbuf[4] >> 1;
+                    n += 1;
+                    src[dsti + 1] = dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4;
+                    n += 1;
+                    src[dsti] = dbuf[0] << 3 | dbuf[1] >> 2;
+                    n += 1;
+                }
+                5 => {
+                    src[dsti + 2] = dbuf[3] << 4 | dbuf[4] >> 1;
+                    n += 1;
+                    src[dsti + 1] = dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4;
+                    n += 1;
+                    src[dsti] = dbuf[0] << 3 | dbuf[1] >> 2;
+                    n += 1;
+                }
+                4 => {
+                    src[dsti + 1] = dbuf[1] << 6 | dbuf[2] << 1 | dbuf[3] >> 4;
+                    n += 1;
+                    src[dsti] = dbuf[0] << 3 | dbuf[1] >> 2;
+                    n += 1;
+                }
+                2 => {
+                    src[dsti] = dbuf[0] << 3 | dbuf[1] >> 2;
+                    n += 1;
+                }
+                _ => {}
+            }
+            dsti += 5;
         }
+        Ok((n, end))
     }
 
     /// Returns the maximum length in bytes of the decoded data
@@ -666,13 +784,15 @@ impl Encoding {
 
 /// Removes newline characters and returns the number
 /// of non-newline characters copied to dst.
-fn strip_new_lines(src: &[u8], dst: &mut [u8]) -> usize {
+#[inline]
+fn strip_new_lines_inplace(dst: &mut [u8]) -> usize {
     let mut offset = 0;
-    for b in src {
+    for i in 0..dst.len() {
+        let b = dst[i];
         if b.eq(&b'\r') || b.eq(&b'\n') {
             continue;
         }
-        dst[offset] = *b;
+        dst[offset] = b;
         offset += 1;
     }
     offset
@@ -760,9 +880,7 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
 
         // Trailing fringe.
         // Safety: buf.len() always less of equal to self.buf.len()
-        unsafe {
-            core::ptr::copy(buf.as_ptr(), self.buf.as_mut_ptr(), buf.len());
-        }
+        crate::copy(buf, &mut self.buf);
         self.nbuf = buf.len();
         n += buf.len();
         Ok(n)
@@ -805,11 +923,7 @@ impl<R: std::io::Read> std::io::Read for NewLineFilteringReader<R> {
             Ok(mut n) => {
                 while n > 0 {
                     let s = &mut buf[..n];
-                    let ptr = s.as_mut_ptr();
-                    let slen = s.len();
-                    let offset =
-                        unsafe { strip_new_lines(s, core::slice::from_raw_parts_mut(ptr, slen)) };
-
+                    let offset = strip_new_lines_inplace(s);
                     if offset > 0 {
                         return Ok(offset);
                     }
