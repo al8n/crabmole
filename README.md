@@ -28,15 +28,15 @@ crabmole = "0.0.1"
 ```
 
 ## Status
-| name | status | no_std  |
-|:----:|:------:|:-------:|
-| `container/ring` | 🚧 | ✅ |
-| `sort` |   ✅   |    ✅    |
-| `encoding/base32` | ✅ | ✅ |
-| `encoding/base64` | 🚧 | ✅ |
-| `io/pipe` | ✅ | ❌ |
-| `async-io/pipe` | ✅ | ❌ |
-| `time` | - | ❌ |
+| name | status | no_std  |  100% safe  |
+|:----:|:------:|:-------:|:-----------:|
+| `container/ring` | 🚧 | ✅ | ❌ |
+| `sort` |   ✅   |    ✅    | ✅ |
+| `encoding/base32` | ✅ | ✅ | ✅ |
+| `encoding/base64` | 🚧 | ✅ | ✅ |
+| `io/pipe` | ✅ | ❌ | ✅ |
+| `async-io/pipe` | ✅ | ❌ | ✅ |
+| `time` | - | ❌ | ✅ |
 
 - 🚧: WIP
 - ✅: Support
