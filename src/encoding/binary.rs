@@ -257,7 +257,6 @@ mod tests {
 
     #[test]
     fn test_constants() {
-        let x: usize = usize::from(0u64);
         test_constant(16, MAX_VARINT_LEN16);
         test_constant(32, MAX_VARINT_LEN32);
         test_constant(64, MAX_VARINT_LEN64);
