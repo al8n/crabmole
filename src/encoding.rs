@@ -1,5 +1,5 @@
-// /// Go encoding.binary library
-// pub mod binary;
+/// Go encoding.binary library
+pub mod binary;
 
 /// Go encoding.base32 library
 pub mod base32;
