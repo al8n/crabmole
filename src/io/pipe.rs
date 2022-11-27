@@ -233,6 +233,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_pipe1() {
         let (tx, rx) = bounded(1);
         let (r, w) = pipe();
@@ -264,6 +265,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_pipe2() {
         let (tx, rx) = bounded(1);
         let (r, w) = pipe();
