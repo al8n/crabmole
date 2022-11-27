@@ -1,12 +1,14 @@
 [package]
 name = "crabmole"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 license = "MIT OR Apache-2.0 OR BSD-3-Clause"
 description = "Porting Go standard library in Rust"
 documentation = "https://docs.rs/crabmole/"
 homepage = "https://github.com/al8n/crabmole"
 repository = "https://github.com/al8n/crabmole"
+keywords = ["base32", "pipe", "sort"]
+category = ["developement-tools", "no-std", "encoding"]
 
 [features]
 default = ["std"]
