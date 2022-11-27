@@ -835,10 +835,7 @@ impl<R> Decoder<R> {
 
     /// Constructs a new base32 stream decoder.
     #[inline]
-    pub const fn with_newline_filter(
-        enc: Base32,
-        reader: R,
-    ) -> Decoder<NewLineFilteringReader<R>> {
+    pub const fn with_newline_filter(enc: Base32, reader: R) -> Decoder<NewLineFilteringReader<R>> {
         Decoder {
             enc,
             reader: NewLineFilteringReader { wrapped: reader },

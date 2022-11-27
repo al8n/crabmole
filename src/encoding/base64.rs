@@ -697,8 +697,7 @@ pub const URL_ENCODING: Base64 = Base64::new_unchecked(ENCODE_URL);
 /// The standard raw, unpadded base64 encoding,
 /// as defined in RFC 4648 section 3.2.
 /// This is the same as StdBase64 but omits padding characters.
-pub const RAW_STD_ENCODING: Base64 =
-    Base64::new_unchecked(ENCODE_STD).with_padding_unchecked(None);
+pub const RAW_STD_ENCODING: Base64 = Base64::new_unchecked(ENCODE_STD).with_padding_unchecked(None);
 
 const DECODE_MAP_INITIALIZE: [u8; 256] = [255; 256];
 
