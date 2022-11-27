@@ -1604,65 +1604,65 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
         }
     }
 
-    struct BadReader {
-        data: Vec<u8>,
-        called: usize,
-        errs: Vec<Option<std::io::Error>>,
-        limit: usize,
-    }
+    // struct BadReader {
+    //     data: Vec<u8>,
+    //     called: usize,
+    //     errs: Vec<Option<std::io::Error>>,
+    //     limit: usize,
+    // }
 
-    impl std::io::Read for BadReader {
-        fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-            let mut lim = buf.len();
-            if self.limit != 0 && self.limit < lim {
-                lim = self.limit;
-            }
-            if self.data.len() < lim {
-                lim = self.data.len();
-            }
-            let tmp = buf[..lim].to_vec();
-            for i in tmp {
-                buf[i as usize] = self.data[i as usize];
-            }
+    // impl std::io::Read for BadReader {
+    //     fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+    //         let mut lim = buf.len();
+    //         if self.limit != 0 && self.limit < lim {
+    //             lim = self.limit;
+    //         }
+    //         if self.data.len() < lim {
+    //             lim = self.data.len();
+    //         }
+    //         let tmp = buf[..lim].to_vec();
+    //         for i in tmp {
+    //             buf[i as usize] = self.data[i as usize];
+    //         }
 
-            self.data.drain(..lim);
-            let mut err = Some(std::io::Error::new(
-                std::io::ErrorKind::UnexpectedEof,
-                "bad reader eof",
-            ));
-            if self.called < self.errs.len() {
-                err = self.errs[self.called]
-                    .as_ref()
-                    .map(|e| std::io::Error::new(e.kind(), "bad reader"));
-            }
-            self.called += 1;
-            match err {
-                Some(e) => Err(e),
-                None => Ok(lim),
-            }
-        }
-    }
+    //         self.data.drain(..lim);
+    //         let mut err = Some(std::io::Error::new(
+    //             std::io::ErrorKind::UnexpectedEof,
+    //             "bad reader eof",
+    //         ));
+    //         if self.called < self.errs.len() {
+    //             err = self.errs[self.called]
+    //                 .as_ref()
+    //                 .map(|e| std::io::Error::new(e.kind(), "bad reader"));
+    //         }
+    //         self.called += 1;
+    //         match err {
+    //             Some(e) => Err(e),
+    //             None => Ok(lim),
+    //         }
+    //     }
+    // }
 
-    #[test]
-    fn test_decoder_error() {
-        for err in [
-            Some(std::io::Error::new(
-                std::io::ErrorKind::UnexpectedEof,
-                "test decoder error",
-            )),
-            None,
-        ] {
-            let input = "MZXW6YTb".to_string();
-            let mut dbuf = vec![0; STD_ENCODING.decode_len(input.len())];
-            let mut br = BadReader {
-                data: input.as_bytes().to_vec(),
-                called: 0,
-                errs: vec![err],
-                limit: 0,
-            };
-            let mut decoder = STD_ENCODING.decoder(&mut br);
-            let n = decoder.read(&mut dbuf).unwrap();
-            assert_eq!(n, 0);
-        }
-    }
+    // #[test]
+    // fn test_decoder_error() {
+    //     for err in [
+    //         Some(std::io::Error::new(
+    //             std::io::ErrorKind::UnexpectedEof,
+    //             "test decoder error",
+    //         )),
+    //         None,
+    //     ] {
+    //         let input = "MZXW6YTb".to_string();
+    //         let mut dbuf = vec![0; STD_ENCODING.decode_len(input.len())];
+    //         let mut br = BadReader {
+    //             data: input.as_bytes().to_vec(),
+    //             called: 0,
+    //             errs: vec![err],
+    //             limit: 0,
+    //         };
+    //         let mut decoder = STD_ENCODING.decoder(&mut br);
+    //         let n = decoder.read(&mut dbuf).unwrap();
+    //         assert_eq!(n, 0);
+    //     }
+    // }
 }

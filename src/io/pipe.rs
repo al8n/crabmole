@@ -49,27 +49,25 @@ impl PipeReader {
     /// returned as err; otherwise err is EOF.
     pub fn read(&self, buf: &mut [u8]) -> Result<usize, PipeError> {
         select! {
-            recv(self.inner.done_rx) -> _ => {
-                return Err(self.read_close_error());
-            }
-            default => {}
-        }
-
-        select! {
-            recv(self.wr_rx) -> msg => {
-                match msg {
-                    Ok(mut msg) => {
-                        let n = crate::copy(buf, &mut msg);
-                        self.rd_tx.send(n).unwrap();
-                        Ok(n)
+            recv(self.inner.done_rx) -> _ => Err(self.read_close_error()),
+            default => {
+                select! {
+                    recv(self.wr_rx) -> msg => {
+                        match msg {
+                            Ok(mut msg) => {
+                                let n = crate::copy(buf, &mut msg);
+                                self.rd_tx.send(n).unwrap();
+                                Ok(n)
+                            }
+                            Err(_) => {
+                                Err(PipeError::Closed)
+                            }
+                        }
                     }
-                    Err(_) => {
-                        Err(PipeError::Closed)
+                    recv(self.inner.done_rx) -> _ => {
+                        Err(self.read_close_error())
                     }
                 }
-            }
-            recv(self.inner.done_rx) -> _ => {
-                Err(self.read_close_error())
             }
         }
     }

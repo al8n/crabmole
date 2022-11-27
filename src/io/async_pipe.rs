@@ -50,9 +50,7 @@ impl PipeReader {
     /// returned as err; otherwise err is EOF.
     pub async fn read(&self, buf: &mut [u8]) -> Result<usize, PipeError> {
         select! {
-            _ = self.inner.done_rx.recv().fuse() => {
-                return Err(self.read_close_error().await);
-            }
+            _ = self.inner.done_rx.recv().fuse() => Err(self.read_close_error().await),
             default => {
                 select! {
                     msg = self.wr_rx.recv().fuse() => {
