@@ -32,8 +32,12 @@ crabmole = "0.0.1"
 |:----:|:------:|:-------:|:-----------:|
 | `container/ring` | 🚧 | ✅ | ❌ |
 | `sort` |   ✅   |    ✅    | ✅ |
+| `encoding/ascii85` | ✅ | ✅ | ✅ |
 | `encoding/base32` | ✅ | ✅ | ✅ |
 | `encoding/base64` | 🚧 | ✅ | ✅ |
+| `encoding/binary` | 🚧 | ✅ | ✅ |
+| `encoding/hex` | ✅ | ✅ | ✅ |
+| `encoding/pem` | ✅ | ✅ | ✅ |
 | `io/pipe` | ✅ | ❌ | ✅ |
 | `async-io/pipe` | ✅ | ❌ | ✅ |
 | `time` | - | ❌ | ✅ |
