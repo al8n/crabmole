@@ -20,16 +20,20 @@ pub fn append_uvarint(mut buf: alloc::vec::Vec<u8>, x: impl Unsigned) -> alloc::
 #[cfg(feature = "std")]
 #[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 #[inline]
-pub fn write_uvarint<W: std::io::Write>(mut buf: W, x: impl Unsigned) -> Result<usize, std::io::Error> {
+pub fn write_uvarint<W: std::io::Write>(
+    mut buf: W,
+    x: impl Unsigned,
+) -> Result<usize, std::io::Error> {
     let mut x = x.to_u64();
     let mut n = 0;
     while x >= 0x80 {
         n += buf.write(&[(x as u8) | 0x80])?;
         x >>= 7;
     }
-    buf
-        .write(&[x as u8])
-        .map(|nn| { n += nn; n })
+    buf.write(&[x as u8]).map(|nn| {
+        n += nn;
+        n
+    })
 }
 
 /// Reads an encoded unsigned integer from r and returns the value and number of bytes readed.
@@ -46,7 +50,10 @@ pub fn read_uvarint<R: std::io::Read, I: Unsigned>(mut r: R) -> std::io::Result<
 
         if b[0] < 0x80 {
             if i == MAX_VARINT_LEN64 - 1 && b[0] > 1 {
-                return Err(std::io::Error::new(std::io::ErrorKind::Other, Error::Overflow));
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    Error::Overflow,
+                ));
             }
             return Ok((I::from_u64(x | ((b[0] as u64) << s)), i));
         }
@@ -54,11 +61,14 @@ pub fn read_uvarint<R: std::io::Read, I: Unsigned>(mut r: R) -> std::io::Result<
         s += 7;
     }
 
-    Err(std::io::Error::new(std::io::ErrorKind::Other, Error::Overflow))
+    Err(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        Error::Overflow,
+    ))
 }
 
 /// Encodes a uint64 into buf and returns the number of bytes written.
-/// 
+///
 /// # Panic
 /// The buffer is too small.
 #[inline]
@@ -79,7 +89,7 @@ pub fn put_uvarint(buf: &mut [u8], x: impl Unsigned) -> usize {
 pub enum Error {
     /// Buffer is too small
     SmallBuffer,
-    /// Overflow 64-bit 
+    /// Overflow 64-bit
     Overflow,
 }
 
@@ -88,7 +98,7 @@ impl core::fmt::Display for Error {
         match self {
             Self::SmallBuffer => write!(f, "binary: the buffer is too small"),
             Self::Overflow => write!(f, "binary: varint overflows a 64-bit integer"),
-        } 
+        }
     }
 }
 
@@ -108,7 +118,7 @@ pub fn uvarint<R: Unsigned>(buf: &[u8]) -> Result<(R, usize), Error> {
         let b = *b;
         if b < 0x80 {
             if i == MAX_VARINT_LEN64 - 1 && b > 1 {
-                return Err(Error::Overflow); 
+                return Err(Error::Overflow);
             }
             return Ok((R::from_u64(x | (b as u64) << s), i + 1));
         }
@@ -142,7 +152,7 @@ pub fn write_varint<W: std::io::Write>(buf: W, x: impl Signed) -> std::io::Resul
     if x < 0 {
         ux = !ux;
     }
-    write_uvarint(buf, ux) 
+    write_uvarint(buf, ux)
 }
 
 /// Reads an encoded unsigned integer from r and returns the value and number of bytes readed.
@@ -160,9 +170,9 @@ pub fn read_varint<R: std::io::Read, I: Signed>(r: R) -> std::io::Result<(I, usi
 }
 
 /// Encodes an integer into buf and returns the number of bytes written.
-/// 
+///
 /// # Panic
-/// The buffer is too small. 
+/// The buffer is too small.
 #[inline]
 pub fn put_varint(buf: &mut [u8], x: impl Signed) -> usize {
     let x = x.to_i64();
@@ -185,7 +195,6 @@ pub fn varint<R: Signed>(buf: &[u8]) -> Result<(R, usize), Error> {
     Ok((R::from_i64(x), n))
 }
 
-
 macro_rules! impl_ {
     ($trait: ident::<$ret:ident>::$fn: ident::$from_fn: ident { $($x:ident),+ $(,)? }) => {
         $(
@@ -207,7 +216,7 @@ pub trait Unsigned {
     /// Converts self to u64
     fn to_u64(&self) -> u64;
 
-    /// 
+    ///
     fn from_u64(val: u64) -> Self;
 }
 
@@ -227,7 +236,7 @@ pub trait Signed {
     /// Converts self to i64
     fn to_i64(&self) -> i64;
 
-    /// 
+    ///
     fn from_i64(val: i64) -> Self;
 }
 
@@ -251,7 +260,7 @@ mod tests {
 
     fn test_constant(w: u64, max: usize) {
         let mut buf = vec![0; MAX_VARINT_LEN64];
-        let n = put_uvarint(&mut buf,  1u64 << (w - 1));
+        let n = put_uvarint(&mut buf, 1u64 << (w - 1));
         assert_eq!(n, max);
     }
 

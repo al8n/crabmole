@@ -56,7 +56,7 @@ pub enum Error {
 impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
-            Error::InvalidEncoder => write!(f, "Encoding alphabet must be 32 bytes long"),
+            Error::InvalidEncoder => write!(f, "Base32 alphabet must be 32 bytes long"),
             Error::InvalidPadding => write!(f, "Invalid padding character"),
             Error::PaddingContainedInAlphabet(ch) => {
                 write!(f, "Padding character '{ch}' is contained in the alphabet")
@@ -76,25 +76,31 @@ pub const STD_PADDING: Option<char> = Some('=');
 
 /// The standard base32 encoding, as defined in
 /// RFC 4648.
-pub const STD_ENCODING: Encoding = Encoding::new(ENCODE_STD);
+pub const STD_ENCODING: Base32 = Base32::new(ENCODE_STD);
 
 /// The `Extended Hex Alphabet` defined in RFC 4648.
 // It is typically used in DNS.
-pub const HEX_ENCODING: Encoding = Encoding::new(ENCODE_HEX);
+pub const HEX_ENCODING: Base32 = Base32::new(ENCODE_HEX);
 
-/// An Encoding is a radix 32 encoding/decoding scheme, defined by a
+/// An Base32 is a radix 32 encoding/decoding scheme, defined by a
 /// 32-character alphabet. The most common is the "base32" encoding
 /// introduced for SASL GSSAPI and standardized in RFC 4648.
 /// The alternate "base32hex" encoding is used in DNSSEC.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
-pub struct Encoding {
+pub struct Base32 {
     encode: [u8; BASE],
     decode_map: [u8; 256],
     pad_char: Option<char>,
 }
 
-impl Encoding {
-    /// Returns a new Encoding defined by the given alphabet,
+impl Default for Base32 {
+    fn default() -> Self {
+        STD_ENCODING
+    }
+}
+
+impl Base32 {
+    /// Returns a new Base32 defined by the given alphabet,
     /// which must be a 32-byte slice.
     #[inline]
     pub const fn new(encoder: [u8; BASE]) -> Self {
@@ -133,7 +139,7 @@ impl Encoding {
         decode_map[encoder[30] as usize] = 30;
         decode_map[encoder[31] as usize] = 31;
 
-        Encoding {
+        Self {
             encode: encoder,
             decode_map,
             pad_char: Some('='),
@@ -407,7 +413,7 @@ impl Encoding {
                         (dlen, end) = (j, true);
 
                         // 7, 5 and 2 are not valid padding lengths, and so 1, 3 and 6 are not
-                        // valid dlen values. See RFC 4648 Section 6 "Base 32 Encoding" listing
+                        // valid dlen values. See RFC 4648 Section 6 "Base 32 Base32" listing
                         // the five valid padding lengths, and Section 9 "Illustrations and
                         // Examples" for an illustration for how the 1st, 3rd and 6th base32
                         // src bytes do not yield enough information to decode a dst byte.
@@ -537,7 +543,7 @@ impl Encoding {
                         (dlen, end) = (j, true);
 
                         // 7, 5 and 2 are not valid padding lengths, and so 1, 3 and 6 are not
-                        // valid dlen values. See RFC 4648 Section 6 "Base 32 Encoding" listing
+                        // valid dlen values. See RFC 4648 Section 6 "Base 32 Base32" listing
                         // the five valid padding lengths, and Section 9 "Illustrations and
                         // Examples" for an illustration for how the 1st, 3rd and 6th base32
                         // src bytes do not yield enough information to decode a dst byte.
@@ -640,7 +646,7 @@ impl std::error::Error for DecodeError {}
 #[cfg(feature = "std")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Encoder<W> {
-    enc: Encoding,
+    enc: Base32,
     writer: W,
     buf: [u8; 5],
     nbuf: usize,
@@ -655,7 +661,7 @@ impl<W> Encoder<W> {
     /// writing, the caller must **Flush** the returned encoder to flush any
     /// partially written blocks.
     #[inline]
-    pub const fn new(enc: Encoding, writer: W) -> Self {
+    pub const fn new(enc: Base32, writer: W) -> Self {
         Self {
             enc,
             writer,
@@ -802,7 +808,7 @@ fn read_encoded_data(
 #[cfg(feature = "std")]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Decoder<R> {
-    enc: Encoding,
+    enc: Base32,
     reader: R,
     end: bool,
     buf: [u8; 1024],
@@ -815,7 +821,7 @@ pub struct Decoder<R> {
 impl<R> Decoder<R> {
     /// Constructs a new base32 stream decoder.
     #[inline]
-    pub const fn new(enc: Encoding, reader: R) -> Self {
+    pub const fn new(enc: Base32, reader: R) -> Self {
         Self {
             enc,
             reader,
@@ -830,7 +836,7 @@ impl<R> Decoder<R> {
     /// Constructs a new base32 stream decoder.
     #[inline]
     pub const fn with_newline_filter(
-        enc: Encoding,
+        enc: Base32,
         reader: R,
     ) -> Decoder<NewLineFilteringReader<R>> {
         Decoder {
@@ -1061,7 +1067,7 @@ mod test {
     fn test_decoder() {
         for p in pairs() {
             let mut reader = p.encoded.as_bytes().to_vec();
-            let mut decoder = Encoding::new(ENCODE_STD).decoder(std::io::Cursor::new(&mut reader));
+            let mut decoder = Base32::new(ENCODE_STD).decoder(std::io::Cursor::new(&mut reader));
             let mut dbuf = vec![0; STD_ENCODING.decode_len(p.encoded.len())];
             match decoder.read(&mut dbuf) {
                 Ok(n) => {
@@ -1377,7 +1383,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
         }
 
         struct Test {
-            enc: Encoding,
+            enc: Base32,
             cases: &'static [TestCase],
         }
 
