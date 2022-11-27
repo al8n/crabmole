@@ -19,12 +19,9 @@ pub mod sort;
 pub mod encoding;
 
 /// Go io library
-#[cfg(feature = "io")]
+#[cfg(any(feature = "io", feature = "async-io"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "io", feature = "async-io"))))]
 pub mod io;
-
-/// Go io library async version
-#[cfg(feature = "async-io")]
-pub mod async_io;
 
 /// Copies elements from a source slice into a destination slice. (As a special case, it also will copy bytes from a string to a slice of bytes.) The source and destination may overlap.
 /// Copy returns the number of elements copied, which will be the minimum of `src.len()` and `dst.len()`.
