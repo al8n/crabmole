@@ -35,140 +35,7 @@ macro_rules! assign_32 {
     };
 }
 
-macro_rules! check_32 {
-    ($arr: ident, $char: ident, $invalid: expr) => {
-        if $char == $arr[0] as char {
-            $invalid;
-        }
-
-        if $char == $arr[1] as char {
-            $invalid;
-        }
-
-        if $char == $arr[2] as char {
-            $invalid;
-        }
-
-        if $char == $arr[3] as char {
-            $invalid;
-        }
-
-        if $char == $arr[4] as char {
-            $invalid;
-        }
-
-        if $char == $arr[5] as char {
-            $invalid;
-        }
-
-        if $char == $arr[6] as char {
-            $invalid;
-        }
-
-        if $char == $arr[7] as char {
-            $invalid;
-        }
-
-        if $char == $arr[8] as char {
-            $invalid;
-        }
-
-        if $char == $arr[9] as char {
-            $invalid;
-        }
-
-        if $char == $arr[10] as char {
-            $invalid;
-        }
-
-        if $char == $arr[11] as char {
-            $invalid;
-        }
-
-        if $char == $arr[12] as char {
-            $invalid;
-        }
-
-        if $char == $arr[13] as char {
-            $invalid;
-        }
-
-        if $char == $arr[14] as char {
-            $invalid;
-        }
-
-        if $char == $arr[15] as char {
-            $invalid;
-        }
-
-        if $char == $arr[16] as char {
-            $invalid;
-        }
-
-        if $char == $arr[17] as char {
-            $invalid;
-        }
-
-        if $char == $arr[18] as char {
-            $invalid;
-        }
-
-        if $char == $arr[19] as char {
-            $invalid;
-        }
-
-        if $char == $arr[20] as char {
-            $invalid;
-        }
-
-        if $char == $arr[21] as char {
-            $invalid;
-        }
-
-        if $char == $arr[22] as char {
-            $invalid;
-        }
-
-        if $char == $arr[23] as char {
-            $invalid;
-        }
-
-        if $char == $arr[24] as char {
-            $invalid;
-        }
-
-        if $char == $arr[25] as char {
-            $invalid;
-        }
-
-        if $char == $arr[26] as char {
-            $invalid;
-        }
-
-        if $char == $arr[27] as char {
-            $invalid;
-        }
-
-        if $char == $arr[28] as char {
-            $invalid;
-        }
-
-        if $char == $arr[29] as char {
-            $invalid;
-        }
-
-        if $char == $arr[30] as char {
-            $invalid;
-        }
-
-        if $char == $arr[31] as char {
-            $invalid;
-        }
-    };
-}
-
 const BASE: usize = 32;
-
 const ENCODE_STD: [u8; BASE] = *b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 const ENCODE_HEX: [u8; BASE] = *b"0123456789ABCDEFGHIJKLMNOPQRSTUV";
 const DECODE_MAP_INITIALIZE: [u8; 256] = [255; 256];
@@ -308,48 +175,6 @@ impl Encoding {
         reader: R,
     ) -> Decoder<NewLineFilteringReader<R>> {
         Decoder::new(*self, NewLineFilteringReader::new(reader))
-    }
-
-    /// Creates a new encoding identical to enc except
-    /// with a specified padding character.
-    /// The padding character must not be '\r' or '\n', must not
-    /// be contained in the encoding's alphabet and must be a rune equal or
-    /// below '\xff'.
-    ///
-    /// # Panic
-    /// - `padding` must not be '\r' or '\n', must not be contained in the alphabet and must be a rune equal or
-    /// below '\xff'.
-    /// - `encoder` must be a 32-byte slice
-    #[inline]
-    pub const fn with_padding_unchecked(encoder: [u8; BASE], padding: Option<char>) -> Self {
-        let mut decode_map = [0xff; 256];
-        assign_32!(encoder, decode_map);
-
-        if let Some(padding) = padding {
-            if padding == '\r' || padding == '\n' || padding > (0xff as char) {
-                panic!(
-                    "Padding must not be '\\r' or '\\n' and must be a rune equal or below '\\xff'"
-                );
-            }
-
-            check_32!(
-                encoder,
-                padding,
-                panic!("Padding character is contained in the alphabet")
-            );
-
-            return Encoding {
-                encode: encoder,
-                decode_map,
-                pad_char: Some(padding),
-            };
-        }
-
-        Encoding {
-            encode: encoder,
-            decode_map,
-            pad_char: None,
-        }
     }
 
     /// Returns the length in bytes of the base32 encoding
@@ -1236,7 +1061,7 @@ mod test {
     fn test_decoder() {
         for p in pairs() {
             let mut reader = p.encoded.as_bytes().to_vec();
-            let mut decoder = STD_ENCODING.decoder(std::io::Cursor::new(&mut reader));
+            let mut decoder = Encoding::new(ENCODE_STD).decoder(std::io::Cursor::new(&mut reader));
             let mut dbuf = vec![0; STD_ENCODING.decode_len(p.encoded.len())];
             match decoder.read(&mut dbuf) {
                 Ok(n) => {
