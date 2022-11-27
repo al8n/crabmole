@@ -1,5 +1,3 @@
-
-
 macro_rules! assign_64 {
     ($src: ident, $dst: ident) => {
         $dst[0]= $src[0];
@@ -363,6 +361,3 @@ const STD_ENCODING: Encoding = Encoding::new(ENCODE_STD);
 // URLEncoding is the alternate base64 encoding defined in RFC 4648.
 // It is typically used in URLs and file names.
 const URLEncoding: Encoding = Encoding::new(ENCODE_URL);
-
-
-

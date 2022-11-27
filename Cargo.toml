@@ -1,26 +1,39 @@
 [package]
 name = "crabmole"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 license = "MIT OR Apache-2.0 OR BSD-3-Clause"
 description = "Porting Go standard library in Rust"
 documentation = "https://docs.rs/crabmole/"
 homepage = "https://github.com/al8n/crabmole"
 repository = "https://github.com/al8n/crabmole"
+keywords = ["base32", "pipe", "sort"]
+category = ["developement-tools", "no-std", "encoding"]
 
 [features]
 default = ["std"]
-full = ["encoding", "std", "sort"]
+full = ["encoding", "io", "async-io", "std", "sort"]
 std = ["alloc"]
 alloc = []
 
 sort = []
 encoding = []
 
+io = ["std", "crossbeam-channel", "parking_lot"]
+async-io = ["std", "async-channel", "futures-util/io", "async-lock"]
+
 [dependencies]
+async-channel = { version = "1.7", optional = true }
+async-lock = { version = "2.6", optional = true }
+crossbeam-channel = { version = "0.5", optional = true }
+futures = { version = "0.3", optional = true }
+futures-util = { version = "0.3", optional = true }
+parking_lot = { version = "0.12", optional = true }
+pollster = { version = "0.2", optional = true }
 
 [dev-dependencies]
 rand = "0.8"
+tokio = { version = "1.22", features = ["full"] }
 
 [package.metadata.docs.rs]
 all-features = true
