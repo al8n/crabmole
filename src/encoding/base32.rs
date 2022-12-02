@@ -718,10 +718,13 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
-        self.enc.encode(&self.buf[..self.nbuf], &mut self.out);
-        let encoded_len = self.enc.encoded_len(self.nbuf);
-        self.nbuf = 0;
-        self.writer.write_all(&self.out[..encoded_len])
+        if self.nbuf > 0 {
+            self.enc.encode(&self.buf[..self.nbuf], &mut self.out);
+            let encoded_len = self.enc.encoded_len(self.nbuf);
+            self.nbuf = 0;
+            self.writer.write_all(&self.out[..encoded_len])?;
+        }
+        self.writer.flush()
     }
 }
 

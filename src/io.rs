@@ -41,3 +41,30 @@ impl core::fmt::Display for PipeError {
 }
 
 impl std::error::Error for PipeError {}
+
+/// The trait that groups the basic [`std::io::Read`] and [`std::io::Write`].
+pub trait ReadWriter: std::io::Write + std::io::Read {}
+
+impl<T: std::io::Read + std::io::Write> ReadWriter for T {}
+
+/// The trait that groups the basic [`std::io::Read`] and [`Closer`].
+pub trait ReadCloser: std::io::Read + Closer {}
+
+impl<T: std::io::Read + Closer> ReadCloser for T {}
+
+/// The trait that groups the basic [`std::io::Write`] and [`Closer`].
+pub trait WriteCloser: std::io::Write + Closer {}
+
+impl<T: std::io::Write + Closer> WriteCloser for T {}
+
+/// The trait that groups the basic [`std::io::Read`], [`std::io::Write`] and [`Closer`].
+pub trait ReadWriteCloser: std::io::Read + Closer {}
+
+/// Closer is the trait that wraps the basic `close` method.
+///
+/// The behavior of `close` after the first call is undefined.
+/// Specific implementations may document their own behavior.
+pub trait Closer {
+    /// Close
+    fn close(&mut self) -> std::io::Result<()>;
+}

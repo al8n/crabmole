@@ -151,7 +151,9 @@ pub fn decode_to_vec(src: &[u8]) -> Result<alloc::vec::Vec<u8>, Error> {
 #[cfg(feature = "std")]
 #[inline]
 pub fn dump(src: &[u8]) -> std::io::Result<alloc::vec::Vec<u8>> {
+    use crate::io::Closer;
     use std::io::Write;
+
     if src.is_empty() {
         return Ok(alloc::vec![]);
     }
@@ -290,43 +292,6 @@ const fn to_char(b: u8) -> u8 {
 }
 
 #[cfg(feature = "std")]
-impl<W: std::io::Write> Dumper<W> {
-    ///
-    pub fn close(&mut self) -> std::io::Result<()> {
-        if self.closed {
-            return Ok(());
-        }
-
-        self.closed = true;
-        if self.used == 0 {
-            return Ok(());
-        }
-
-        self.buf[0] = b' ';
-        self.buf[1] = b' ';
-        self.buf[2] = b' ';
-        self.buf[3] = b' ';
-        self.buf[4] = b'|';
-        let n_bytes = self.used;
-        while self.used < 16 {
-            let l = if self.used == 7 {
-                4
-            } else if self.used == 15 {
-                5
-            } else {
-                3
-            };
-            self.w.write_all(&self.buf[..l])?;
-            self.used += 1;
-        }
-        self.right_chars[n_bytes] = b'|';
-        self.right_chars[n_bytes + 1] = b'\n';
-        self.w.write_all(&self.right_chars[..n_bytes + 2])?;
-        Ok(())
-    }
-}
-
-#[cfg(feature = "std")]
 impl<W: std::io::Write> std::io::Write for Dumper<W> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
         if self.closed {
@@ -391,5 +356,41 @@ impl<W: std::io::Write> std::io::Write for Dumper<W> {
 
     fn flush(&mut self) -> std::io::Result<()> {
         self.w.flush()
+    }
+}
+
+#[cfg(feature = "std")]
+impl<W: std::io::Write> crate::io::Closer for Dumper<W> {
+    fn close(&mut self) -> std::io::Result<()> {
+        if self.closed {
+            return Ok(());
+        }
+
+        self.closed = true;
+        if self.used == 0 {
+            return Ok(());
+        }
+
+        self.buf[0] = b' ';
+        self.buf[1] = b' ';
+        self.buf[2] = b' ';
+        self.buf[3] = b' ';
+        self.buf[4] = b'|';
+        let n_bytes = self.used;
+        while self.used < 16 {
+            let l = if self.used == 7 {
+                4
+            } else if self.used == 15 {
+                5
+            } else {
+                3
+            };
+            self.w.write_all(&self.buf[..l])?;
+            self.used += 1;
+        }
+        self.right_chars[n_bytes] = b'|';
+        self.right_chars[n_bytes + 1] = b'\n';
+        self.w.write_all(&self.right_chars[..n_bytes + 2])?;
+        Ok(())
     }
 }
