@@ -26,7 +26,6 @@ async-io = ["std", "async-channel", "futures-util/io", "async-lock"]
 async-channel = { version = "1.7", optional = true }
 async-lock = { version = "2.6", optional = true }
 crossbeam-channel = { version = "0.5", optional = true }
-futures = { version = "0.3", optional = true }
 futures-util = { version = "0.3", optional = true }
 parking_lot = { version = "0.12", optional = true }
 pollster = { version = "0.2", optional = true }
