@@ -728,6 +728,14 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
     }
 }
 
+#[cfg(feature = "std")]
+impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
+    fn close(&mut self) -> std::io::Result<()> {
+        use std::io::Write;
+        self.flush()
+    }
+}
+
 /// A reader wrapper can filter newline characters when decoding base32 stream.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
