@@ -32,6 +32,7 @@ impl std::error::Error for CorruptInputError {}
 ///
 /// Often, ascii85-encoded data is wrapped in <~ and ~> symbols.
 /// Encode does not add these.
+#[inline]
 pub fn encode(mut src: &[u8], mut dst: &mut [u8]) -> usize {
     const EMPTY: &[u8] = &[];
 
@@ -194,6 +195,7 @@ impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
 /// Decode ignores space and control characters in src.
 /// Often, ascii85-encoded data is wrapped in <~ and ~> symbols.
 /// Decode expects these to have been stripped by the caller.
+#[inline]
 pub fn decode(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), CorruptInputError> {
     decode_in(src, dst, false)
 }
@@ -209,6 +211,7 @@ pub fn decode(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), CorruptInput
 /// Decode assumes that src represents the
 /// end of the input stream and processes it completely rather
 /// than wait for the completion of another 32-bit block.
+#[inline]
 pub fn decode_with_flush(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), CorruptInputError> {
     decode_in(src, dst, true)
 }
@@ -334,7 +337,8 @@ impl<R: std::io::Read> std::io::Read for Decoder<R> {
                 let (ndst, nsrc) = decode_in(&self.buf[..self.nbuf], &mut self.outbuf, self.eof)
                     .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
                 if ndst > 0 {
-                    self.out = self.outbuf[0..ndst].to_vec();
+                    self.out.resize(ndst, 0);
+                    self.out.copy_from_slice(&self.outbuf[0..ndst]);
                     self.buf.copy_within(nsrc..self.nbuf, 0);
                     self.nbuf -= nsrc;
                     continue;
@@ -417,8 +421,8 @@ mod tests {
     fn strip85(s: &[u8]) -> Vec<u8> {
         let mut t = vec![0; s.len()];
         let mut w = 0;
-        for r in 0..s.len() {
-            let c = s[r];
+        for r in s {
+            let c = *r;
             if c > b' ' {
                 t[w] = c;
                 w += 1;
