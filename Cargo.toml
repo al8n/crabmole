@@ -18,6 +18,7 @@ alloc = []
 
 sort = []
 encoding = []
+unicode = []
 
 io = ["std", "crossbeam-channel", "parking_lot"]
 async-io = ["std", "async-channel", "futures-util/io", "async-lock"]
