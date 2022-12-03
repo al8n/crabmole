@@ -12,3 +12,6 @@ pub mod base64;
 
 /// Go encoding/hex library
 pub mod hex;
+
+// /// Go encoding/pem library
+// pub mod pem;

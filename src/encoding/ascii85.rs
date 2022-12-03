@@ -2,6 +2,18 @@
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct CorruptInputError(usize);
 
+impl CorruptInputError {
+    /// Returns position of illegal byte of the source slice.
+    pub const fn position(&self) -> usize {
+        self.0
+    }
+
+    /// Consumes self and returns position of illegal byte of the source slice.
+    pub const fn into_inner(&self) -> usize {
+        self.0
+    }
+}
+
 impl core::fmt::Display for CorruptInputError {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "Illegal ascii85 data at input byte {}", self.0)
@@ -39,22 +51,22 @@ pub fn encode(mut src: &[u8], mut dst: &mut [u8]) -> usize {
         let mut v = 0u32;
         match src.len() {
             1 => {
-                v |= src[3] as u32;
+                v |= (src[0] as u32) << 24;
+            }
+            2 => {
+                v |= (src[1] as u32) << 16;
+                v |= (src[0] as u32) << 24;
+            }
+            3 => {
                 v |= (src[2] as u32) << 8;
                 v |= (src[1] as u32) << 16;
                 v |= (src[0] as u32) << 24;
             }
-            2 => {
+            _ => {
                 v |= src[3] as u32;
                 v |= (src[2] as u32) << 8;
                 v |= (src[1] as u32) << 16;
-            }
-            3 => {
-                v |= src[3] as u32;
-                v |= (src[2] as u32) << 8;
-            }
-            _ => {
-                v |= src[3] as u32;
+                v |= (src[0] as u32) << 24;
             }
         }
 
@@ -282,6 +294,7 @@ pub struct Decoder<R> {
     nbuf: usize,
     out: alloc::vec::Vec<u8>,
     outbuf: [u8; 1024],
+    eof: bool,
 }
 
 #[cfg(feature = "alloc")]
@@ -294,6 +307,7 @@ impl<R> Decoder<R> {
             nbuf: 0,
             out: alloc::vec::Vec::new(),
             outbuf: [0; 1024],
+            eof: false,
         }
     }
 }
@@ -317,10 +331,10 @@ impl<R: std::io::Read> std::io::Read for Decoder<R> {
             // Decode leftover input from last read.
 
             if self.nbuf > 0 {
-                let (ndst, nsrc) = decode(&self.buf[..self.nbuf], &mut self.outbuf)
+                let (ndst, nsrc) = decode_in(&self.buf[..self.nbuf], &mut self.outbuf, self.eof)
                     .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
                 if ndst > 0 {
-                    self.out.drain(ndst..);
+                    self.out = self.outbuf[0..ndst].to_vec();
                     self.buf.copy_within(nsrc..self.nbuf, 0);
                     self.nbuf -= nsrc;
                     continue;
@@ -340,8 +354,215 @@ impl<R: std::io::Read> std::io::Read for Decoder<R> {
             }
 
             // Read more data.
-            self.nbuf += self.r.read(&mut self.buf[self.nbuf..])?;
+            let nread = self.r.read(&mut self.buf[self.nbuf..])?;
+            if nread == 0 {
+                self.eof = true;
+                if self.nbuf == 0 {
+                    break;
+                }
+            }
+            self.nbuf += nread;
         }
         Ok(n)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::{Read, Write};
+
+    use crate::io::Closer;
+
+    use super::*;
+
+    struct TestPair {
+        encoded: String,
+        decoded: String,
+    }
+
+    fn big_test() -> TestPair {
+        TestPair {
+            encoded: concat!(
+                "9jqo^BlbD-BleB1DJ+*+F(f,q/0JhKF<GL>Cj@.4Gp$d7F!,L7@<6@)/0JDEF<G%<+EV:2F!,\n",
+                "O<DJ+*.@<*K0@<6L(Df-\\0Ec5e;DffZ(EZee.Bl.9pF\"AGXBPCsi+DGm>@3BB/F*&OCAfu2/AKY\n",
+                "i(DIb:@FD,*)+C]U=@3BN#EcYf8ATD3s@q?d$AftVqCh[NqF<G:8+EV:.+Cf>-FD5W8ARlolDIa\n",
+                "l(DId<j@<?3r@:F%a+D58'ATD4$Bl@l3De:,-DJs`8ARoFb/0JMK@qB4^F!,R<AKZ&-DfTqBG%G\n",
+                ">uD.RTpAKYo'+CT/5+Cei#DII?(E,9)oF*2M7/c\n"
+            )
+            .to_string(),
+            decoded: concat!(
+                "Man is distinguished, not only by his reason, but by this singular passion from ",
+                "other animals, which is a lust of the mind, that by a perseverance of delight in ",
+                "the continued and indefatigable generation of knowledge, exceeds the short ",
+                "vehemence of any carnal pleasure."
+            )
+            .to_string(),
+        }
+    }
+
+    fn pairs() -> Vec<TestPair> {
+        vec![
+            TestPair {
+                encoded: String::new(),
+                decoded: String::new(),
+            },
+            big_test(),
+            TestPair {
+                decoded: "\u{000}\u{000}\u{000}\u{000}".to_string(),
+                encoded: "z".to_string(),
+            },
+        ]
+    }
+
+    fn strip85(s: &[u8]) -> Vec<u8> {
+        let mut t = vec![0; s.len()];
+        let mut w = 0;
+        for r in 0..s.len() {
+            let c = s[r];
+            if c > b' ' {
+                t[w] = c;
+                w += 1;
+            }
+        }
+        t.drain(..w).collect()
+    }
+
+    #[test]
+    fn test_encode() {
+        for p in pairs() {
+            let mut buf = vec![0; max_encoded_len(p.decoded.len())];
+            let n = encode(p.decoded.as_bytes(), &mut buf);
+            buf = buf[0..n].to_vec();
+            assert_eq!(strip85(&buf), strip85(p.encoded.as_bytes()));
+        }
+    }
+
+    #[test]
+    fn test_encoder() {
+        for p in pairs() {
+            let mut bb = vec![];
+            let mut encoder = Encoder::new(&mut bb);
+            encoder.write_all(p.decoded.as_bytes()).unwrap();
+            encoder.close().unwrap();
+            assert_eq!(strip85(&bb), strip85(p.encoded.as_bytes()));
+        }
+    }
+
+    #[test]
+    fn test_encoder_buffering() {
+        let input = big_test().decoded.as_bytes().to_vec();
+        for bs in 1..=12 {
+            let mut bb = vec![];
+            let mut encoder = Encoder::new(&mut bb);
+            let mut pos = 0;
+            while pos < input.len() {
+                let mut end = pos + bs;
+                if end > input.len() {
+                    end = input.len();
+                }
+                let n = encoder.write(&input[pos..end]).unwrap();
+                assert_eq!(n, end - pos);
+
+                pos += bs;
+            }
+            encoder.close().unwrap();
+            assert_eq!(strip85(&bb), strip85(big_test().encoded.as_bytes()));
+        }
+    }
+
+    #[test]
+    fn test_decode() {
+        for p in pairs() {
+            let mut dbuf = vec![0; 4 * p.encoded.len()];
+            let (ndst, nsrc) = decode_with_flush(p.encoded.as_bytes(), &mut dbuf).unwrap();
+            assert_eq!(nsrc, p.encoded.len());
+            assert_eq!(ndst, p.decoded.len());
+            assert_eq!(&dbuf[0..ndst], p.decoded.as_bytes());
+        }
+    }
+
+    #[test]
+    fn test_decoder() {
+        for p in pairs() {
+            eprintln!("{}", p.decoded);
+            let mut decoder = Decoder::new(std::io::Cursor::new(p.encoded.as_bytes()));
+
+            let mut dbuf = String::new();
+            let _n = decoder.read_to_string(&mut dbuf).unwrap();
+            assert_eq!(dbuf.len(), p.decoded.len());
+            assert_eq!(dbuf, p.decoded);
+        }
+    }
+
+    #[test]
+    fn test_decoder_buffering() {
+        let big_test = big_test();
+        for bs in 1..=12 {
+            let mut decoder = Decoder::new(big_test.encoded.as_bytes());
+            let mut buf = vec![0; big_test.decoded.len() + 12];
+            let mut total = 0;
+            while total < big_test.decoded.len() {
+                let n = decoder.read(&mut buf[total..total + bs]).unwrap();
+                total += n;
+            }
+            assert_eq!(&buf[..total], big_test.decoded.as_bytes());
+        }
+    }
+
+    #[test]
+    fn test_decode_corrupt() {
+        struct Corrupt {
+            e: String,
+            p: usize,
+        }
+
+        let examples = vec![
+            Corrupt {
+                e: "v".to_string(),
+                p: 0,
+            },
+            Corrupt {
+                e: "!z!!!!!!!!!".to_string(),
+                p: 1,
+            },
+        ];
+
+        for e in examples {
+            let mut dbuf = vec![0; 4 * e.e.len()];
+            let p = decode_with_flush(e.e.as_bytes(), &mut dbuf)
+                .unwrap_err()
+                .into_inner();
+            assert_eq!(p, e.p);
+        }
+    }
+
+    #[test]
+    fn test_big() {
+        let n = 3 * 1000 + 1;
+        let mut raw = vec![0; n];
+        const ALPHA: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for i in 0..n {
+            raw[i] = ALPHA[i % ALPHA.len()];
+        }
+
+        let mut encoded = vec![];
+        let mut encoder = Encoder::new(&mut encoded);
+        let nn = encoder.write(&raw).unwrap();
+        assert_eq!(nn, n);
+        encoder.close().unwrap();
+        let mut decoder = Decoder::new(std::io::Cursor::new(&mut encoded));
+        let mut decoded = String::new();
+        let _n = decoder.read_to_string(&mut decoded).unwrap();
+        assert_eq!(decoded.as_bytes(), raw);
+    }
+
+    #[test]
+    fn test_decoder_internal_whitespace() {
+        let mut s = vec![b' '; 2048];
+        s.push(b'z');
+        let mut decoder = Decoder::new(std::io::Cursor::new(&mut s));
+        let mut decoded = String::new();
+        decoder.read_to_string(&mut decoded).unwrap();
+        assert_eq!(decoded, "\u{000}\u{000}\u{000}\u{000}");
     }
 }
