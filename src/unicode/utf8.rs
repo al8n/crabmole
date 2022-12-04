@@ -1,11 +1,11 @@
-/// The "error" Rune or "Unicode replacement character"
+/// The "error" Char or "Unicode replacement character"
 pub const ERROR_CHAR: char = char::REPLACEMENT_CHARACTER;
 
 /// Characters below SELF_CHAR are represented AS themselves in a single byte.
 pub const SELF_CHAR: char = 0x80 as char;
 
 /// The highest valid code point a char can have, '\u{10FFFF}'.
-pub const MAX_RUNE: char = char::MAX;
+pub const MAX_CHAR: char = char::MAX;
 
 /// Maximum number of bytes of a UTF-8 encoded Unicode character.
 pub const UTF_MAX: usize = 4;
@@ -95,7 +95,7 @@ const ACCEPT_RANGES: [AcceptRange; 16] = [
 ];
 
 /// Reports whether the bytes in p begin with a full UTF-8 encoding of a rune.
-/// An invalid encoding is considered a full Rune since it will convert as a width-1 error rune.
+/// An invalid encoding is considered a full Char since it will convert as a width-1 error rune.
 #[inline]
 pub const fn full_char(p: &[u8]) -> bool {
     let n = p.len();
@@ -128,7 +128,7 @@ pub const fn char_len(r: &char) -> Option<usize> {
         () if r <= CHAR_2_MAX => Some(2),
         () if SURROGATE_MIN <= r && r <= SURROGATE_MAX => None,
         () if r <= CHAR_3_MAX => Some(3),
-        () if r <= MAX_RUNE as i32 => Some(4),
+        () if r <= MAX_CHAR as i32 => Some(4),
         _ => None,
     }
 }
@@ -203,7 +203,7 @@ pub fn valid(mut p: &[u8]) -> bool {
             (p[4] as u32) | ((p[5] as u32) << 8) | ((p[6] as u32) << 16) | ((p[7] as u32) << 24);
 
         if (first32 | second32) & 0x80808080 != 0 {
-            // Found a non ASCII byte (>= RuneSelf).
+            // Found a non ASCII byte (>= CharSelf).
             break;
         }
 
@@ -252,13 +252,13 @@ pub const fn valid_char(r: char) -> bool {
     let r = r as i32;
     match () {
         () if 0 <= r && r < SURROGATE_MIN => true,
-        () if SURROGATE_MAX < r && r <= MAX_RUNE as i32 => true,
+        () if SURROGATE_MAX < r && r <= MAX_CHAR as i32 => true,
         _ => false,
     }
 }
 
 /// Writes into p (which must be large enough) the UTF-8 encoding of the rune.
-/// If the rune is out of range, it writes the encoding of RuneError.
+/// If the rune is out of range, it writes the encoding of CharError.
 /// It returns the number of bytes written.
 #[inline]
 pub fn encode_char(p: &mut [u8], r: char) -> usize {
@@ -274,7 +274,7 @@ pub fn encode_char(p: &mut [u8], r: char) -> usize {
             p[1] = TX | ((i as u8) & MASK_X);
             2
         }
-        () if i > (MAX_RUNE as u32)
+        () if i > (MAX_CHAR as u32)
             || (SURROGATE_MIN as u32) <= i && i <= (SURROGATE_MAX as u32) =>
         {
             let rr = ERROR_CHAR as u32;
@@ -299,9 +299,47 @@ pub fn encode_char(p: &mut [u8], r: char) -> usize {
     }
 }
 
+
+/// Appends the UTF-8 encoding of r to the end of p and
+/// returns the extended buffer. If the rune is out of range,
+/// it appends the encoding of [`ERROR_CHAR`].
+#[inline]
+#[cfg(feature = "alloc")]
+pub fn append_char(p: &mut alloc::vec::Vec<u8>, r: char) {
+    // This function is inlineable for fast handling of ASCII.
+    if (r as u32) <= (CHAR_1_MAX as u32) {
+        p.push(r as u8);
+        return;
+    }
+    let i = r as u32;
+    match () {
+        () if i <= (CHAR_2_MAX as u32) => {
+            p.push(T2 | ((i >> 6) as u8));
+            p.push(TX | ((i as u8) & MASK_X));
+        },
+        () if (i > (MAX_CHAR as u32)) || ((SURROGATE_MIN as u32) <= i && i <= (SURROGATE_MAX as u32)) => {
+            let rr = ERROR_CHAR as u32;
+            p.push(T3 | ((rr >> 12) as u8));
+            p.push(TX | (((rr >> 6) as u8) & MASK_X));
+            p.push(TX | ((rr as u8) & MASK_X)); 
+        }
+        () if i <= (CHAR_3_MAX as u32) => {
+            p.push(T3 | ((i >> 12) as u8));
+            p.push(TX | (((i >> 6) as u8) & MASK_X));
+            p.push(TX | ((i as u8) & MASK_X));
+        }
+        _ => {
+            p.push(T4 | ((i >> 18) as u8));
+            p.push(TX | (((i >> 12) as u8) & MASK_X));
+            p.push(TX | (((i >> 6) as u8) & MASK_X));
+            p.push(TX | ((i as u8) & MASK_X));
+        }
+    }
+}
+
 /// Unpacks the first UTF-8 encoding in p and returns the rune and
-/// its width in bytes. If p is empty it returns (RuneError, 0). Otherwise, if
-/// the encoding is invalid, it returns (RuneError, 1). Both are impossible
+/// its width in bytes. If p is empty it returns (CharError, 0). Otherwise, if
+/// the encoding is invalid, it returns (CharError, 1). Both are impossible
 /// results for correct, non-empty UTF-8.
 ///
 /// An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
@@ -385,8 +423,8 @@ pub fn decode_char(p: &[u8]) -> (char, usize) {
 }
 
 /// Unpacks the last UTF-8 encoding in p and returns the rune and
-/// its width in bytes. If p is empty it returns (RuneError, 0). Otherwise, if
-/// the encoding is invalid, it returns (RuneError, 1). Both are impossible
+/// its width in bytes. If p is empty it returns (CharError, 0). Otherwise, if
+/// the encoding is invalid, it returns (CharError, 1). Both are impossible
 /// results for correct, non-empty UTF-8.
 ///
 /// An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
