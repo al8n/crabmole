@@ -378,7 +378,7 @@ impl<W: std::io::Write> std::io::Write for Dumper<W> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "io"))]
 impl<W: std::io::Write> crate::io::Closer for Dumper<W> {
     fn close(&mut self) -> std::io::Result<()> {
         if self.closed {

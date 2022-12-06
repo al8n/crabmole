@@ -164,23 +164,11 @@ impl Base32 {
         Encoder::new(*self, writer)
     }
 
-    /// Returns a decoder
-    ///
-    /// See [`Decoder::decoder_without_newlines`] if you want to decode source without newlines.
+    /// Returns a base32 decoder
     #[cfg(feature = "std")]
     #[inline]
     pub const fn decoder<R: std::io::Read>(&self, reader: R) -> Decoder<R> {
         Decoder::new(*self, reader)
-    }
-
-    /// Returns a decoder which ignore the newline characters
-    #[cfg(feature = "std")]
-    #[inline]
-    pub const fn decoder_without_newlines<R: std::io::Read>(
-        &self,
-        reader: R,
-    ) -> Decoder<NewLineFilteringReader<R>> {
-        Decoder::new(*self, NewLineFilteringReader::new(reader))
     }
 
     /// Returns the length in bytes of the base32 encoding
@@ -313,32 +301,10 @@ impl Base32 {
     /// DecodedLen(len(src)) bytes to dst and returns the number of bytes
     /// written. If src contains invalid base32 data, it will return the
     /// number of bytes successfully written and DecodeError.
-    ///
-    /// See `decode_without_newline` if you want to ignore the newline characters
-    #[inline]
-    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
-        self.decode_in(src, dst).map(|(n, _)| n)
-    }
-
-    /// Returns the bytes represented by the base32 slice.
-    #[inline]
-    #[cfg(feature = "alloc")]
-    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, DecodeError> {
-        let mut dst = src.to_vec();
-        self.decode_in(src, &mut dst).map(|(n, _)| {
-            dst.truncate(n);
-            dst
-        })
-    }
-
-    /// Decodes src using the encoding enc. It writes at most
-    /// DecodedLen(len(src)) bytes to dst and returns the number of bytes
-    /// written. If src contains invalid base32 data, it will return the
-    /// number of bytes successfully written and DecodeError.
     /// New line characters (`\r` and `\n`) are ignored.
     #[inline]
     #[cfg(feature = "alloc")]
-    pub fn decode_without_newline(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
+    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
         let mut buf = src.to_vec();
         let l = strip_new_lines_inplace(&mut buf);
         self.decode_in(&buf[..l], dst).map(|(n, _)| n)
@@ -347,10 +313,7 @@ impl Base32 {
     /// Returns the bytes represented by the base32 slice (ignore newline characters (`\r` and `\n`)).
     #[inline]
     #[cfg(feature = "alloc")]
-    pub fn decode_without_newline_to_vec(
-        &self,
-        src: &[u8],
-    ) -> Result<alloc::vec::Vec<u8>, DecodeError> {
+    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, DecodeError> {
         let mut buf = src.to_vec();
         let l = strip_new_lines_inplace(&mut buf);
         self.decode_inplace(&mut buf, l).map(|(n, _)| {
@@ -643,7 +606,6 @@ impl core::fmt::Display for DecodeError {
 impl std::error::Error for DecodeError {}
 
 /// Base32 encoder
-#[cfg(feature = "std")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Encoder<W> {
     enc: Base32,
@@ -653,7 +615,6 @@ pub struct Encoder<W> {
     out: [u8; 1024],
 }
 
-#[cfg(feature = "std")]
 impl<W> Encoder<W> {
     /// Returns a new base32 stream encoder. Data written to
     /// the returned writer will be encoded using enc and then written to w.
@@ -728,7 +689,7 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "io"))]
 impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
     fn close(&mut self) -> std::io::Result<()> {
         use std::io::Write;
@@ -739,15 +700,14 @@ impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
 /// A reader wrapper can filter newline characters when decoding base32 stream.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
-pub struct NewLineFilteringReader<R> {
+struct NewLineFilteringReader<R> {
     wrapped: R,
 }
 
-#[cfg(feature = "std")]
-impl<R: std::io::Read> NewLineFilteringReader<R> {
+impl<R> NewLineFilteringReader<R> {
     /// Creates a `NewlineFilteringReader` that wraps the given reader.
     #[inline]
-    pub const fn new(reader: R) -> NewLineFilteringReader<R> {
+    const fn new(reader: R) -> NewLineFilteringReader<R> {
         NewLineFilteringReader { wrapped: reader }
     }
 }
@@ -820,7 +780,7 @@ fn read_encoded_data(
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Decoder<R> {
     enc: Base32,
-    reader: R,
+    reader: NewLineFilteringReader<R>,
     end: bool,
     buf: [u8; 1024],
     nbuf: usize,
@@ -835,21 +795,7 @@ impl<R> Decoder<R> {
     pub const fn new(enc: Base32, reader: R) -> Self {
         Self {
             enc,
-            reader,
-            end: false,
-            buf: [0; 1024],
-            nbuf: 0,
-            out: std::vec::Vec::new(),
-            out_buf: [0; 1024 / 8 * 5],
-        }
-    }
-
-    /// Constructs a new base32 stream decoder.
-    #[inline]
-    pub const fn with_newline_filter(enc: Base32, reader: R) -> Decoder<NewLineFilteringReader<R>> {
-        Decoder {
-            enc,
-            reader: NewLineFilteringReader { wrapped: reader },
+            reader: NewLineFilteringReader::new(reader),
             end: false,
             buf: [0; 1024],
             nbuf: 0,
@@ -1253,7 +1199,7 @@ mod test {
     fn test_new_line_characters() {
         let test_string_encode = |expected: &str, examples: &[&str]| {
             for e in examples {
-                match STD_ENCODING.decode_without_newline_to_vec(e.as_bytes()) {
+                match STD_ENCODING.decode_to_vec(e.as_bytes()) {
                     Ok(buf) => {
                         assert_eq!(expected.as_bytes(), &buf);
                     }
@@ -1299,12 +1245,12 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
 ====";
 
         let encoded_start = ENCODED.replace('\n', "");
-        let mut dec = STD_ENCODING.decoder_without_newlines(std::io::Cursor::new(&ENCODED));
+        let mut dec = STD_ENCODING.decoder(std::io::Cursor::new(&ENCODED));
 
         let mut res1 = String::new();
         dec.read_to_string(&mut res1).unwrap();
 
-        let mut dec = STD_ENCODING.decoder_without_newlines(std::io::Cursor::new(&encoded_start));
+        let mut dec = STD_ENCODING.decoder(std::io::Cursor::new(&encoded_start));
         let mut res2 = String::new();
         dec.read_to_string(&mut res2).unwrap();
         assert_eq!(res1, res2);

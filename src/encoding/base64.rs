@@ -675,6 +675,27 @@ impl core::fmt::Display for Error {
 #[cfg(feature = "std")]
 impl std::error::Error for Error {}
 
+/// Decode error
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct CorruptInputError(u64);
+
+impl CorruptInputError {
+    /// leak the inner input byte
+    #[inline]
+    pub const fn into_inner(self) -> u64 {
+        self.0
+    }
+}
+
+impl core::fmt::Display for CorruptInputError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "illegal base64 data at input byte {}", self.0)
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for CorruptInputError {}
+
 const BASE: usize = 64;
 
 const ENCODE_STD: [u8; BASE] = *b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -857,4 +878,421 @@ impl Base64 {
         self.strict = true;
         self
     }
+
+    /// Returns the length in bytes of the base64 encoding
+    /// of an input buffer of length n.
+    #[inline]
+    pub const fn encoded_len(&self, n: usize) -> usize {
+        if self.pad_char.is_none() {
+            return (n * 8 + 5) / 6;
+        }
+        (n + 2) / 3 * 4
+    }
+
+    /// Encodes src using the encoding enc, writing
+    /// EncodedLen(len(src)) bytes to dst.
+    ///
+    /// The encoding pads the output to a multiple of 4 bytes,
+    /// so Encode is not appropriate for use on individual blocks
+    /// of a large data stream. Use NewEncoder() instead.
+    pub fn encode(&self, src: &[u8], dst: &mut [u8]) {
+        if src.is_empty() {
+            return;
+        }
+
+        let (mut di, mut si) = (0, 0);
+        let n = (src.len() / 3) * 3;
+        while si < n {
+            // Convert 3x 8bit source bytes into 4 bytes
+            let val =
+                ((src[si] as usize) << 16) | ((src[si + 1] as usize) << 8) | (src[si + 2] as usize);
+
+            dst[di] = self.encode[(val >> 18) & 0x3f];
+            dst[di + 1] = self.encode[(val >> 12) & 0x3f];
+            dst[di + 2] = self.encode[(val >> 6) & 0x3f];
+            dst[di + 3] = self.encode[val & 0x3f];
+
+            si += 3;
+            di += 4;
+        }
+
+        let remain = src.len() - si;
+        if remain == 0 {
+            return;
+        }
+
+        // Add the remaining small block
+        let mut val = (src[si] as usize) << 16;
+        if remain == 2 {
+            val |= (src[si + 1] as usize) << 8;
+        }
+
+        dst[di] = self.encode[(val >> 18) & 0x3f];
+        dst[di + 1] = self.encode[(val >> 12) & 0x3f];
+
+        match remain {
+            2 => {
+                dst[di + 2] = self.encode[(val >> 6) & 0x3f];
+                if let Some(ch) = self.pad_char {
+                    dst[di + 3] = ch as u8;
+                }
+            }
+            1 => {
+                if let Some(ch) = self.pad_char {
+                    dst[di + 2] = ch as u8;
+                    dst[di + 3] = ch as u8;
+                }
+            }
+            _ => {}
+        }
+    }
+
+    /// Returns the base64 encoding of src.
+    #[cfg(feature = "alloc")]
+    pub fn encode_to_vec(&self, src: &[u8]) -> alloc::vec::Vec<u8> {
+        let mut buf = alloc::vec![0; self.encoded_len(src.len())];
+        self.encode(src, &mut buf);
+        buf
+    }
+
+    /// Decodes src using the encoding enc. It writes at most
+    /// `self.decoded_len(src.len())` bytes to dst and returns the number of bytes
+    /// written. If src contains invalid base64 data, it will return the
+    /// number of bytes successfully written and CorruptInputError.
+    /// New line characters (\r and \n) are ignored.
+    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, CorruptInputError> {
+        if src.is_empty() {
+            return Ok(0);
+        }
+
+        let mut n = 0;
+        let mut si = 0;
+        while usize::BITS >= 64 && src.len() - si >= 8 && dst.len() - n >= 8 {
+            let src2 = &src[si..si + 8];
+            let (dn, ok) = assemble_64(
+                self.decode_map[src2[0] as usize],
+                self.decode_map[src2[1] as usize],
+                self.decode_map[src2[2] as usize],
+                self.decode_map[src2[3] as usize],
+                self.decode_map[src2[4] as usize],
+                self.decode_map[src2[5] as usize],
+                self.decode_map[src2[6] as usize],
+                self.decode_map[src2[7] as usize],
+            );
+
+            if ok {
+                dst[n..n + core::mem::size_of::<u64>()].copy_from_slice(&dn.to_be_bytes());
+                n += 6;
+                si += 8;
+            } else {
+                let (si1, ninc) = self.decode_quantum(src, &mut dst[n..], si)?;
+                si = si1;
+                n += ninc;
+            }
+        }
+
+        while src.len() >= 4 && dst.len() - n >= 4 {
+            let src2 = &src[si..si + 4];
+            let (dn, ok) = assemble_32(
+                self.decode_map[src2[0] as usize],
+                self.decode_map[src2[1] as usize],
+                self.decode_map[src2[2] as usize],
+                self.decode_map[src2[3] as usize],
+            );
+            if ok {
+                dst[n..n + core::mem::size_of::<u32>()].copy_from_slice(&dn.to_be_bytes());
+                n += 3;
+                si += 4;
+            } else {
+                let (si1, ninc) = self.decode_quantum(src, &mut dst[n..], si)?;
+                si = si1;
+                n += ninc;
+            }
+        }
+
+        while si < src.len() {
+            let (si1, ninc) = self.decode_quantum(src, &mut dst[n..], si)?;
+            si = si1;
+            n += ninc;
+        }
+        Ok(n)
+    }
+
+    /// Decodes up to 4 base64 bytes. The received parameters are
+    /// the destination buffer dst, the source buffer src and an index in the
+    /// source buffer si.
+    /// It returns the number of bytes read from src, the number of bytes written
+    /// to dst, and an error, if any.
+    #[inline]
+    fn decode_quantum(
+        self,
+        src: &[u8],
+        dst: &mut [u8],
+        mut si: usize,
+    ) -> Result<(usize, usize), CorruptInputError> {
+        let mut dbuf = [0; 4];
+        let mut dlen = 4;
+        let mut j = 0;
+        while j < dbuf.len() {
+            if src.len() == si {
+                match () {
+                    () if j == 0 => {
+                        return Ok((si, 0));
+                    }
+                    () if j == 1 || self.pad_char.is_some() => {
+                        return Err(CorruptInputError((si - j) as u64));
+                    }
+                    _ => {}
+                }
+                dlen = j;
+                break;
+            }
+            let in_ = src[si];
+            si += 1;
+
+            let out = self.decode_map[in_ as usize];
+            if out != 0xff {
+                dbuf[j] = out;
+                j += 1;
+                continue;
+            }
+
+            if in_ == b'\n' || in_ == b'\r' {
+                j -= 1;
+                continue;
+            }
+
+            if let Some(ch) = self.pad_char {
+                if (in_ as char) != ch {
+                    return Err(CorruptInputError((si - 1) as u64));
+                }
+            }
+
+            // We've reached the end and there's padding
+            match j {
+                0 | 1 => {
+                    // incorrect padding
+                    return Err(CorruptInputError((si - 1) as u64));
+                }
+                2 => {
+                    // "==" is expected, the first "=" is already consumed.
+                    // skip over newlines
+                    while si < src.len() && (src[si] == b'\n' || src[si] == b'\r') {
+                        si += 1;
+                    }
+                    if si == src.len() {
+                        // not enough padding
+                        return Err(CorruptInputError(src.len() as u64));
+                    }
+                    if let Some(ch) = self.pad_char {
+                        if (src[si] as char) != ch {
+                            return Err(CorruptInputError((si - 1) as u64));
+                        }
+                    }
+                }
+                _ => {}
+            }
+
+            // skip over newlines
+            while si < src.len() && (src[si] == b'\n' || src[si] == b'\r') {
+                si += 1;
+            }
+            if si < src.len() {
+                // trailing garbage
+                return Err(CorruptInputError(si as u64));
+            }
+            dlen = j;
+            break;
+        }
+
+        // Convert 4x 6bit source bytes into 3 bytes
+        let val = ((dbuf[0] as usize) << 18)
+            | ((dbuf[1] as usize) << 12)
+            | ((dbuf[2] as usize) << 6)
+            | (dbuf[3] as usize);
+        dbuf[2] = val as u8;
+        dbuf[1] = (val >> 8) as u8;
+        dbuf[0] = (val >> 16) as u8;
+
+        match dlen {
+            4 => {
+                dst[2] = dbuf[2];
+                dbuf[2] = 0;
+                dst[1] = dbuf[1];
+                if self.strict && dbuf[2] != 0 {
+                    return Err(CorruptInputError((si - 1) as u64));
+                }
+                dbuf[1] = 0;
+                dst[0] = dbuf[0];
+                if self.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
+                    return Err(CorruptInputError((si - 2) as u64));
+                }
+            }
+            3 => {
+                dst[1] = dbuf[1];
+                if self.strict && dbuf[2] != 0 {
+                    return Err(CorruptInputError((si - 1) as u64));
+                }
+                dbuf[1] = 0;
+                dst[0] = dbuf[0];
+                if self.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
+                    return Err(CorruptInputError((si - 2) as u64));
+                }
+            }
+            2 => {
+                dst[0] = dbuf[0];
+                if self.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
+                    return Err(CorruptInputError((si - 2) as u64));
+                }
+            }
+            _ => {}
+        }
+        Ok((si, dlen - 1))
+    }
+
+    /// Returns the maximum length in bytes of the decoded data
+    /// corresponding to n bytes of base64-encoded
+    #[inline]
+    pub const fn decoded_len(&self, n: usize) -> usize {
+        if self.pad_char.is_none() {
+            return n * 6 / 8;
+        }
+        n / 4 * 3
+    }
+}
+
+/// Base64 encoder
+pub struct Encoder<W> {
+    enc: Base64,
+    w: W,
+    buf: [u8; 3],
+    nbuf: usize,
+    out: [u8; 1024],
+}
+
+impl<W> Encoder<W> {
+    /// Returns a new encoder based on the given encoding
+    #[inline]
+    pub const fn new(enc: Base64, w: W) -> Self {
+        Self {
+            enc,
+            w,
+            buf: [0; 3],
+            nbuf: 0,
+            out: [0; 1024],
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<W: std::io::Write> std::io::Write for Encoder<W> {
+    #[inline]
+    fn write(&mut self, mut buf: &[u8]) -> std::io::Result<usize> {
+        let mut n = 0;
+        // Leading fringe.
+        if self.nbuf > 0 {
+            let mut i = 0;
+            while i < buf.len() && self.nbuf < 3 {
+                self.buf[self.nbuf] = buf[i];
+                self.nbuf += 1;
+                i += 1;
+            }
+            n += i;
+            buf = &buf[i..];
+            if self.nbuf < 3 {
+                return Ok(n);
+            }
+
+            self.enc.encode(&self.buf, &mut self.out);
+            self.w.write_all(&self.out[..4])?;
+            self.nbuf = 0;
+        }
+
+        // Large interior chunks.
+        while buf.len() >= 3 {
+            let mut nn = self.out.len() / 4 * 3;
+            if nn > buf.len() {
+                nn = buf.len();
+                nn -= nn % 3;
+            }
+            self.enc.encode(&buf[..nn], &mut self.out);
+            self.w.write_all(&self.out[..nn / 3 * 4])?;
+            n += nn;
+            buf = &buf[nn..];
+        }
+
+        // Trailing fringe.
+        crate::copy(buf, &mut self.buf);
+        self.nbuf = buf.len();
+        n += buf.len();
+        Ok(n)
+    }
+
+    #[inline]
+    fn flush(&mut self) -> std::io::Result<()> {
+        if self.nbuf > 0 {
+            self.enc.encode(&self.buf[..self.nbuf], &mut self.out);
+            self.w
+                .write_all(&self.out[..self.enc.encoded_len(self.nbuf)])?;
+            self.nbuf = 0;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(all(feature = "std", feature = "io"))]
+impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
+    fn close(&mut self) -> std::io::Result<()> {
+        use std::io::Write;
+        self.flush()
+    }
+}
+
+/// Assembles 4 base64 digits into 3 bytes.
+/// Each digit comes from the decode map, and will be 0xff
+/// if it came from an invalid character.
+#[inline]
+const fn assemble_32(n1: u8, n2: u8, n3: u8, n4: u8) -> (u32, bool) {
+    // Check that all the digits are valid. If any of them was 0xff, their
+    // bitwise OR will be 0xff.
+    if n1 | n2 | n3 | n4 == 0xff {
+        return (0, false);
+    }
+    (
+        ((n1 as u32) << 26) | ((n2 as u32) << 20) | ((n3 as u32) << 14) | ((n4 as u32) << 8),
+        true,
+    )
+}
+
+/// Assembles 8 base64 digits into 6 bytes.
+/// Each digit comes from the decode map, and will be 0xff
+/// if it came from an invalid character.
+#[inline]
+#[allow(clippy::too_many_arguments)]
+const fn assemble_64(
+    n1: u8,
+    n2: u8,
+    n3: u8,
+    n4: u8,
+    n5: u8,
+    n6: u8,
+    n7: u8,
+    n8: u8,
+) -> (u64, bool) {
+    // Check that all the digits are valid. If any of them was 0xff, their
+    // bitwise OR will be 0xff.
+    if n1 | n2 | n3 | n4 | n5 | n6 | n7 | n8 == 0xff {
+        return (0, false);
+    }
+    (
+        ((n1 as u64) << 58)
+            | ((n2 as u64) << 52)
+            | ((n3 as u64) << 46)
+            | ((n4 as u64) << 40)
+            | ((n5 as u64) << 34)
+            | ((n6 as u64) << 28)
+            | ((n7 as u64) << 22)
+            | ((n8 as u64) << 16),
+        true,
+    )
 }

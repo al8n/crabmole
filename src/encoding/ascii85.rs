@@ -181,7 +181,7 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "io"))]
 impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
     fn close(&mut self) -> std::io::Result<()> {
         use std::io::Write;
