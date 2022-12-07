@@ -717,8 +717,13 @@ pub const URL_ENCODING: Base64 = Base64::new_unchecked(ENCODE_URL);
 
 /// The standard raw, unpadded base64 encoding,
 /// as defined in RFC 4648 section 3.2.
-/// This is the same as StdBase64 but omits padding characters.
+/// This is the same as [`STD_ENCODING`] but omits padding characters.
 pub const RAW_STD_ENCODING: Base64 = Base64::new_unchecked(ENCODE_STD).with_padding_unchecked(None);
+
+/// The unpadded alternate base64 encoding defined in RFC 4648.
+/// It is typically used in URLs and file names.
+/// This is the same as [`URL_ENCODING`] but omits padding characters.
+pub const RAW_URL_ENCODING: Base64 = Base64::new_unchecked(ENCODE_URL).with_padding_unchecked(None);
 
 const DECODE_MAP_INITIALIZE: [u8; 256] = [255; 256];
 
@@ -889,6 +894,12 @@ impl Base64 {
         (n + 2) / 3 * 4
     }
 
+    /// Returns a base64 encoder.
+    #[inline]
+    pub const fn encoder<W: std::io::Write>(self, w: W) -> Encoder<W> {
+        Encoder::new(self, w)
+    }
+
     /// Encodes src using the encoding enc, writing
     /// EncodedLen(len(src)) bytes to dst.
     ///
@@ -955,6 +966,12 @@ impl Base64 {
         buf
     }
 
+    /// Returns the base64 decoder
+    #[cfg(feature = "std")]
+    pub const fn decoder<R: std::io::Read>(self, r: R) -> Decoder<R> {
+        Decoder::new(self, r)
+    }
+
     /// Decodes src using the encoding enc. It writes at most
     /// `self.decoded_len(src.len())` bytes to dst and returns the number of bytes
     /// written. If src contains invalid base64 data, it will return the
@@ -1016,6 +1033,15 @@ impl Base64 {
             n += ninc;
         }
         Ok(n)
+    }
+
+    /// Returns the bytes represented by the base64 vec s.
+    #[cfg(feature = "alloc")]
+    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, CorruptInputError> {
+        let mut buf = alloc::vec![0; self.decoded_len(src.len())];
+        let n = self.decode(src, &mut buf)?;
+        buf.truncate(n);
+        Ok(buf)
     }
 
     /// Decodes up to 4 base64 bytes. The received parameters are
@@ -1248,6 +1274,142 @@ impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
     }
 }
 
+struct NewLineFilteringReader<R> {
+    wrapped: R,
+}
+
+#[cfg(feature = "std")]
+impl<R: std::io::Read> std::io::Read for NewLineFilteringReader<R> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        let mut n = self.wrapped.read(buf)?;
+        while n > 0 {
+            let mut offset = 0;
+            for i in 0..n {
+                if buf[i] != b'\r' && buf[i] != b'\n' {
+                    if i != offset {
+                        buf[offset] = buf[i];
+                    }
+                    offset += 1;
+                }
+            }
+            if offset > 0 {
+                return Ok(offset);
+            }
+            // Previous buffer entirely whitespace, read again
+            n = self.wrapped.read(buf)?;
+        }
+        Ok(n)
+    }
+}
+
+/// Base64 decoder
+#[cfg(feature = "alloc")]
+pub struct Decoder<R> {
+    eof: bool,
+    r: NewLineFilteringReader<R>,
+    enc: Base64,
+    buf: [u8; 1024],
+    nbuf: usize,
+    out: alloc::vec::Vec<u8>,
+    outbuf: [u8; 1024 / 4 * 3],
+}
+
+#[cfg(feature = "alloc")]
+impl<R> Decoder<R> {
+    /// Create a new decoder
+    #[inline]
+    pub const fn new(enc: Base64, r: R) -> Decoder<R> {
+        Decoder {
+            eof: false,
+            r: NewLineFilteringReader { wrapped: r },
+            enc,
+            buf: [0; 1024],
+            nbuf: 0,
+            out: alloc::vec::Vec::new(),
+            outbuf: [0; 1024 / 4 * 3],
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl<R: std::io::Read> std::io::Read for Decoder<R> {
+    fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+        // Use leftover decoded output from last read.
+        if !self.out.is_empty() {
+            let n = crate::copy(&self.out, buf);
+            self.out.drain(..n);
+            return Ok(n);
+        }
+
+        // This code assumes that d.r strips supported whitespace ('\r' and '\n').
+        let mut n = 0;
+
+        // Refill buffer.
+        while self.nbuf < 4 && !self.eof {
+            let mut nn = buf.len() / 3 * 4;
+            if nn < 4 {
+                nn = 4;
+            }
+            if nn > self.buf.len() {
+                nn = self.buf.len();
+            }
+            nn = self.r.read(&mut self.buf[self.nbuf..nn])?;
+            if nn == 0 {
+                self.eof = true;
+                break;
+            }
+            self.nbuf += nn;
+        }
+
+        if self.nbuf < 4 {
+            if self.enc.pad_char.is_none() && self.nbuf > 0 {
+                // Decode final fragment, without padding.
+                let nw = self
+                    .enc
+                    .decode(&self.buf[..self.nbuf], &mut self.outbuf)
+                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+                self.nbuf = 0;
+                self.out.resize(nw, 0);
+                self.out[..nw].copy_from_slice(&self.outbuf[..nw]);
+                n = crate::copy(&self.out, buf);
+                self.out.drain(..n);
+                if n > 0 || buf.is_empty() && !self.out.is_empty() {
+                    return Ok(n);
+                }
+            }
+
+            if n == 0 && self.nbuf > 0 {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::UnexpectedEof,
+                    "base64 decoder: unexpected EOF",
+                ));
+            }
+        }
+
+        // Decode chunk into p, or d.out and then p if p is too small.
+        let (nr, mut nw) = (self.nbuf / 4 * 4, self.nbuf / 4 * 3);
+        if nw > buf.len() {
+            nw = self
+                .enc
+                .decode(&self.buf[..nr], &mut self.outbuf)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+            self.out.resize(nw, 0);
+            self.out[..nw].copy_from_slice(&self.outbuf[..nw]);
+            n = crate::copy(&self.out, buf);
+            self.out.drain(..n);
+        } else {
+            n = self
+                .enc
+                .decode(&self.buf[..nr], buf)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+        }
+        self.nbuf -= nr;
+        self.buf.copy_within(nr..nr + self.nbuf, 0);
+
+        Ok(n)
+    }
+}
+
 /// Assembles 4 base64 digits into 3 bytes.
 /// Each digit comes from the decode map, and will be 0xff
 /// if it came from an invalid character.
@@ -1295,4 +1457,251 @@ const fn assemble_64(
             | ((n8 as u64) << 16),
         true,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::{Read, Write};
+
+    use crate::io::Closer;
+
+    use super::*;
+
+    fn big_test() -> TestPair {
+        TestPair {
+            decoded: b"Twas brillig, and the slithy toves".to_vec(),
+            encoded: b"VHdhcyBicmlsbGlnLCBhbmQgdGhlIHNsaXRoeSB0b3Zlcw==".to_vec(),
+        }
+    }
+
+    struct TestPair {
+        decoded: Vec<u8>,
+        encoded: Vec<u8>,
+    }
+
+    fn pairs() -> Vec<TestPair> {
+        vec![
+            // RFC 3548 examples
+            TestPair {
+                decoded: vec![20, 251, 156, 3, 217, 126],
+                encoded: b"FPucA9l+".to_vec(),
+            },
+            TestPair {
+                decoded: vec![20, 251, 156, 3, 217],
+                encoded: b"FPucA9k=".to_vec(),
+            },
+            TestPair {
+                decoded: vec![20, 251, 156, 3],
+                encoded: b"FPucAw==".to_vec(),
+            },
+            // RFC 4648 examples
+            TestPair {
+                decoded: b"".to_vec(),
+                encoded: b"".to_vec(),
+            },
+            TestPair {
+                decoded: b"f".to_vec(),
+                encoded: b"Zg==".to_vec(),
+            },
+            TestPair {
+                decoded: b"fo".to_vec(),
+                encoded: b"Zm8=".to_vec(),
+            },
+            TestPair {
+                decoded: b"foo".to_vec(),
+                encoded: b"Zm9v".to_vec(),
+            },
+            TestPair {
+                decoded: b"foob".to_vec(),
+                encoded: b"Zm9vYg==".to_vec(),
+            },
+            TestPair {
+                decoded: b"fooba".to_vec(),
+                encoded: b"Zm9vYmE=".to_vec(),
+            },
+            TestPair {
+                decoded: b"foobar".to_vec(),
+                encoded: b"Zm9vYmFy".to_vec(),
+            },
+            // Wikipedia examples
+            TestPair {
+                decoded: b"sure.".to_vec(),
+                encoded: b"c3VyZS4=".to_vec(),
+            },
+            TestPair {
+                decoded: b"sure".to_vec(),
+                encoded: b"c3VyZQ==".to_vec(),
+            },
+            TestPair {
+                decoded: b"sur".to_vec(),
+                encoded: b"c3Vy".to_vec(),
+            },
+            TestPair {
+                decoded: b"su".to_vec(),
+                encoded: b"c3U=".to_vec(),
+            },
+            TestPair {
+                decoded: b"leasure.".to_vec(),
+                encoded: b"bGVhc3VyZS4=".to_vec(),
+            },
+            TestPair {
+                decoded: b"easure.".to_vec(),
+                encoded: b"ZWFzdXJlLg==".to_vec(),
+            },
+            TestPair {
+                decoded: b"asure.".to_vec(),
+                encoded: b"YXN1cmUu".to_vec(),
+            },
+            TestPair {
+                decoded: b"sure.".to_vec(),
+                encoded: b"c3VyZS4=".to_vec(),
+            },
+        ]
+    }
+
+    struct EncodingTest {
+        enc: Base64,
+        conv: Box<dyn Fn(String) -> String>,
+    }
+
+    fn std_ref(r: String) -> String {
+        r
+    }
+
+    fn url_ref(r: String) -> String {
+        r.replace('+', "-").replace('/', "_")
+    }
+
+    fn raw_ref(r: String) -> String {
+        r.trim_end_matches('=').to_string()
+    }
+
+    fn raw_url_ref(r: String) -> String {
+        raw_ref(url_ref(r))
+    }
+
+    const FUNNY_ENCODING: Base64 = STD_ENCODING.with_padding_unchecked(Some('@'));
+
+    fn funny_ref(r: String) -> String {
+        r.replace('=', "@")
+    }
+
+    fn encoding_tests() -> Vec<EncodingTest> {
+        vec![
+            EncodingTest {
+                enc: STD_ENCODING,
+                conv: Box::new(std_ref),
+            },
+            EncodingTest {
+                enc: URL_ENCODING,
+                conv: Box::new(url_ref),
+            },
+            EncodingTest {
+                enc: RAW_STD_ENCODING,
+                conv: Box::new(raw_ref),
+            },
+            EncodingTest {
+                enc: RAW_URL_ENCODING,
+                conv: Box::new(raw_url_ref),
+            },
+            EncodingTest {
+                enc: FUNNY_ENCODING,
+                conv: Box::new(funny_ref),
+            },
+            EncodingTest {
+                enc: STD_ENCODING.with_strict(),
+                conv: Box::new(std_ref),
+            },
+            EncodingTest {
+                enc: URL_ENCODING.with_strict(),
+                conv: Box::new(url_ref),
+            },
+            EncodingTest {
+                enc: RAW_STD_ENCODING.with_strict(),
+                conv: Box::new(raw_ref),
+            },
+            EncodingTest {
+                enc: RAW_URL_ENCODING.with_strict(),
+                conv: Box::new(raw_url_ref),
+            },
+            EncodingTest {
+                enc: FUNNY_ENCODING.with_strict(),
+                conv: Box::new(funny_ref),
+            },
+        ]
+    }
+
+    #[test]
+    fn test_encode() {
+        for p in pairs() {
+            for tt in encoding_tests() {
+                let got = tt.enc.encode_to_vec(&p.decoded);
+                assert_eq!(
+                    got,
+                    (tt.conv)(String::from_utf8_lossy(&p.encoded).to_string()).as_bytes()
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_encoder() {
+        for p in pairs() {
+            let mut bb = vec![];
+            let mut encoder = STD_ENCODING.encoder(&mut bb);
+            encoder.write_all(&p.decoded).unwrap();
+            encoder.close().unwrap();
+            assert_eq!(bb, p.encoded);
+        }
+    }
+
+    #[test]
+    fn test_encoder_buffering() {
+        let input = big_test().decoded;
+        for bs in 1..=12 {
+            let mut bb = vec![];
+            let mut encoder = STD_ENCODING.encoder(&mut bb);
+            let mut pos = 0;
+            while pos < input.len() {
+                let mut end = pos + bs;
+                if end > input.len() {
+                    end = input.len();
+                }
+
+                let n = encoder.write(&input[pos..end]).unwrap();
+                assert_eq!(n, end - pos);
+                pos += bs;
+            }
+            encoder.close().unwrap();
+            assert_eq!(bb, big_test().encoded);
+        }
+    }
+
+    #[test]
+    fn test_decode() {
+        for p in pairs() {
+            for tt in encoding_tests() {
+                let encoded = (tt.conv)(String::from_utf8_lossy(p.encoded.as_slice()).to_string());
+                let mut dbuf = vec![0; tt.enc.decoded_len(encoded.len())];
+                let count = tt.enc.decode(encoded.as_bytes(), &mut dbuf).unwrap();
+                assert_eq!(count, p.decoded.len());
+                assert_eq!(&dbuf[..count], &p.decoded);
+
+                let dbuf = tt.enc.decode_to_vec(encoded.as_bytes()).unwrap();
+                assert_eq!(dbuf, p.decoded);
+            }
+        }
+    }
+
+    #[test]
+    fn test_decoder() {
+        for p in pairs() {
+            let mut dbuf = vec![0; STD_ENCODING.decoded_len(p.encoded.len())];
+            let mut decoder = STD_ENCODING.decoder(std::io::Cursor::new(&p.encoded));
+            let count = decoder.read(&mut dbuf).unwrap();
+            eprintln!("dbuf: {:?}", dbuf);
+            assert_eq!(count, p.decoded.len());
+            assert_eq!(&dbuf[..count], &p.decoded);
+        }
+    }
 }
