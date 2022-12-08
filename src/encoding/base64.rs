@@ -940,7 +940,7 @@ impl Base64 {
             }
         }
 
-        while src.len() >= 4 && dst.len() - n >= 4 {
+        while src.len() - si >= 4 && dst.len() - n >= 4 {
             let src2 = &src[si..si + 4];
             let (dn, ok) = assemble_32(
                 self.decode_map[src2[0] as usize],
@@ -1016,7 +1016,6 @@ impl Base64 {
             }
 
             if in_ == b'\n' || in_ == b'\r' {
-                j -= 1;
                 continue;
             }
 
@@ -1025,7 +1024,6 @@ impl Base64 {
                     return Err(CorruptInputError((si - 1) as u64));
                 }
             }
-
             // We've reached the end and there's padding
             match j {
                 0 | 1 => {
@@ -1648,5 +1646,357 @@ mod tests {
             }
             assert_eq!(&buf[..total], &input.decoded);
         }
+    }
+
+    #[test]
+    fn test_decode_corrupt() {
+        struct TestCase {
+            input: Vec<u8>,
+            offset: isize,
+        }
+
+        let test_cases = vec![
+            TestCase {
+                input: b"".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"\n".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"AAA=\n".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"AAAA\n".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"!!!!".to_vec(),
+                offset: 0,
+            },
+            TestCase {
+                input: b"====".to_vec(),
+                offset: 0,
+            },
+            TestCase {
+                input: b"x===".to_vec(),
+                offset: 1,
+            },
+            TestCase {
+                input: b"=AAA".to_vec(),
+                offset: 0,
+            },
+            TestCase {
+                input: b"A=AA".to_vec(),
+                offset: 1,
+            },
+            TestCase {
+                input: b"AA=A".to_vec(),
+                offset: 2,
+            },
+            TestCase {
+                input: b"AA==A".to_vec(),
+                offset: 4,
+            },
+            TestCase {
+                input: b"AAA=AAAA".to_vec(),
+                offset: 4,
+            },
+            TestCase {
+                input: b"AAAAA".to_vec(),
+                offset: 4,
+            },
+            TestCase {
+                input: b"AAAAAA".to_vec(),
+                offset: 4,
+            },
+            TestCase {
+                input: b"A=".to_vec(),
+                offset: 1,
+            },
+            TestCase {
+                input: b"A==".to_vec(),
+                offset: 1,
+            },
+            TestCase {
+                input: b"AA=".to_vec(),
+                offset: 3,
+            },
+            TestCase {
+                input: b"AA==".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"AAA=".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"AAAA".to_vec(),
+                offset: -1,
+            },
+            TestCase {
+                input: b"AAAAAA=".to_vec(),
+                offset: 7,
+            },
+            TestCase {
+                input: b"YWJjZA=====".to_vec(),
+                offset: 8,
+            },
+            TestCase {
+                input: b"A!\n".to_vec(),
+                offset: 1,
+            },
+            TestCase {
+                input: b"A=\n".to_vec(),
+                offset: 1,
+            },
+        ];
+
+        for tc in test_cases {
+            let mut dbuf = vec![0; STD_ENCODING.decoded_len(tc.input.len())];
+            if tc.offset == -1 {
+                let _ = STD_ENCODING.decode(&tc.input, &mut dbuf).unwrap();
+                continue;
+            }
+
+            let n = STD_ENCODING
+                .decode(&tc.input, &mut dbuf)
+                .unwrap_err()
+                .into_inner();
+            assert_eq!(n, tc.offset as u64);
+        }
+    }
+
+    #[test]
+    fn test_decode_bounds() {
+        let mut buf = [0; 32];
+        let s = STD_ENCODING.encode_to_vec(&buf);
+        let n = STD_ENCODING.decode(&s, &mut buf).unwrap();
+        assert_eq!(n, buf.len());
+    }
+
+    struct Test {
+        enc: Base64,
+        n: usize,
+        want: usize,
+    }
+
+    #[test]
+    fn test_encoded_len() {
+        for tt in vec![
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 0,
+                want: 0,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 1,
+                want: 2,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 2,
+                want: 3,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 3,
+                want: 4,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 7,
+                want: 10,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 0,
+                want: 0,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 1,
+                want: 4,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 2,
+                want: 4,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 3,
+                want: 4,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 4,
+                want: 8,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 7,
+                want: 12,
+            },
+        ] {
+            assert_eq!(tt.enc.encoded_len(tt.n), tt.want, "encoded_len({})", tt.n);
+        }
+    }
+
+    #[test]
+    fn test_decoded_len() {
+        for tt in vec![
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 0,
+                want: 0,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 2,
+                want: 1,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 3,
+                want: 2,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 4,
+                want: 3,
+            },
+            Test {
+                enc: RAW_STD_ENCODING,
+                n: 10,
+                want: 7,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 0,
+                want: 0,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 4,
+                want: 3,
+            },
+            Test {
+                enc: STD_ENCODING,
+                n: 8,
+                want: 6,
+            },
+        ] {
+            let got = tt.enc.decoded_len(tt.n);
+            assert_eq!(got, tt.want);
+        }
+    }
+
+    #[test]
+    fn test_big() {
+        const N: usize = 3 * 1000 + 1;
+        let mut raw = [0; N];
+        const ALPHA: &[u8] = b"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for i in 0..N {
+            raw[i] = ALPHA[i % ALPHA.len()];
+        }
+
+        let mut encoded = vec![];
+        let mut w = STD_ENCODING.encoder(&mut encoded);
+        let nn = w.write(&raw).unwrap();
+        assert_eq!(nn, N);
+
+        w.close().unwrap();
+        let mut dbuf = vec![];
+        let mut decoded = STD_ENCODING.decoder(std::io::Cursor::new(&encoded));
+        decoded.read_to_end(&mut dbuf).unwrap();
+        assert_eq!(dbuf, raw);
+    }
+
+    #[test]
+    fn test_new_line_characters() {
+        const EXPECTED: &str = "sure";
+        let examples = vec![
+            "c3VyZQ==",
+            "c3VyZQ==\r",
+            "c3VyZQ==\n",
+            "c3VyZQ==\r\n",
+            "c3VyZ\r\nQ==",
+            "c3V\ryZ\nQ==",
+            "c3V\nyZ\rQ==",
+            "c3VyZ\nQ==",
+            "c3VyZQ\n==",
+            "c3VyZQ=\n=",
+            "c3VyZQ=\r\n\r\n=",
+        ];
+
+        for e in examples {
+            let buf = STD_ENCODING.decode_to_vec(e.as_bytes()).unwrap();
+            assert_eq!(EXPECTED, std::str::from_utf8(&buf).unwrap());
+        }
+    }
+
+    #[test]
+    fn test_decoder_issue_3577() {
+        // TODO: implement this test case
+    }
+
+    #[test]
+    fn test_decoder_issue_4779() {
+        let encoded = r#"CP/EAT8AAAEF
+AQEBAQEBAAAAAAAAAAMAAQIEBQYHCAkKCwEAAQUBAQEBAQEAAAAAAAAAAQACAwQFBgcICQoLEAAB
+BAEDAgQCBQcGCAUDDDMBAAIRAwQhEjEFQVFhEyJxgTIGFJGhsUIjJBVSwWIzNHKC0UMHJZJT8OHx
+Y3M1FqKygyZEk1RkRcKjdDYX0lXiZfKzhMPTdePzRieUpIW0lcTU5PSltcXV5fVWZnaGlqa2xtbm
+9jdHV2d3h5ent8fX5/cRAAICAQIEBAMEBQYHBwYFNQEAAhEDITESBEFRYXEiEwUygZEUobFCI8FS
+0fAzJGLhcoKSQ1MVY3M08SUGFqKygwcmNcLSRJNUoxdkRVU2dGXi8rOEw9N14/NGlKSFtJXE1OT0
+pbXF1eX1VmZ2hpamtsbW5vYnN0dXZ3eHl6e3x//aAAwDAQACEQMRAD8A9VSSSSUpJJJJSkkkJ+Tj
+1kiy1jCJJDnAcCTykpKkuQ6p/jN6FgmxlNduXawwAzaGH+V6jn/R/wCt71zdn+N/qL3kVYFNYB4N
+ji6PDVjWpKp9TSXnvTf8bFNjg3qOEa2n6VlLpj/rT/pf567DpX1i6L1hs9Py67X8mqdtg/rUWbbf
++gkp0kkkklKSSSSUpJJJJT//0PVUkkklKVLq3WMDpGI7KzrNjADtYNXvI/Mqr/Pd/q9W3vaxjnvM
+NaCXE9gNSvGPrf8AWS3qmba5jjsJhoB0DAf0NDf6sevf+/lf8Hj0JJATfWT6/dV6oXU1uOLQeKKn
+EQP+Hubtfe/+R7Mf/g7f5xcocp++Z11JMCJPgFBxOg7/AOuqDx8I/ikpkXkmSdU8mJIJA/O8EMAy
+j+mSARB/17pKVXYWHXjsj7yIex0PadzXMO1zT5KHoNA3HT8ietoGhgjsfA+CSnvvqh/jJtqsrwOv
+2b6NGNzXfTYexzJ+nU7/ALkf4P8Awv6P9KvTQQ4AgyDqCF85Pho3CTB7eHwXoH+LT65uZbX9X+o2
+bqbPb06551Y4
+"#;
+
+        let encoded_stort = encoded.replace('\n', "");
+        let mut buf = vec![];
+        let mut decoder = STD_ENCODING.decoder(std::io::Cursor::new(encoded));
+        decoder.read_to_end(&mut buf).unwrap();
+
+        let mut buf1 = vec![];
+        let mut decoder1 = STD_ENCODING.decoder(std::io::Cursor::new(encoded_stort));
+        decoder1.read_to_end(&mut buf1).unwrap();
+        assert_eq!(buf, buf1);
+    }
+
+    #[test]
+    fn test_decode_issue_7733() {
+        let err = STD_ENCODING
+            .decode_to_vec(b"YWJjZA=====")
+            .unwrap_err()
+            .into_inner();
+        assert_eq!(err, 8);
+    }
+
+    #[test]
+    fn test_decode_issue_15656() {
+        let err = STD_ENCODING
+            .with_strict()
+            .decode_to_vec(b"WvLTlMrX9NpYDQlEIFlnDB==")
+            .unwrap_err()
+            .into_inner();
+        assert_eq!(err, 22);
+        STD_ENCODING
+            .with_strict()
+            .decode_to_vec(b"WvLTlMrX9NpYDQlEIFlnDA==")
+            .unwrap();
+        STD_ENCODING
+            .decode_to_vec(b"WvLTlMrX9NpYDQlEIFlnDB==")
+            .unwrap();
     }
 }
