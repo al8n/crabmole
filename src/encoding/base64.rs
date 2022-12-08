@@ -1635,4 +1635,18 @@ mod tests {
             assert_eq!(&dbuf[..count], &p.decoded);
         }
     }
+
+    #[test]
+    fn test_decoder_buffering() {
+        let input = big_test();
+        for bs in 1..=12 {
+            let mut decoder = STD_ENCODING.decoder(std::io::Cursor::new(&input.encoded));
+            let mut buf = vec![0; input.decoded.len() + 12];
+            let mut total = 0;
+            while total < input.decoded.len() {
+                total += decoder.read(&mut buf[total..total + bs]).unwrap();
+            }
+            assert_eq!(&buf[..total], &input.decoded);
+        }
+    }
 }
