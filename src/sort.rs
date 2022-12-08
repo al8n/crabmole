@@ -852,6 +852,7 @@ mod tests {
     const STRINGS: &[&str] = &["", "Hello", "foo", "bar", "foo", "f00", "%*&^*&^&", "***"];
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_sort_int_slice() {
         let mut data = INTS.to_vec();
         Sort::sort(&mut data);
@@ -863,6 +864,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_sort_f64_slice() {
         let mut data = FLOATS.to_vec();
         Sort::sort(&mut data);
@@ -874,6 +876,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_sort_string_slice() {
         let mut data = STRINGS.iter().map(|s| s.to_string()).collect::<Vec<_>>();
         Sort::sort(&mut data);
@@ -885,6 +888,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_slice() {
         let mut data = STRINGS.iter().map(|s| s.to_string()).collect::<Vec<_>>();
 
@@ -900,6 +904,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_sort_large_random() {
         let mut data = (0..1000000)
             .map(|_| rand::random::<isize>())
@@ -915,6 +920,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_reverse_sort_int_slice() {
         let mut data = INTS.to_vec();
         let mut data1 = INTS.to_vec();
@@ -953,6 +959,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_non_deterministic_comparison() {
         for _ in 0..10 {
             Sort::sort(&mut NonDeterministicTestingData);
@@ -1172,6 +1179,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_sort_bm() {
         test_bentley_mc_ilroy(
             |data| {
@@ -1182,6 +1190,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_stable_bm() {
         test_bentley_mc_ilroy(
             |data| {
@@ -1267,6 +1276,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_adversary() {
         // large enough to distinguish between O(n^2) and O(n*log(n))
         const SIZE: usize = 10_000;
@@ -1339,6 +1349,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_stability() {
         const N: usize = 100_000;
         const M: usize = 1000;
@@ -1411,11 +1422,13 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_count_stable_ops() {
         count_ops(|td| td.sort_stable(), "Stable");
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_count_sort_ops() {
         count_ops(|td| td.sort(), "Sort");
     }
@@ -1565,6 +1578,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_search() {
         for mut t in tests() {
             let i = search(t.n, &mut t.f);
@@ -1584,6 +1598,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_search_efficiency() {
         let mut n = 100;
         let mut step = 1;
@@ -1613,6 +1628,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(miri, ignore)]
     fn test_search_exhaustive() {
         for n in 0..=100 {
             for x in 0..=n {
