@@ -608,24 +608,24 @@ impl std::error::Error for Error {}
 
 /// Decode error
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CorruptInputError(u64);
+pub struct DecodeError(usize);
 
-impl CorruptInputError {
+impl DecodeError {
     /// leak the inner input byte
     #[inline]
-    pub const fn into_inner(self) -> u64 {
+    pub const fn into_inner(self) -> usize {
         self.0
     }
 }
 
-impl core::fmt::Display for CorruptInputError {
+impl core::fmt::Display for DecodeError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "illegal base64 data at input byte {}", self.0)
     }
 }
 
 #[cfg(feature = "std")]
-impl std::error::Error for CorruptInputError {}
+impl std::error::Error for DecodeError {}
 
 const BASE: usize = 64;
 
@@ -689,8 +689,6 @@ impl Base64 {
         check_64!(encoder, CH, return Err(Error::InvalidEncoder));
 
         let mut decode_map = DECODE_MAP_INITIALIZE;
-        // let mut enc = [0; BASE];
-        // assign_64!(encoder, enc);
         assign_decode_map!(decode_map, encoder);
 
         Ok(Self {
@@ -907,9 +905,9 @@ impl Base64 {
     /// Decodes src using the encoding enc. It writes at most
     /// `self.decoded_len(src.len())` bytes to dst and returns the number of bytes
     /// written. If src contains invalid base64 data, it will return the
-    /// number of bytes successfully written and CorruptInputError.
+    /// number of bytes successfully written and DecodeError.
     /// New line characters (\r and \n) are ignored.
-    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, CorruptInputError> {
+    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
         if src.is_empty() {
             return Ok(0);
         }
@@ -969,7 +967,7 @@ impl Base64 {
 
     /// Returns the bytes represented by the base64 vec s.
     #[cfg(feature = "alloc")]
-    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, CorruptInputError> {
+    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, DecodeError> {
         let mut buf = alloc::vec![0; self.decoded_len(src.len())];
         let n = self.decode(src, &mut buf)?;
         buf.truncate(n);
@@ -987,7 +985,7 @@ impl Base64 {
         src: &[u8],
         dst: &mut [u8],
         mut si: usize,
-    ) -> Result<(usize, usize), CorruptInputError> {
+    ) -> Result<(usize, usize), DecodeError> {
         let mut dbuf = [0; 4];
         let mut dlen = 4;
         let mut j = 0;
@@ -998,7 +996,7 @@ impl Base64 {
                         return Ok((si, 0));
                     }
                     () if j == 1 || self.pad_char.is_some() => {
-                        return Err(CorruptInputError((si - j) as u64));
+                        return Err(DecodeError(si - j));
                     }
                     _ => {}
                 }
@@ -1021,14 +1019,14 @@ impl Base64 {
 
             if let Some(ch) = self.pad_char {
                 if (in_ as char) != ch {
-                    return Err(CorruptInputError((si - 1) as u64));
+                    return Err(DecodeError(si - 1));
                 }
             }
             // We've reached the end and there's padding
             match j {
                 0 | 1 => {
                     // incorrect padding
-                    return Err(CorruptInputError((si - 1) as u64));
+                    return Err(DecodeError(si - 1));
                 }
                 2 => {
                     // "==" is expected, the first "=" is already consumed.
@@ -1038,11 +1036,11 @@ impl Base64 {
                     }
                     if si == src.len() {
                         // not enough padding
-                        return Err(CorruptInputError(src.len() as u64));
+                        return Err(DecodeError(src.len()));
                     }
                     if let Some(ch) = self.pad_char {
                         if (src[si] as char) != ch {
-                            return Err(CorruptInputError((si - 1) as u64));
+                            return Err(DecodeError(si - 1));
                         }
                     }
                     si += 1;
@@ -1055,7 +1053,7 @@ impl Base64 {
             }
             if si < src.len() {
                 // trailing garbage
-                return Err(CorruptInputError(si as u64));
+                return Err(DecodeError(si));
             }
             dlen = j;
             break;
@@ -1076,29 +1074,29 @@ impl Base64 {
                 dbuf[2] = 0;
                 dst[1] = dbuf[1];
                 if self.strict && dbuf[2] != 0 {
-                    return Err(CorruptInputError((si - 1) as u64));
+                    return Err(DecodeError(si - 1));
                 }
                 dbuf[1] = 0;
                 dst[0] = dbuf[0];
                 if self.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
-                    return Err(CorruptInputError((si - 2) as u64));
+                    return Err(DecodeError(si - 2));
                 }
             }
             3 => {
                 dst[1] = dbuf[1];
                 if self.strict && dbuf[2] != 0 {
-                    return Err(CorruptInputError((si - 1) as u64));
+                    return Err(DecodeError(si - 1));
                 }
                 dbuf[1] = 0;
                 dst[0] = dbuf[0];
                 if self.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
-                    return Err(CorruptInputError((si - 2) as u64));
+                    return Err(DecodeError(si - 2));
                 }
             }
             2 => {
                 dst[0] = dbuf[0];
                 if self.strict && (dbuf[1] != 0 || dbuf[2] != 0) {
-                    return Err(CorruptInputError((si - 2) as u64));
+                    return Err(DecodeError(si - 2));
                 }
             }
             _ => {}
@@ -1765,7 +1763,7 @@ mod tests {
                 .decode(&tc.input, &mut dbuf)
                 .unwrap_err()
                 .into_inner();
-            assert_eq!(n, tc.offset as u64);
+            assert_eq!(n, tc.offset as usize);
         }
     }
 
