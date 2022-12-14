@@ -1,15 +1,17 @@
 /// Pipe
-#[cfg(feature = "io")]
-#[cfg_attr(docsrs, doc(cfg(feature = "io")))]
+#[cfg(feature = "pipe")]
+#[cfg_attr(docsrs, doc(cfg(feature = "pipe")))]
 pub mod pipe;
 
 /// Pipe
-#[cfg(feature = "async-io")]
-#[cfg_attr(docsrs, doc(cfg(feature = "async-io")))]
+#[cfg(feature = "async-pipe")]
+#[cfg_attr(docsrs, doc(cfg(feature = "async-pipe")))]
 pub mod async_pipe;
 
 /// Error for pipe
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[cfg(any(feature = "pipe", feature = "async-pipe"))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "pipe", feature = "async-pipe"))))]
 pub enum PipeError {
     /// Read/Write on closed pipe
     Closed,

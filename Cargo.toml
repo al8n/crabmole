@@ -1,6 +1,6 @@
 [package]
 name = "crabmole"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT OR Apache-2.0 OR BSD-3-Clause"
 description = "Porting Go standard library in Rust"
@@ -17,10 +17,21 @@ std = ["alloc"]
 alloc = []
 
 sort = []
-encoding = []
 
-io = ["std", "crossbeam-channel", "parking_lot"]
-async-io = ["std", "async-channel", "futures-util/io", "async-lock"]
+# encoding related features
+encoding = ["ascii85", "base32", "base64", "binary", "hex"]
+ascii85 = []
+base32 = []
+base64 = []
+binary = []
+hex = []
+
+# io related features
+io = ["std", "pipe"]
+async-io = ["std", "async-pipe"]
+pipe = ["std", "crossbeam-channel", "parking_lot"]
+async-pipe = ["std", "async-channel", "futures-util/io", "async-lock"]
+
 
 [dependencies]
 async-channel = { version = "1.7", optional = true }

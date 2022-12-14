@@ -14,13 +14,43 @@ extern crate alloc;
 pub mod sort;
 
 /// Go encoding library
-#[cfg(feature = "encoding")]
-#[cfg_attr(docsrs, doc(cfg(feature = "encoding")))]
+#[cfg(any(
+    feature = "encoding",
+    feature = "hex",
+    feature = "base64",
+    feature = "base32",
+    feature = "binary",
+    feature = "ascii85"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "encoding",
+        feature = "hex",
+        feature = "base64",
+        feature = "base32",
+        feature = "binary",
+        feature = "ascii85"
+    )))
+)]
 pub mod encoding;
 
 /// Go io library
-#[cfg(any(feature = "io", feature = "async-io"))]
-#[cfg_attr(docsrs, doc(cfg(any(feature = "io", feature = "async-io"))))]
+#[cfg(any(
+    feature = "io",
+    feature = "async-io",
+    feature = "pipe",
+    feature = "async-pipe"
+))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(
+        feature = "io",
+        feature = "async-io",
+        feature = "pipe",
+        feature = "async-pipe"
+    )))
+)]
 pub mod io;
 
 /// Copies elements from a source slice into a destination slice. (As a special case, it also will copy bytes from a string to a slice of bytes.) The source and destination may overlap.
