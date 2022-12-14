@@ -136,10 +136,9 @@ pub fn decode_to_vec(src: &[u8]) -> Result<alloc::vec::Vec<u8>, Error> {
 
 /// Returns a [`Vec<u8>`] that contains a hex dump of the given data. The format
 /// of the hex dump matches the output of `hexdump -C` on the command line.
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "io"))]
 #[inline]
 pub fn dump(src: &[u8]) -> std::io::Result<alloc::vec::Vec<u8>> {
-    use crate::io::Closer;
     use std::io::Write;
 
     if src.is_empty() {
@@ -154,7 +153,7 @@ pub fn dump(src: &[u8]) -> std::io::Result<alloc::vec::Vec<u8>> {
     let mut dumper = Dumper::new(&mut dst);
     dumper
         .write_all(src)
-        .and_then(|_| dumper.close())
+        .and_then(|_| dumper.close_in())
         .map(|_| dst)
 }
 
@@ -304,6 +303,43 @@ impl<W> Dumper<W> {
     }
 }
 
+#[cfg(feature = "std")]
+impl<W: std::io::Write> Dumper<W> {
+    #[inline]
+    fn close_in(&mut self) -> std::io::Result<()> {
+        if self.closed {
+            return Ok(());
+        }
+
+        self.closed = true;
+        if self.used == 0 {
+            return Ok(());
+        }
+
+        self.buf[0] = b' ';
+        self.buf[1] = b' ';
+        self.buf[2] = b' ';
+        self.buf[3] = b' ';
+        self.buf[4] = b'|';
+        let n_bytes = self.used;
+        while self.used < 16 {
+            let l = if self.used == 7 {
+                4
+            } else if self.used == 15 {
+                5
+            } else {
+                3
+            };
+            self.w.write_all(&self.buf[..l])?;
+            self.used += 1;
+        }
+        self.right_chars[n_bytes] = b'|';
+        self.right_chars[n_bytes + 1] = b'\n';
+        self.w.write_all(&self.right_chars[..n_bytes + 2])?;
+        Ok(())
+    }
+}
+
 #[inline]
 const fn to_char(b: u8) -> u8 {
     if b < 32 || b > 126 {
@@ -381,36 +417,7 @@ impl<W: std::io::Write> std::io::Write for Dumper<W> {
 #[cfg(all(feature = "std", feature = "io"))]
 impl<W: std::io::Write> crate::io::Closer for Dumper<W> {
     fn close(&mut self) -> std::io::Result<()> {
-        if self.closed {
-            return Ok(());
-        }
-
-        self.closed = true;
-        if self.used == 0 {
-            return Ok(());
-        }
-
-        self.buf[0] = b' ';
-        self.buf[1] = b' ';
-        self.buf[2] = b' ';
-        self.buf[3] = b' ';
-        self.buf[4] = b'|';
-        let n_bytes = self.used;
-        while self.used < 16 {
-            let l = if self.used == 7 {
-                4
-            } else if self.used == 15 {
-                5
-            } else {
-                3
-            };
-            self.w.write_all(&self.buf[..l])?;
-            self.used += 1;
-        }
-        self.right_chars[n_bytes] = b'|';
-        self.right_chars[n_bytes + 1] = b'\n';
-        self.w.write_all(&self.right_chars[..n_bytes + 2])?;
-        Ok(())
+        self.close_in()
     }
 }
 
