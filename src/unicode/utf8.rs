@@ -120,15 +120,15 @@ pub const fn full_char(p: &[u8]) -> bool {
 /// Returns the number of bytes required to encode the rune.
 /// It returns [`Option::None`] if the rune is not a valid value to encode in UTF-8.
 #[inline]
-pub const fn char_len(r: &char) -> Option<usize> {
-    let r = *r as i32;
-    match () {
-        () if r < 0 => None,
-        () if r <= CHAR_1_MAX => Some(1),
-        () if r <= CHAR_2_MAX => Some(2),
-        () if SURROGATE_MIN <= r && r <= SURROGATE_MAX => None,
-        () if r <= CHAR_3_MAX => Some(3),
-        () if r <= MAX_CHAR as i32 => Some(4),
+pub const fn char_len(r: Option<char>) -> Option<usize> {
+
+    match r {
+        Some(ch) if (ch as i32) < 0 => None,
+        Some(ch) if (ch as i32)  <= CHAR_1_MAX => Some(1),
+        Some(ch) if (ch as i32) <= CHAR_2_MAX => Some(2),
+        Some(ch) if SURROGATE_MIN <= (ch as i32)  && (ch as i32)  <= SURROGATE_MAX => None,
+        Some(ch) if (ch as i32) <= CHAR_3_MAX => Some(3),
+        Some(ch) if (ch as i32) <= MAX_CHAR as i32 => Some(4),
         _ => None,
     }
 }
@@ -248,11 +248,10 @@ pub fn valid(mut p: &[u8]) -> bool {
 /// Reports whether r can be legally encoded as UTF-8.
 /// Code points that are out of range or a surrogate half are illegal.
 #[inline]
-pub const fn valid_char(r: char) -> bool {
-    let r = r as i32;
-    match () {
-        () if 0 <= r && r < SURROGATE_MIN => true,
-        () if SURROGATE_MAX < r && r <= MAX_CHAR as i32 => true,
+pub const fn valid_char(r: Option<char>) -> bool {
+    match r {
+        Some(r) if 0 <= (r as i32) && (r as i32) < SURROGATE_MIN => true,
+        Some(r) if SURROGATE_MAX < (r as i32) && (r as i32) <= MAX_CHAR as i32 => true,
         _ => false,
     }
 }
@@ -465,4 +464,609 @@ pub fn decode_last_char(p: &[u8]) -> (char, usize) {
         return (ERROR_CHAR, 1);
     }
     (r, size)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::unicode::utf8::*;
+    use std::char::REPLACEMENT_CHARACTER;
+    
+    struct Utf8Map {
+        r: char,
+        str: Vec<u8>,
+    }
+
+    fn utf8_map() -> Vec<Utf8Map>{
+        vec![
+            Utf8Map {
+                r: std::char::from_u32(0x0000).unwrap_or(ERROR_CHAR),
+                str: vec![0],
+            },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0001).unwrap_or(ERROR_CHAR),
+            //     str: vec![1],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x007e).unwrap_or(ERROR_CHAR),
+            //     str: vec![126],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x007f).unwrap_or(ERROR_CHAR),
+            //     str: vec![127],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0080).unwrap_or(ERROR_CHAR),
+            //     str: vec![194, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0081).unwrap_or(ERROR_CHAR),
+            //     str: vec![194, 129],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00bf).unwrap_or(ERROR_CHAR),
+            //     str: vec![194, 191],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00c0).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00c1).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 129],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00c8).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 136],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00d0).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 144],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00e0).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 160],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00f0).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 176],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00f8).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 184],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x00ff).unwrap_or(ERROR_CHAR),
+            //     str: vec![195, 191],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0100).unwrap_or(ERROR_CHAR),
+            //     str: vec![196, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x07ff).unwrap_or(ERROR_CHAR),
+            //     str: vec![223, 191],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0400).unwrap_or(ERROR_CHAR),
+            //     str: vec![208, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0800).unwrap_or(ERROR_CHAR),
+            //     str: vec![224, 160, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x0801).unwrap_or(ERROR_CHAR),
+            //     str: vec![224, 160, 129],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x1000).unwrap_or(ERROR_CHAR),
+            //     str: vec![225, 128, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0xd000).unwrap_or(ERROR_CHAR),
+            //     str: vec![237, 128, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0xd7ff).unwrap_or(ERROR_CHAR),// last code point before surrogate half.
+            //     str: vec![237, 159, 191],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0xe000).unwrap_or(ERROR_CHAR),// first code point after surrogate half.
+            //     str: vec![238, 128, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0xfffe).unwrap_or(ERROR_CHAR),
+            //     str: vec![239, 191, 190],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0xffff).unwrap_or(ERROR_CHAR),
+            //     str: vec![239, 191, 191],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x10000).unwrap_or(ERROR_CHAR),
+            //     str: vec![240, 144, 128, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x10001).unwrap_or(ERROR_CHAR),
+            //     str: vec![240, 144, 128, 129],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x40000).unwrap_or(ERROR_CHAR),
+            //     str: vec![241, 128, 128, 128],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x10fffe).unwrap_or(ERROR_CHAR),
+            //     str: vec![244, 143, 191, 190],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0x10ffff).unwrap_or(ERROR_CHAR),
+            //     str: vec![244, 143, 191, 191],
+            // },
+            // Utf8Map {
+            //     r: std::char::from_u32(0xFFFD).unwrap_or(ERROR_CHAR),
+            //     str: vec![239, 191, 189],
+            // }
+        ]
+    }
+    
+    fn surrogate_map() -> Vec<Utf8Map> {
+        vec![
+            Utf8Map {
+                r: std::char::from_u32(0xd800).unwrap_or(ERROR_CHAR),
+                str: vec![237, 160, 128],
+            },
+            Utf8Map {
+                r: std::char::from_u32(0xdfff).unwrap_or(ERROR_CHAR),
+                str: vec![237, 191, 191],
+            }
+        ]
+    }
+
+    fn strings_tests() -> Vec<Vec<u8>> {
+        vec![
+            "".as_bytes().to_vec(),
+            "abcd".as_bytes().to_vec(),
+            "☺☻☹".as_bytes().to_vec(),
+            "日a本b語ç日ð本Ê語þ日¥本¼語i日©".as_bytes().to_vec(),
+            "日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©".as_bytes().to_vec(),
+            vec![128, 128, 128, 128]
+        ]
+    }
+
+    #[test]
+    fn test_full_char() {
+        for m in utf8_map() {
+            let b = m.str;
+            assert!(full_char(&b));
+
+            let b1 = &b[..b.len()];
+            assert!(full_char(b1));
+        }
+        
+        for s in vec![b"\x00", b"\x01"] {
+            let b = s;
+            assert!(full_char(b));
+        }
+    }
+
+    #[test]
+    fn test_encode_char() {
+        for m in utf8_map() {
+            let b = m.str;
+            let mut buf = vec![0; 10];
+            let n = encode_char(&mut buf, m.r); 
+            let b1 = &buf[..n];
+            assert_eq!(b1, b);
+        }
+    }
+
+    #[test]
+    fn test_append_char() {
+        for m in utf8_map() {
+            let mut buf: Vec<u8> = vec![];
+            append_char(&mut buf, m.r);
+            assert_eq!(&buf, &m.str);
+
+            buf = "init".as_bytes().to_vec();
+            append_char(&mut buf, m.r);
+            let mut s = b"init".to_vec();
+            for st in m.str{
+                s.push(st);
+            }
+            assert_eq!(&buf, &s);
+        }
+    }
+
+    #[test]
+    fn test_decode_surrogate_char() {
+        for m in surrogate_map() {
+            let b = &m.str;
+            let (r, size) = decode_char(b.as_slice());
+            assert_eq!(r, ERROR_CHAR);
+            assert_eq!(size, 1);
+        }
+    }
+
+    #[test]
+    fn test_decode_char() {
+        for mut m in utf8_map() {
+            let b = &mut m.str;
+            let (r, size) = decode_char(b.as_slice());
+            assert_eq!(r, m.r);
+            assert_eq!(size, b.len());
+            //     b := []byte(m.str)
+            //     r, size := DecodeRune(b)
+            //     if r != m.r || size != len(b) {
+            //         t.Errorf("DecodeRune(%q) = %#04x, %d want %#04x, %d", b, r, size, m.r, len(b))
+            //     }
+            //     s := m.str
+            //     r, size = DecodeRuneInString(s)
+            //     if r != m.r || size != len(b) {
+            //         t.Errorf("DecodeRuneInString(%q) = %#04x, %d want %#04x, %d", s, r, size, m.r, len(b))
+            //     }
+
+
+            // there's an extra byte that bytes left behind - make sure trailing byte works
+            let (r, size) = decode_char(&b[..b.capacity()]);
+            assert_eq!(r, m.r);
+            assert_eq!(size, b.len());
+
+            let mut s = b.clone();
+            s.push(0);
+            let (r, size) = decode_char(&s);
+            assert_eq!(r, m.r);
+            assert_eq!(size, b.len());
+        // there's an extra byte that bytes left behind - make sure trailing byte works
+        //     r, size = DecodeRune(b[0:cap(b)])
+        //     if r != m.r || size != len(b) {
+        //         t.Errorf("DecodeRune(%q) = %#04x, %d want %#04x, %d", b, r, size, m.r, len(b))
+        //     }
+        //     s = m.str + "\x00"
+        //     r, size = DecodeRuneInString(s)
+        //     if r != m.r || size != len(b) {
+        //         t.Errorf("DecodeRuneInString(%q) = %#04x, %d want %#04x, %d", s, r, size, m.r, len(b))
+        //     }
+    
+
+
+            // make sure missing bytes fail
+            let mut want_size = 1;
+            if want_size > b.len() {
+                want_size = 0;
+            }
+
+            let (_, size) = decode_char(&b[..b.len()]);
+            assert_eq!(size, want_size);
+
+            let n = m.str.len();
+            let b = &mut m.str[..n];
+            let (_, size) = decode_char(b);
+            assert_eq!(size, want_size);
+            //     // make sure missing bytes fail
+        //     wantsize := 1
+        //     if wantsize >= len(b) {
+        //         wantsize = 0
+        //     }
+        //     r, size = DecodeRune(b[0 : len(b)-1])
+        //     if r != RuneError || size != wantsize {
+        //         t.Errorf("DecodeRune(%q) = %#04x, %d want %#04x, %d", b[0:len(b)-1], r, size, RuneError, wantsize)
+        //     }
+        //     s = m.str[0 : len(m.str)-1]
+        //     r, size = DecodeRuneInString(s)
+        //     if r != RuneError || size != wantsize {
+        //         t.Errorf("DecodeRuneInString(%q) = %#04x, %d want %#04x, %d", s, r, size, RuneError, wantsize)
+        //     }
+
+            // make sure bad sequences fail
+            let mut b = m.str.clone();
+            let n = b.len();
+            if n == 1 {
+                b[0] = 128;
+            }
+            else {
+                b[n - 1] = 127;
+            }
+            let (r, size) =decode_char(b.as_slice());
+            assert_eq!(r, ERROR_CHAR);
+            assert_eq!(size, 1);
+
+            let s = &b;
+            let (r, size) = decode_char(s);
+            assert_eq!(r, ERROR_CHAR);
+            assert_eq!(size, 1);
+              
+        //     // make sure bad sequences fail
+        //     if len(b) == 1 {
+        //         b[0] = 0x80
+        //     } else {
+        //         b[len(b)-1] = 0x7F
+        //     }
+        //     r, size = DecodeRune(b)
+        //     if r != RuneError || size != 1 {
+        //         t.Errorf("DecodeRune(%q) = %#04x, %d want %#04x, %d", b, r, size, RuneError, 1)
+        //     }
+        //     s = string(b)
+        //     r, size = DecodeRuneInString(s)
+        //     if r != RuneError || size != 1 {
+        //         t.Errorf("DecodeRuneInString(%q) = %#04x, %d want %#04x, %d", s, r, size, RuneError, 1)
+        //     }
+        }
+    }
+
+   #[test]
+   fn test_sequencing() {
+    for ts in strings_tests() {
+        for m in utf8_map() {
+
+        }
+    }
+    // for _, ts := range testStrings {
+	// 	for _, m := range utf8map {
+	// 		for _, s := range []string{ts + m.str, m.str + ts, ts + m.str + ts} {
+	// 			testSequence(t, s)
+	// 		}
+	// 	}
+	// }
+   }
+
+   struct CharCountTest {
+        in_: &'static [u8],
+        out: usize,
+   }
+
+   fn char_count_tests() -> Vec<CharCountTest> {
+        vec![
+            CharCountTest {
+                in_: "abcd".as_bytes(),
+                out: 4,
+            },
+            CharCountTest {
+                in_: "☺☻☹".as_bytes(),
+                out: 3,
+            },
+            CharCountTest {
+                in_: "1,2,3,4".as_bytes(),
+                out: 7,
+            },
+            CharCountTest {
+                in_: b"\xe2\x00",
+                out: 2,
+            },
+            CharCountTest {
+                in_: b"\xe2\x80",
+                out: 2,
+            },
+            CharCountTest {
+                in_: b"a\xe2\x80",
+                out: 3,
+            }
+        ]
+    // {"abcd", 4},
+	// {"☺☻☹", 3},
+	// {"1,2,3,4", 7},
+	// {"\xe2\x00", 2},
+	// {"\xe2\x80", 2},
+	// {"a\xe2\x80", 3},
+   }
+
+   #[test]
+   fn test_char_count() {
+        for tt in char_count_tests() {
+            assert_eq!(char_count(tt.in_), tt.out);
+        }
+    // for _, tt := range runecounttests {
+	// 	if out := RuneCountInString(tt.in); out != tt.out {
+	// 		t.Errorf("RuneCountInString(%q) = %d, want %d", tt.in, out, tt.out)
+	// 	}
+	// 	if out := RuneCount([]byte(tt.in)); out != tt.out {
+	// 		t.Errorf("RuneCount(%q) = %d, want %d", tt.in, out, tt.out)
+	// 	}
+	// }
+   }
+
+    struct CharLenTest {
+        r: Option<char>,
+        size: usize,
+    }
+
+    fn char_len_tests() -> Vec<CharLenTest> {
+        vec![
+            CharLenTest {
+                r: std::char::from_u32(0),
+                size: 1,
+            },
+            CharLenTest {
+                r: Some('e' as char),
+                size: 1,
+            },
+            CharLenTest {
+                r: Some('é' as char),
+                size: 2,
+            },
+            CharLenTest {
+                r: Some('☺' as char),
+                size: 3,
+            },
+            CharLenTest {
+                r: Some(ERROR_CHAR),
+                size: 3,
+            }, 
+            CharLenTest {
+                r: Some(MAX_CHAR),
+                size: 4,
+            },
+            CharLenTest {
+                r: std::char::from_u32(0xD800),
+                size: 0,
+            },
+            CharLenTest {
+                r: std::char::from_u32(0xDFFF),
+                size: 0,
+            },
+            CharLenTest {
+                r: std::char::from_u32((MAX_CHAR as u32) + 1),
+                size: 0,
+            }
+        ]
+    }
+
+    #[test]
+    fn test_char_len() {
+        for tt in char_len_tests() {
+            let size = char_len(tt.r).unwrap_or(0);
+            assert_eq!(size, tt.size);
+        }
+    }
+
+    struct ValidTest {
+        in_: &'static [u8],
+        out: bool,
+    }
+
+    fn valid_tests() -> Vec<ValidTest> {
+        vec![
+            ValidTest {
+                in_: "".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: "a".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: "abc".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: "Ж".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: "ЖЖ".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: "брэд-ЛГТМ".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: "☺☻☹".as_bytes(),
+                out: true,
+            },
+            ValidTest {
+                in_: b"aa\xe2",
+                out: false,
+            },
+            ValidTest {
+                in_: &[66, 250],
+                out: false,
+            },
+            ValidTest {
+                in_: &[66, 250, 67],
+                out: false,
+            },
+            ValidTest {
+                in_: "a\u{FFFDb}".as_bytes(),
+                out: true,
+            },
+            ValidTest { // U+10FFFF
+                in_: b"\xF4\x8F\xBF\xBF",
+                out: true,
+            },
+            ValidTest { // U+10FFFF+1; out of range
+                in_: b"\xF4\x90\x80\x80",
+                out: false,
+            },
+            ValidTest { // 0x1FFFFF; out of range
+                in_: b"\xF7\xBF\xBF\xBF",
+                out: false,
+            }, 
+            ValidTest { // 0x3FFFFFF; out of range
+                in_: b"\xFB\xBF\xBF\xBF\xBF",
+                out: false,
+            },
+            ValidTest { // U+0000 encoded in two bytes: incorrect
+                in_: b"\xc0\x80",
+                out: false,
+            },
+            ValidTest { // U+D800 high surrogate (sic)
+                in_: b"\xed\xa0\x80",
+                out: false,
+            },
+            ValidTest { // U+DFFF low surrogate (sic)
+                in_: b"\xed\xbf\xbf",
+                out: false,
+            }
+        ]
+    }
+    
+    #[test]
+    fn test_valid(){
+        for tt in valid_tests() {
+            assert_eq!(valid(tt.in_), tt.out);
+        }
+    }
+
+    struct ValidCharTest {
+        r: Option<char>,
+        ok: bool,
+    }
+
+    fn valid_char_tests() -> Vec<ValidCharTest> {
+        vec![
+            ValidCharTest {
+                r: std::char::from_u32(0),
+                ok: true,
+            },
+            ValidCharTest {
+                r: Some('e' as char),
+                ok: true,
+            },
+            ValidCharTest {
+                r: Some('é' as char),
+                ok: true,
+            },
+            ValidCharTest {
+                r: Some('☺' as char),
+                ok: true,
+            },
+            ValidCharTest {
+                r: Some(ERROR_CHAR),
+                ok: true,
+            },
+            ValidCharTest {
+                r: Some(MAX_CHAR),
+                ok: true,
+            },
+            ValidCharTest {
+                r: std::char::from_u32(0xD7FF),
+                ok: true,
+            },
+            ValidCharTest {
+                r: std::char::from_u32(0xD800),
+                ok: false,
+            },
+            ValidCharTest {
+                r: std::char::from_u32(0xDFFF),
+                ok: false,
+            },
+            ValidCharTest {
+                r: std::char::from_u32(0xE000),
+                ok: true,
+            },
+            ValidCharTest {
+                r: std::char::from_u32(MAX_CHAR as u32 + 1),
+                ok: false,
+            }
+        ]
+    }
+
+    #[test]
+    fn test_valid_char() {
+        for tt in valid_char_tests() {
+            let ok = valid_char(tt.r);
+            assert_eq!(ok, tt.ok); 
+        }
+    }
+
 }
