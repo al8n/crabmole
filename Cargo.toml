@@ -19,9 +19,10 @@ alloc = []
 sort = []
 
 # encoding related features
-encoding = ["ascii85", "base32", "base64", "binary", "hex"]
+encoding = ["ascii85", "base32", "base58", "base64", "binary", "hex"]
 ascii85 = []
 base32 = []
+base58 = []
 base64 = []
 binary = []
 hex = []

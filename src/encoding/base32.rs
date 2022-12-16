@@ -1,302 +1,5 @@
-macro_rules! assign_decode_map {
-    ($decode_map: ident, $encoder: ident) => {
-        $decode_map[$encoder[0] as usize] = 0;
-        $decode_map[$encoder[1] as usize] = 1;
-        $decode_map[$encoder[2] as usize] = 2;
-        $decode_map[$encoder[3] as usize] = 3;
-        $decode_map[$encoder[4] as usize] = 4;
-        $decode_map[$encoder[5] as usize] = 5;
-        $decode_map[$encoder[6] as usize] = 6;
-        $decode_map[$encoder[7] as usize] = 7;
-        $decode_map[$encoder[8] as usize] = 8;
-        $decode_map[$encoder[9] as usize] = 9;
-        $decode_map[$encoder[10] as usize] = 10;
-        $decode_map[$encoder[11] as usize] = 11;
-        $decode_map[$encoder[12] as usize] = 12;
-        $decode_map[$encoder[13] as usize] = 13;
-        $decode_map[$encoder[14] as usize] = 14;
-        $decode_map[$encoder[15] as usize] = 15;
-        $decode_map[$encoder[16] as usize] = 16;
-        $decode_map[$encoder[17] as usize] = 17;
-        $decode_map[$encoder[18] as usize] = 18;
-        $decode_map[$encoder[19] as usize] = 19;
-        $decode_map[$encoder[20] as usize] = 20;
-        $decode_map[$encoder[21] as usize] = 21;
-        $decode_map[$encoder[22] as usize] = 22;
-        $decode_map[$encoder[23] as usize] = 23;
-        $decode_map[$encoder[24] as usize] = 24;
-        $decode_map[$encoder[25] as usize] = 25;
-        $decode_map[$encoder[26] as usize] = 26;
-        $decode_map[$encoder[27] as usize] = 27;
-        $decode_map[$encoder[28] as usize] = 28;
-        $decode_map[$encoder[29] as usize] = 29;
-        $decode_map[$encoder[30] as usize] = 30;
-        $decode_map[$encoder[31] as usize] = 31;
-    };
-}
-
-macro_rules! check_32 {
-    ($encoder: ident, $invalid: expr) => {{
-        if $encoder[0] == b'\n' || $encoder[0] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[1] == b'\n' || $encoder[1] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[2] == b'\n' || $encoder[2] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[3] == b'\n' || $encoder[3] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[4] == b'\n' || $encoder[4] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[5] == b'\n' || $encoder[5] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[6] == b'\n' || $encoder[6] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[7] == b'\n' || $encoder[7] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[8] == b'\n' || $encoder[8] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[9] == b'\n' || $encoder[9] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[10] == b'\n' || $encoder[10] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[11] == b'\n' || $encoder[11] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[12] == b'\n' || $encoder[12] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[13] == b'\n' || $encoder[13] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[14] == b'\n' || $encoder[14] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[15] == b'\n' || $encoder[15] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[16] == b'\n' || $encoder[16] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[17] == b'\n' || $encoder[17] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[18] == b'\n' || $encoder[18] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[19] == b'\n' || $encoder[19] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[20] == b'\n' || $encoder[20] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[21] == b'\n' || $encoder[21] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[22] == b'\n' || $encoder[22] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[23] == b'\n' || $encoder[23] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[24] == b'\n' || $encoder[24] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[25] == b'\n' || $encoder[25] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[26] == b'\n' || $encoder[26] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[27] == b'\n' || $encoder[27] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[28] == b'\n' || $encoder[28] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[29] == b'\n' || $encoder[29] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[30] == b'\n' || $encoder[30] == b'\r' {
-            $invalid;
-        }
-
-        if $encoder[31] == b'\n' || $encoder[31] == b'\r' {
-            $invalid;
-        }
-    }};
-    ($encoder: ident, $ch: ident, $invalid: expr) => {{
-        if $encoder[0] == b'\n' || $encoder[0] == b'\r' || $encoder[0] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[1] == b'\n' || $encoder[1] == b'\r' || $encoder[1] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[2] == b'\n' || $encoder[2] == b'\r' || $encoder[2] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[3] == b'\n' || $encoder[3] == b'\r' || $encoder[3] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[4] == b'\n' || $encoder[4] == b'\r' || $encoder[4] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[5] == b'\n' || $encoder[5] == b'\r' || $encoder[5] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[6] == b'\n' || $encoder[6] == b'\r' || $encoder[6] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[7] == b'\n' || $encoder[7] == b'\r' || $encoder[7] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[8] == b'\n' || $encoder[8] == b'\r' || $encoder[8] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[9] == b'\n' || $encoder[9] == b'\r' || $encoder[9] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[10] == b'\n' || $encoder[10] == b'\r' || $encoder[10] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[11] == b'\n' || $encoder[11] == b'\r' || $encoder[11] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[12] == b'\n' || $encoder[12] == b'\r' || $encoder[12] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[13] == b'\n' || $encoder[13] == b'\r' || $encoder[13] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[14] == b'\n' || $encoder[14] == b'\r' || $encoder[14] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[15] == b'\n' || $encoder[15] == b'\r' || $encoder[15] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[16] == b'\n' || $encoder[16] == b'\r' || $encoder[16] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[17] == b'\n' || $encoder[17] == b'\r' || $encoder[17] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[18] == b'\n' || $encoder[18] == b'\r' || $encoder[18] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[19] == b'\n' || $encoder[19] == b'\r' || $encoder[19] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[20] == b'\n' || $encoder[20] == b'\r' || $encoder[20] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[21] == b'\n' || $encoder[21] == b'\r' || $encoder[21] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[22] == b'\n' || $encoder[22] == b'\r' || $encoder[22] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[23] == b'\n' || $encoder[23] == b'\r' || $encoder[23] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[24] == b'\n' || $encoder[24] == b'\r' || $encoder[24] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[25] == b'\n' || $encoder[25] == b'\r' || $encoder[25] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[26] == b'\n' || $encoder[26] == b'\r' || $encoder[26] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[27] == b'\n' || $encoder[27] == b'\r' || $encoder[27] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[28] == b'\n' || $encoder[28] == b'\r' || $encoder[28] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[29] == b'\n' || $encoder[29] == b'\r' || $encoder[29] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[30] == b'\n' || $encoder[30] == b'\r' || $encoder[30] == $ch as u8 {
-            $invalid;
-        }
-
-        if $encoder[31] == b'\n' || $encoder[31] == b'\r' || $encoder[31] == $ch as u8 {
-            $invalid;
-        }
-    }};
-}
-
-const BASE: usize = 32;
+/// `BASE = 32`
+pub const BASE: usize = 32;
 const ENCODE_STD: [u8; BASE] = *b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 const ENCODE_HEX: [u8; BASE] = *b"0123456789ABCDEFGHIJKLMNOPQRSTUV";
 const DECODE_MAP_INITIALIZE: [u8; 256] = [255; 256];
@@ -372,10 +75,15 @@ impl Base32 {
     #[inline]
     pub const fn new(encoder: [u8; BASE]) -> Result<Self, Error> {
         const CH: char = '=';
-        check_32!(encoder, CH, return Err(Error::InvalidEncoder));
-
         let mut decode_map = DECODE_MAP_INITIALIZE;
-        assign_decode_map!(decode_map, encoder);
+        let mut idx = 0;
+        while idx < BASE {
+            if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == CH as u8 {
+                return Err(Error::InvalidEncoder);
+            }
+            decode_map[encoder[idx] as usize] = idx as u8;
+            idx += 1;
+        }
         Ok(Self {
             encode: encoder,
             decode_map,
@@ -395,15 +103,15 @@ impl Base32 {
     #[inline]
     pub const fn new_unchecked(encoder: [u8; BASE]) -> Self {
         const CH: char = '=';
-        check_32!(
-            encoder,
-            CH,
-            panic!("encoding alphabet contains newline character or padding character")
-        );
-
         let mut decode_map = DECODE_MAP_INITIALIZE;
-        // assign_64!(encoder, decode_map);
-        assign_decode_map!(decode_map, encoder);
+        let mut idx = 0;
+        while idx < BASE {
+            if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == CH as u8 {
+                panic!("encoding alphabet contains newline character or padding character");
+            }
+            decode_map[encoder[idx] as usize] = idx as u8;
+            idx += 1;
+        }
 
         Self {
             encode: encoder,
@@ -421,16 +129,30 @@ impl Base32 {
     pub const fn with_padding(self, padding: Option<char>) -> Result<Self, Error> {
         let Self {
             encode: encoder,
-            decode_map,
+            mut decode_map,
             pad_char: _,
         } = self;
 
         match padding {
             Some(ch) => {
-                check_32!(encoder, ch, return Err(Error::InvalidPadding));
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == ch as u8 {
+                        return Err(Error::InvalidPadding);
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
             }
             None => {
-                check_32!(encoder, return Err(Error::InvalidPadding));
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' {
+                        return Err(Error::InvalidPadding);
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
             }
         }
 
@@ -454,23 +176,30 @@ impl Base32 {
     pub const fn with_padding_unchecked(self, pad: Option<char>) -> Self {
         let Self {
             encode: encoder,
-            decode_map,
+            mut decode_map,
             pad_char: _,
         } = self;
 
         match pad {
             Some(ch) => {
-                check_32!(
-                    encoder,
-                    ch,
-                    panic!("encoding alphabet contains newline character or padding character")
-                );
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == ch as u8 {
+                        panic!("encoding alphabet contains newline character or padding character");
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
             }
             None => {
-                check_32!(
-                    encoder,
-                    panic!("encoding alphabet contains newline character or padding character")
-                );
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' {
+                        panic!("encoding alphabet contains newline character or padding character");
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
             }
         }
 
