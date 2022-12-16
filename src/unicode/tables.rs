@@ -1,5 +1,57 @@
 use super::{Range16, Range32, RangeTable};
 
+macro_rules! rt {
+    (r16: {$({$lo16:expr, $hi16:expr, $stride16: expr}),* $(,)?}, r32: {$({$lo32:expr, $hi32:expr, $stride32: expr}),* $(,)?}, latin_offset: $latin_offset:expr $(,)?) => {
+        &RangeTable {
+            r16: r16![$({$lo16, $hi16, $stride16}),*],
+            r32: r32![$({$lo32, $hi32, $stride32}),*],
+            latin_offset: $latin_offset,
+        }
+    };
+    (latin_offset: $latin_offset:expr $(,)?) => {
+        &RangeTable {
+            r16: r16![],
+            r32: r32![],
+            latin_offset: $latin_offset,
+        }
+    };
+    (r16: {$({$lo16:expr, $hi16:expr, $stride16: expr}),* $(,)?} $(,)?) => {
+        &RangeTable {
+            r16: r16![$({$lo16, $hi16, $stride16}),*],
+            r32: r32![],
+            latin_offset: 0,
+        }
+    };
+    (r32: {$({$lo32:expr, $hi32:expr, $stride32: expr}),* $(,)?} $(,)?) => {
+        &RangeTable {
+            r16: r16![],
+            r32: r32![$({$lo32, $hi32, $stride32}),*],
+            latin_offset: 0,
+        }
+    };
+    (r32: {$({$lo32:expr, $hi32:expr, $stride32: expr}),* $(,)?}, latin_offset: $latin_offset:expr $(,)?) => {
+        &RangeTable {
+            r16: r16![],
+            r32: r32![$({$lo32, $hi32, $stride32}),*],
+            latin_offset: $latin_offset,
+        }
+    };
+    (r16: {$({$lo16:expr, $hi16:expr, $stride16: expr}),* $(,)?}, latin_offset: $latin_offset:expr $(,)?) => {
+        &RangeTable {
+            r16: r16![$({$lo16, $hi16, $stride16}),*],
+            r32: r32![],
+            latin_offset: $latin_offset,
+        }
+    };
+    (r16: {$({$lo16:expr, $hi16:expr, $stride16: expr}),* $(,)?}, r32: {$({$lo32:expr, $hi32:expr, $stride32: expr}),* $(,)?} $(,)?) => {
+        &RangeTable {
+            r16: r16![$({$lo16, $hi16, $stride16}),*],
+            r32: r32![$({$lo32, $hi32, $stride32}),*],
+            latin_offset: 0,
+        }
+    };
+}
+
 macro_rules! r16 {
     ($({$lo:expr, $hi:expr, $stride: expr}),* $(,)?) => {
         &[$(
@@ -16,11 +68,82 @@ macro_rules! r32 {
     };
 }
 
-/// DIGIT range table
-pub const DIGIT: RangeTable = _ND;
+/// The set of Unicode control and special characters, category C.
+pub const OTHER: &RangeTable = _C;
 
-const _ND: RangeTable = RangeTable {
-    r16: r16! {
+/// The set of Unicode control and special characters, category C.
+pub const C: &RangeTable = _C;
+
+/// CC is the set of Unicode characters in category Cc (Other, control).
+pub const CC: &RangeTable = _CC;
+
+/// DIGIT range table
+pub const DIGIT: &RangeTable = _ND;
+
+const _C: &RangeTable = rt! {
+    r16: {
+        {0x0000, 0x001f, 1},
+        {0x007f, 0x009f, 1},
+        {0x00ad, 0x0600, 1363},
+        {0x0601, 0x0605, 1},
+        {0x061c, 0x06dd, 193},
+        {0x070f, 0x08e2, 467},
+        {0x180e, 0x200b, 2045},
+        {0x200c, 0x200f, 1},
+        {0x202a, 0x202e, 1},
+        {0x2060, 0x2064, 1},
+        {0x2066, 0x206f, 1},
+        {0xd800, 0xf8ff, 1},
+        {0xfeff, 0xfff9, 250},
+        {0xfffa, 0xfffb, 1},
+    },
+    r32: {
+        {0x110bd, 0x110cd, 16},
+        {0x13430, 0x13438, 1},
+        {0x1bca0, 0x1bca3, 1},
+        {0x1d173, 0x1d17a, 1},
+        {0xe0001, 0xe0020, 31},
+        {0xe0021, 0xe007f, 1},
+        {0xf0000, 0xffffd, 1},
+        {0x100000, 0x10fffd, 1},
+    },
+    latin_offset: 2,
+};
+
+const _CC: &RangeTable = rt! {
+    r16: {
+        {0x0000, 0x001f, 1},
+        {0x007f, 0x009f, 1},
+    },
+    latin_offset: 2,
+};
+
+const _CF: &RangeTable = rt! {
+    r16: {
+        {0x00ad, 0x0600, 1363},
+        {0x0601, 0x0605, 1},
+        {0x061c, 0x06dd, 193},
+        {0x070f, 0x08e2, 467},
+        {0x180e, 0x200b, 2045},
+        {0x200c, 0x200f, 1},
+        {0x202a, 0x202e, 1},
+        {0x2060, 0x2064, 1},
+        {0x2066, 0x206f, 1},
+        {0xfeff, 0xfff9, 250},
+        {0xfffa, 0xfffb, 1},
+    },
+    r32: {
+        {0x110bd, 0x110cd, 16},
+        {0x13430, 0x13438, 1},
+        {0x1bca0, 0x1bca3, 1},
+        {0x1d173, 0x1d17a, 1},
+        {0xe0001, 0xe0020, 31},
+        {0xe0021, 0xe007f, 1},
+    },
+};
+
+const _ND: &RangeTable = rt! {
+    r16: {
         {0x0030, 0x0039, 1},
         {0x0660, 0x0669, 1},
         {0x06f0, 0x06f9, 1},
@@ -59,7 +182,7 @@ const _ND: RangeTable = RangeTable {
         {0xabf0, 0xabf9, 1},
         {0xff10, 0xff19, 1},
     },
-    r32: r32! {
+    r32: {
         {0x104a0, 0x104a9, 1},
         {0x10d30, 0x10d39, 1},
         {0x11066, 0x1106f, 1},
