@@ -1,7 +1,7 @@
 use super::{Range16, Range32, RangeTable};
 
 macro_rules! r16 {
-    ($({$lo:expr, $hi:expr, $stride: expr}),+ $(,)?) => {
+    ($({$lo:expr, $hi:expr, $stride: expr}),* $(,)?) => {
         &[$(
             Range16::new($lo, $hi, $stride),
         )*]
@@ -9,7 +9,7 @@ macro_rules! r16 {
 }
 
 macro_rules! r32 {
-    ($({$lo:expr, $hi:expr, $stride: expr}),+ $(,)?) => {
+    ($({$lo:expr, $hi:expr, $stride: expr}),* $(,)?) => {
         &[$(
             Range32::new($lo, $hi, $stride),
         )*]
