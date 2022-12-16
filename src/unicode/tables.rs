@@ -3,11 +3,7 @@ use super::{Range16, Range32, RangeTable};
 macro_rules! r16 {
     ($({$lo:expr, $hi:expr, $stride: expr}),+ $(,)?) => {
         &[$(
-            Range16 {
-                lo: $lo,
-                hi: $hi,
-                stride: $stride,
-            },
+            Range16::new($lo, $hi, $stride),
         )*]
     };
 }
@@ -15,19 +11,15 @@ macro_rules! r16 {
 macro_rules! r32 {
     ($({$lo:expr, $hi:expr, $stride: expr}),+ $(,)?) => {
         &[$(
-            Range32 {
-                lo: $lo,
-                hi: $hi,
-                stride: $stride,
-            },
+            Range32::new($lo, $hi, $stride),
         )*]
     };
 }
 
 /// DIGIT range table
-pub const DIGIT: RangeTable = ND;
+pub const DIGIT: RangeTable = _ND;
 
-const ND: RangeTable = RangeTable {
+const _ND: RangeTable = RangeTable {
     r16: r16! {
         {0x0030, 0x0039, 1},
         {0x0660, 0x0669, 1},
