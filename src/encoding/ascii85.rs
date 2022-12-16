@@ -1,27 +1,22 @@
-/// CorruptInputError contains the position of illegal ascii85 data at input byte
+/// DecodeError contains the position of illegal ascii85 data at input byte
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct CorruptInputError(usize);
+pub struct DecodeError(usize);
 
-impl CorruptInputError {
-    /// Returns position of illegal byte of the source slice.
-    pub const fn position(&self) -> usize {
-        self.0
-    }
-
+impl DecodeError {
     /// Consumes self and returns position of illegal byte of the source slice.
     pub const fn into_inner(&self) -> usize {
         self.0
     }
 }
 
-impl core::fmt::Display for CorruptInputError {
+impl core::fmt::Display for DecodeError {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "Illegal ascii85 data at input byte {}", self.0)
     }
 }
 
 #[cfg(feature = "std")]
-impl std::error::Error for CorruptInputError {}
+impl std::error::Error for DecodeError {}
 
 /// Encodes src into at most MaxEncodedLen(len(src))
 /// bytes of dst, returning the actual number of bytes written.
@@ -181,7 +176,7 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "io"))]
 impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
     fn close(&mut self) -> std::io::Result<()> {
         use std::io::Write;
@@ -191,19 +186,19 @@ impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
 
 /// Decodes src into dst, returning both the number
 /// of bytes written to dst and the number consumed from src.
-/// If src contains invalid ascii85 data, Decode will return a [`CorruptInputError`].
+/// If src contains invalid ascii85 data, Decode will return a [`DecodeError`].
 /// Decode ignores space and control characters in src.
 /// Often, ascii85-encoded data is wrapped in <~ and ~> symbols.
 /// Decode expects these to have been stripped by the caller.
 #[inline]
-pub fn decode(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), CorruptInputError> {
+pub fn decode(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), DecodeError> {
     decode_in(src, dst, false)
 }
 
 /// Decodes src into dst, returning both the number
 /// of bytes written to dst and the number consumed from src.
 /// If src contains invalid ascii85 data, Decode will return the
-/// a [`CorruptInputError`].
+/// a [`DecodeError`].
 /// Decode ignores space and control characters in src.
 /// Often, ascii85-encoded data is wrapped in <~ and ~> symbols.
 /// Decode expects these to have been stripped by the caller.
@@ -212,12 +207,12 @@ pub fn decode(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), CorruptInput
 /// end of the input stream and processes it completely rather
 /// than wait for the completion of another 32-bit block.
 #[inline]
-pub fn decode_with_flush(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), CorruptInputError> {
+pub fn decode_with_flush(src: &[u8], dst: &mut [u8]) -> Result<(usize, usize), DecodeError> {
     decode_in(src, dst, true)
 }
 
 #[inline]
-fn decode_in(src: &[u8], dst: &mut [u8], flush: bool) -> Result<(usize, usize), CorruptInputError> {
+fn decode_in(src: &[u8], dst: &mut [u8], flush: bool) -> Result<(usize, usize), DecodeError> {
     let (mut ndst, mut nsrc) = (0, 0);
     let mut v = 0u32;
     let mut nb = 0;
@@ -241,7 +236,7 @@ fn decode_in(src: &[u8], dst: &mut [u8], flush: bool) -> Result<(usize, usize), 
                 nb += 1;
             }
             _ => {
-                return Err(CorruptInputError(i));
+                return Err(DecodeError(i));
             }
         }
 
@@ -265,7 +260,7 @@ fn decode_in(src: &[u8], dst: &mut [u8], flush: bool) -> Result<(usize, usize), 
             // the extra byte provides enough bits to cover
             // the inefficiency of the encoding for the block.
             if nb == 1 {
-                return Err(CorruptInputError(src.len()));
+                return Err(DecodeError(src.len()));
             }
 
             let mut i = nb;

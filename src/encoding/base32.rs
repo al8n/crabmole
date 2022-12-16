@@ -1,41 +1,5 @@
-macro_rules! assign_32 {
-    ($src: ident, $dst: ident) => {
-        $dst[0] = $src[0];
-        $dst[1] = $src[1];
-        $dst[2] = $src[2];
-        $dst[3] = $src[3];
-        $dst[4] = $src[4];
-        $dst[5] = $src[5];
-        $dst[6] = $src[6];
-        $dst[7] = $src[7];
-        $dst[8] = $src[8];
-        $dst[9] = $src[9];
-        $dst[10] = $src[10];
-        $dst[11] = $src[11];
-        $dst[12] = $src[12];
-        $dst[13] = $src[13];
-        $dst[14] = $src[14];
-        $dst[15] = $src[15];
-        $dst[16] = $src[16];
-        $dst[17] = $src[17];
-        $dst[18] = $src[18];
-        $dst[19] = $src[19];
-        $dst[20] = $src[20];
-        $dst[21] = $src[21];
-        $dst[22] = $src[22];
-        $dst[23] = $src[23];
-        $dst[24] = $src[24];
-        $dst[25] = $src[25];
-        $dst[26] = $src[26];
-        $dst[27] = $src[27];
-        $dst[28] = $src[28];
-        $dst[29] = $src[29];
-        $dst[30] = $src[30];
-        $dst[31] = $src[31];
-    };
-}
-
-const BASE: usize = 32;
+/// `BASE = 32`
+pub const BASE: usize = 32;
 const ENCODE_STD: [u8; BASE] = *b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 const ENCODE_HEX: [u8; BASE] = *b"0123456789ABCDEFGHIJKLMNOPQRSTUV";
 const DECODE_MAP_INITIALIZE: [u8; 256] = [255; 256];
@@ -48,9 +12,6 @@ pub enum Error {
 
     /// Invalid padding character
     InvalidPadding,
-
-    /// Padding character is contained in the alphabet
-    PaddingContainedInAlphabet(char),
 }
 
 impl core::fmt::Display for Error {
@@ -58,9 +19,6 @@ impl core::fmt::Display for Error {
         match self {
             Error::InvalidEncoder => write!(f, "Base32 alphabet must be 32 bytes long"),
             Error::InvalidPadding => write!(f, "Invalid padding character"),
-            Error::PaddingContainedInAlphabet(ch) => {
-                write!(f, "Padding character '{ch}' is contained in the alphabet")
-            }
         }
     }
 }
@@ -76,11 +34,20 @@ pub const STD_PADDING: Option<char> = Some('=');
 
 /// The standard base32 encoding, as defined in
 /// RFC 4648.
-pub const STD_ENCODING: Base32 = Base32::new(ENCODE_STD);
+pub const STD_ENCODING: Base32 = Base32::new_unchecked(ENCODE_STD);
+
+/// The standard raw, unpadded base32 encoding.
+/// This is the same as [`STD_ENCODING`] but omits padding characters.
+pub const RAW_STD_ENCODING: Base32 = Base32::new_unchecked(ENCODE_STD).with_padding_unchecked(None);
 
 /// The `Extended Hex Alphabet` defined in RFC 4648.
-// It is typically used in DNS.
-pub const HEX_ENCODING: Base32 = Base32::new(ENCODE_HEX);
+/// It is typically used in DNS.
+pub const HEX_ENCODING: Base32 = Base32::new_unchecked(ENCODE_HEX);
+
+/// The `Extended Hex Alphabet` defined in RFC 4648.
+/// It is typically used in DNS.
+/// This is the same as [`HEX_ENCODING`] but omits padding characters.
+pub const RAW_HEX_ENCODING: Base32 = Base32::new_unchecked(ENCODE_HEX).with_padding_unchecked(None);
 
 /// An Base32 is a radix 32 encoding/decoding scheme, defined by a
 /// 32-character alphabet. The most common is the "base32" encoding
@@ -101,43 +68,50 @@ impl Default for Base32 {
 
 impl Base32 {
     /// Returns a new Base32 defined by the given alphabet,
-    /// which must be a 32-byte slice.
+    /// which must be a 32-byte array that does not contain the padding character
+    /// or CR / LF ('\r', '\n').
+    /// The resulting [`Base32`] uses the default padding character ('='),
+    /// which may be changed or disabled via [`Base32::with_padding`].
     #[inline]
-    pub const fn new(encoder: [u8; BASE]) -> Self {
+    pub const fn new(encoder: [u8; BASE]) -> Result<Self, Error> {
+        const CH: char = '=';
         let mut decode_map = DECODE_MAP_INITIALIZE;
-        assign_32!(encoder, decode_map);
-        decode_map[encoder[0] as usize] = 0;
-        decode_map[encoder[1] as usize] = 1;
-        decode_map[encoder[2] as usize] = 2;
-        decode_map[encoder[3] as usize] = 3;
-        decode_map[encoder[4] as usize] = 4;
-        decode_map[encoder[5] as usize] = 5;
-        decode_map[encoder[6] as usize] = 6;
-        decode_map[encoder[7] as usize] = 7;
-        decode_map[encoder[8] as usize] = 8;
-        decode_map[encoder[9] as usize] = 9;
-        decode_map[encoder[10] as usize] = 10;
-        decode_map[encoder[11] as usize] = 11;
-        decode_map[encoder[12] as usize] = 12;
-        decode_map[encoder[13] as usize] = 13;
-        decode_map[encoder[14] as usize] = 14;
-        decode_map[encoder[15] as usize] = 15;
-        decode_map[encoder[16] as usize] = 16;
-        decode_map[encoder[17] as usize] = 17;
-        decode_map[encoder[18] as usize] = 18;
-        decode_map[encoder[19] as usize] = 19;
-        decode_map[encoder[20] as usize] = 20;
-        decode_map[encoder[21] as usize] = 21;
-        decode_map[encoder[22] as usize] = 22;
-        decode_map[encoder[23] as usize] = 23;
-        decode_map[encoder[24] as usize] = 24;
-        decode_map[encoder[25] as usize] = 25;
-        decode_map[encoder[26] as usize] = 26;
-        decode_map[encoder[27] as usize] = 27;
-        decode_map[encoder[28] as usize] = 28;
-        decode_map[encoder[29] as usize] = 29;
-        decode_map[encoder[30] as usize] = 30;
-        decode_map[encoder[31] as usize] = 31;
+        let mut idx = 0;
+        while idx < BASE {
+            if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == CH as u8 {
+                return Err(Error::InvalidEncoder);
+            }
+            decode_map[encoder[idx] as usize] = idx as u8;
+            idx += 1;
+        }
+        Ok(Self {
+            encode: encoder,
+            decode_map,
+            pad_char: Some('='),
+        })
+    }
+
+    /// Returns a new padded Base32 defined by the given alphabet,
+    /// which must be a 64-byte array that does not contain the padding character
+    /// or CR / LF ('\r', '\n').
+    /// The resulting Base32 uses the default padding character ('='),
+    /// which may be changed or disabled via [`Base32::with_padding_unchecked`].
+    ///
+    /// # Panic
+    /// 64-byte array that contains the padding character ('=')
+    /// or CR / LF ('\r', '\n').
+    #[inline]
+    pub const fn new_unchecked(encoder: [u8; BASE]) -> Self {
+        const CH: char = '=';
+        let mut decode_map = DECODE_MAP_INITIALIZE;
+        let mut idx = 0;
+        while idx < BASE {
+            if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == CH as u8 {
+                panic!("encoding alphabet contains newline character or padding character");
+            }
+            decode_map[encoder[idx] as usize] = idx as u8;
+            idx += 1;
+        }
 
         Self {
             encode: encoder,
@@ -152,9 +126,88 @@ impl Base32 {
     /// be contained in the encoding's alphabet and must be a rune equal or
     /// below '\xff'.
     #[inline]
-    pub const fn with_padding(mut self, padding: Option<char>) -> Self {
-        self.pad_char = padding;
-        self
+    pub const fn with_padding(self, padding: Option<char>) -> Result<Self, Error> {
+        let Self {
+            encode: encoder,
+            mut decode_map,
+            pad_char: _,
+        } = self;
+
+        match padding {
+            Some(ch) => {
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == ch as u8 {
+                        return Err(Error::InvalidPadding);
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
+            }
+            None => {
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' {
+                        return Err(Error::InvalidPadding);
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
+            }
+        }
+
+        Ok(Self {
+            encode: encoder,
+            decode_map,
+            pad_char: padding,
+        })
+    }
+
+    /// Creates a new encoding identical to enc except
+    /// with a specified padding character, or [`NO_PADDING`] to disable padding.
+    /// The padding character must not be '\r' or '\n', must not
+    /// be contained in the encoding's alphabet and must be a rune equal or
+    /// below '\xff'.
+    ///
+    /// # Panic
+    /// 32-byte array that contains the padding character
+    /// or CR / LF ('\r', '\n').
+    #[inline]
+    pub const fn with_padding_unchecked(self, pad: Option<char>) -> Self {
+        let Self {
+            encode: encoder,
+            mut decode_map,
+            pad_char: _,
+        } = self;
+
+        match pad {
+            Some(ch) => {
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' || encoder[idx] == ch as u8 {
+                        panic!("encoding alphabet contains newline character or padding character");
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
+            }
+            None => {
+                let mut idx = 0;
+                while idx < BASE {
+                    if encoder[idx] == b'\n' || encoder[idx] == b'\r' {
+                        panic!("encoding alphabet contains newline character or padding character");
+                    }
+                    decode_map[encoder[idx] as usize] = idx as u8;
+                    idx += 1;
+                }
+            }
+        }
+
+        Self {
+            encode: encoder,
+            decode_map,
+            pad_char: pad,
+        }
     }
 
     /// Returns an encoder
@@ -164,23 +217,11 @@ impl Base32 {
         Encoder::new(*self, writer)
     }
 
-    /// Returns a decoder
-    ///
-    /// See [`Decoder::decoder_without_newlines`] if you want to decode source without newlines.
+    /// Returns a base32 decoder
     #[cfg(feature = "std")]
     #[inline]
     pub const fn decoder<R: std::io::Read>(&self, reader: R) -> Decoder<R> {
         Decoder::new(*self, reader)
-    }
-
-    /// Returns a decoder which ignore the newline characters
-    #[cfg(feature = "std")]
-    #[inline]
-    pub const fn decoder_without_newlines<R: std::io::Read>(
-        &self,
-        reader: R,
-    ) -> Decoder<NewLineFilteringReader<R>> {
-        Decoder::new(*self, NewLineFilteringReader::new(reader))
     }
 
     /// Returns the length in bytes of the base32 encoding
@@ -313,32 +354,10 @@ impl Base32 {
     /// DecodedLen(len(src)) bytes to dst and returns the number of bytes
     /// written. If src contains invalid base32 data, it will return the
     /// number of bytes successfully written and DecodeError.
-    ///
-    /// See `decode_without_newline` if you want to ignore the newline characters
-    #[inline]
-    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
-        self.decode_in(src, dst).map(|(n, _)| n)
-    }
-
-    /// Returns the bytes represented by the base32 slice.
-    #[inline]
-    #[cfg(feature = "alloc")]
-    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, DecodeError> {
-        let mut dst = src.to_vec();
-        self.decode_in(src, &mut dst).map(|(n, _)| {
-            dst.truncate(n);
-            dst
-        })
-    }
-
-    /// Decodes src using the encoding enc. It writes at most
-    /// DecodedLen(len(src)) bytes to dst and returns the number of bytes
-    /// written. If src contains invalid base32 data, it will return the
-    /// number of bytes successfully written and DecodeError.
     /// New line characters (`\r` and `\n`) are ignored.
     #[inline]
     #[cfg(feature = "alloc")]
-    pub fn decode_without_newline(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
+    pub fn decode(&self, src: &[u8], dst: &mut [u8]) -> Result<usize, DecodeError> {
         let mut buf = src.to_vec();
         let l = strip_new_lines_inplace(&mut buf);
         self.decode_in(&buf[..l], dst).map(|(n, _)| n)
@@ -347,10 +366,7 @@ impl Base32 {
     /// Returns the bytes represented by the base32 slice (ignore newline characters (`\r` and `\n`)).
     #[inline]
     #[cfg(feature = "alloc")]
-    pub fn decode_without_newline_to_vec(
-        &self,
-        src: &[u8],
-    ) -> Result<alloc::vec::Vec<u8>, DecodeError> {
+    pub fn decode_to_vec(&self, src: &[u8]) -> Result<alloc::vec::Vec<u8>, DecodeError> {
         let mut buf = src.to_vec();
         let l = strip_new_lines_inplace(&mut buf);
         self.decode_inplace(&mut buf, l).map(|(n, _)| {
@@ -643,7 +659,6 @@ impl core::fmt::Display for DecodeError {
 impl std::error::Error for DecodeError {}
 
 /// Base32 encoder
-#[cfg(feature = "std")]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Encoder<W> {
     enc: Base32,
@@ -653,7 +668,6 @@ pub struct Encoder<W> {
     out: [u8; 1024],
 }
 
-#[cfg(feature = "std")]
 impl<W> Encoder<W> {
     /// Returns a new base32 stream encoder. Data written to
     /// the returned writer will be encoded using enc and then written to w.
@@ -728,7 +742,7 @@ impl<W: std::io::Write> std::io::Write for Encoder<W> {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", feature = "io"))]
 impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
     fn close(&mut self) -> std::io::Result<()> {
         use std::io::Write;
@@ -739,15 +753,14 @@ impl<W: std::io::Write> crate::io::Closer for Encoder<W> {
 /// A reader wrapper can filter newline characters when decoding base32 stream.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
-pub struct NewLineFilteringReader<R> {
+struct NewLineFilteringReader<R> {
     wrapped: R,
 }
 
-#[cfg(feature = "std")]
-impl<R: std::io::Read> NewLineFilteringReader<R> {
+impl<R> NewLineFilteringReader<R> {
     /// Creates a `NewlineFilteringReader` that wraps the given reader.
     #[inline]
-    pub const fn new(reader: R) -> NewLineFilteringReader<R> {
+    const fn new(reader: R) -> NewLineFilteringReader<R> {
         NewLineFilteringReader { wrapped: reader }
     }
 }
@@ -820,7 +833,7 @@ fn read_encoded_data(
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Decoder<R> {
     enc: Base32,
-    reader: R,
+    reader: NewLineFilteringReader<R>,
     end: bool,
     buf: [u8; 1024],
     nbuf: usize,
@@ -835,21 +848,7 @@ impl<R> Decoder<R> {
     pub const fn new(enc: Base32, reader: R) -> Self {
         Self {
             enc,
-            reader,
-            end: false,
-            buf: [0; 1024],
-            nbuf: 0,
-            out: std::vec::Vec::new(),
-            out_buf: [0; 1024 / 8 * 5],
-        }
-    }
-
-    /// Constructs a new base32 stream decoder.
-    #[inline]
-    pub const fn with_newline_filter(enc: Base32, reader: R) -> Decoder<NewLineFilteringReader<R>> {
-        Decoder {
-            enc,
-            reader: NewLineFilteringReader { wrapped: reader },
+            reader: NewLineFilteringReader::new(reader),
             end: false,
             buf: [0; 1024],
             nbuf: 0,
@@ -1075,7 +1074,8 @@ mod test {
     fn test_decoder() {
         for p in pairs() {
             let mut reader = p.encoded.as_bytes().to_vec();
-            let mut decoder = Base32::new(ENCODE_STD).decoder(std::io::Cursor::new(&mut reader));
+            let mut decoder =
+                Base32::new_unchecked(ENCODE_STD).decoder(std::io::Cursor::new(&mut reader));
             let mut dbuf = vec![0; STD_ENCODING.decode_len(p.encoded.len())];
             match decoder.read(&mut dbuf) {
                 Ok(n) => {
@@ -1253,7 +1253,7 @@ mod test {
     fn test_new_line_characters() {
         let test_string_encode = |expected: &str, examples: &[&str]| {
             for e in examples {
-                match STD_ENCODING.decode_without_newline_to_vec(e.as_bytes()) {
+                match STD_ENCODING.decode_to_vec(e.as_bytes()) {
                     Ok(buf) => {
                         assert_eq!(expected.as_bytes(), &buf);
                     }
@@ -1299,12 +1299,12 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
 ====";
 
         let encoded_start = ENCODED.replace('\n', "");
-        let mut dec = STD_ENCODING.decoder_without_newlines(std::io::Cursor::new(&ENCODED));
+        let mut dec = STD_ENCODING.decoder(std::io::Cursor::new(&ENCODED));
 
         let mut res1 = String::new();
         dec.read_to_string(&mut res1).unwrap();
 
-        let mut dec = STD_ENCODING.decoder_without_newlines(std::io::Cursor::new(&encoded_start));
+        let mut dec = STD_ENCODING.decoder(std::io::Cursor::new(&encoded_start));
         let mut res2 = String::new();
         dec.read_to_string(&mut res2).unwrap();
         assert_eq!(res1, res2);
@@ -1315,7 +1315,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
         for case in pairs() {
             let default_padding = STD_ENCODING.encode_to_vec(case.decoded.as_bytes());
             let custom_padding = STD_ENCODING
-                .with_padding(Some('@'))
+                .with_padding_unchecked(Some('@'))
                 .encode_to_vec(case.decoded.as_bytes());
             let expected = String::from_utf8_lossy(&default_padding).replace('=', "@");
 
@@ -1329,7 +1329,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
         for case in pairs() {
             let default_padding = STD_ENCODING.encode_to_vec(case.decoded.as_bytes());
             let custom_padding = STD_ENCODING
-                .with_padding(None)
+                .with_padding_unchecked(None)
                 .encode_to_vec(case.decoded.as_bytes());
             let expected = String::from_utf8_lossy(&default_padding)
                 .trim_end_matches('=')
@@ -1344,8 +1344,8 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
     fn test_decode_with_padding() {
         let encodings = [
             STD_ENCODING,
-            STD_ENCODING.with_padding(Some('-')),
-            STD_ENCODING.with_padding(None),
+            STD_ENCODING.with_padding_unchecked(Some('-')),
+            STD_ENCODING.with_padding_unchecked(None),
         ];
 
         for enc in encodings {
@@ -1364,12 +1364,12 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
         let encoded = STD_ENCODING.encode_to_vec(b"foobar");
 
         let _ = STD_ENCODING
-            .with_padding(Some('-'))
+            .with_padding_unchecked(Some('-'))
             .decode_to_vec(&encoded)
             .unwrap_err();
 
         let _ = STD_ENCODING
-            .with_padding(None)
+            .with_padding_unchecked(None)
             .decode_to_vec(&encoded)
             .unwrap_err();
     }
@@ -1427,7 +1427,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
                 ],
             },
             Test {
-                enc: STD_ENCODING.with_padding(None),
+                enc: STD_ENCODING.with_padding_unchecked(None),
                 cases: &[
                     TestCase {
                         in_: 0,
@@ -1489,7 +1489,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
 
     #[test]
     fn test_without_padding_close() {
-        let encodings = [STD_ENCODING, STD_ENCODING.with_padding(None)];
+        let encodings = [STD_ENCODING, STD_ENCODING.with_padding_unchecked(None)];
 
         for enc in encodings {
             for case in pairs() {
@@ -1509,7 +1509,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
 
     #[test]
     fn test_decode_read_all() {
-        let encodings = [STD_ENCODING, STD_ENCODING.with_padding(None)];
+        let encodings = [STD_ENCODING, STD_ENCODING.with_padding_unchecked(None)];
 
         for pair in pairs() {
             for enc in encodings {
@@ -1530,7 +1530,7 @@ LNEBUWIIDFON2CA3DBMJXXE5LNFY==
 
     #[test]
     fn test_decode_small_buffer() {
-        let encodings = [STD_ENCODING, STD_ENCODING.with_padding(None)];
+        let encodings = [STD_ENCODING, STD_ENCODING.with_padding_unchecked(None)];
 
         for buffer_size in 1..200 {
             for pair in pairs() {
