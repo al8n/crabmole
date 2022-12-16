@@ -68,17 +68,46 @@ macro_rules! r32 {
     };
 }
 
-/// The set of Unicode control and special characters, category C.
-pub const OTHER: &RangeTable = _C;
+macro_rules! rt_aliases {
+    (
+        $(
+            $name:ident {
+                $(
+                    $(#[$inner:ident $($args:tt)*])*
+                    $alias:ident;
+                )*
+            }
+        ),+ $(,)?
+    ) => {
+        $(
+            impl RangeTable {
+                $(
+                    $(#[$inner $($args)*])*
+                    pub const $alias: &'static Self = $name;
+                )*
+            }
+        )*
+    };
+}
 
-/// The set of Unicode control and special characters, category C.
-pub const C: &RangeTable = _C;
-
-/// CC is the set of Unicode characters in category Cc (Other, control).
-pub const CC: &RangeTable = _CC;
-
-/// DIGIT range table
-pub const DIGIT: &RangeTable = _ND;
+rt_aliases! {
+    _C {
+       /// The set of Unicode control and special characters, category C.
+       C;
+       /// The set of Unicode control and special characters, category C.
+       OTHER;
+    },
+    _CC {
+        /// CC is the set of Unicode characters in category Cc (Other, control).
+        CC;
+    },
+    _ND {
+        /// The set of Unicode characters in category Nd (Number, decimal digit).
+        ND;
+        /// The set of Unicode characters with the "decimal digit" property.
+        DIGIT;
+    }
+}
 
 const _C: &RangeTable = rt! {
     r16: {

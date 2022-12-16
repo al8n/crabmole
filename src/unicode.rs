@@ -130,7 +130,7 @@ pub const fn is_digit(ch: char) -> bool {
     if c <= MAX_LATIN1 as u32 {
         ('0' as u32) <= c && c <= '9' as u32
     } else {
-        is_excluding_latin(&DIGIT, ch)
+        is_excluding_latin(RangeTable::DIGIT, ch)
     }
 }
 
