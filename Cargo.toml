@@ -10,8 +10,12 @@ repository = "https://github.com/al8n/crabmole"
 keywords = ["base32", "base64", "pipe", "sort"]
 categories = ["development-tools", "no-std", "encoding"]
 
+[workspace]
+members = [".", "derive"]
+
 [features]
-default = ["std"]
+default = ["std", "derive"]
+derive = []
 full = ["encoding", "io", "async-io", "std", "sort"]
 std = ["alloc"]
 alloc = []
@@ -19,10 +23,10 @@ alloc = []
 sort = []
 
 # encoding related features
-encoding = ["ascii85", "base32", "base58", "base64", "binary", "hex"]
+encoding = ["ascii85", "base32", "base64", "binary", "hex"]
 ascii85 = []
 base32 = []
-base58 = []
+# base58 = []
 base64 = []
 binary = []
 hex = []
@@ -38,6 +42,7 @@ async-pipe = ["std", "async-channel", "futures-util/io", "async-lock"]
 async-channel = { version = "1.7", optional = true }
 async-lock = { version = "2.6", optional = true }
 crossbeam-channel = { version = "0.5", optional = true }
+crabmole-derive = { version = "0.1", path = "./derive", optional = true }
 futures-util = { version = "0.3", optional = true }
 parking_lot = { version = "0.12", optional = true }
 pollster = { version = "0.2", optional = true }
