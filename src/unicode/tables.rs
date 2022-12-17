@@ -3852,6 +3852,625 @@ rt! {
 
 // TODO: Srcipts
 
+rt_aliases! {
+    _ADLAM {
+        /// The set of Unicode characters in script Adlam.
+        _ADLAM;
+    },
+    _AHOM {
+        /// The set of Unicode characters in script Ahom.
+        _AHOM;
+    },
+    _ANATOLIAN_HIEROGLYPHS {
+        /// The set of Unicode characters in script Anatolian Hieroglyphs.
+        _ANATOLIAN_HIEROGLYPHS;
+    },
+    _ARABIC {
+        /// The set of Unicode characters in script Arabic.
+        _ARABIC;
+    },
+    _ARMENIAN {
+        /// The set of Unicode characters in script Armenian.
+        _ARMENIAN;
+    },
+    _AVESTAN {
+        /// The set of Unicode characters in script Avestan.
+        _AVESTAN;
+    },
+    _BALINESE {
+        /// The set of Unicode characters in script Balinese.
+        _BALINESE;
+    },
+    _BAMUM {
+        /// The set of Unicode characters in script Bamum.
+        _BAMUM;
+    },
+    _BASSA_VAH {
+        /// The set of Unicode characters in script Bassa Vah.
+        _BASSA_VAH;
+    },
+    _BATAK {
+        /// The set of Unicode characters in script Batak.
+        _BATAK;
+    },
+    _BENGALI {
+        /// The set of Unicode characters in script Bengali.
+        _BENGALI;
+    },
+    _BHAIKSUKI {
+        /// The set of Unicode characters in script Bhaiksiki.
+        BHAIKSUKI;
+    },
+    _BOPOMOFO {
+        /// The set of Unicode characters in script Bopomofo.
+        _BOPOMOFO;
+    },
+    _BRAHMI {
+        /// The set of Unicode characters in script Brahmi.
+        _BRAHMI;
+    },
+    _BRAILLE {
+        /// The set of Unicode characters in script Braille.
+        _BRAILLE;
+    },
+    _BUGINESE {
+        /// The set of Unicode characters in script Buginese.
+        _BUGINESE;
+    },
+    _BUHID {
+        /// The set of Unicode characters in script Buhid.
+        _BUHID;
+    },
+    _CANADIAN_ABORIGINAL {
+        /// The set of Unicode characters in script Canadian Aboriginal.
+        _CANADIAN_ABORIGINAL;
+    },
+    _CARIAN {
+        /// The set of Unicode characters in script Carian.
+        _CARIAN;
+    },
+    _CAUCASIAN_ALBANIAN {
+        /// The set of Unicode characters in script Caucasian Albanian.
+        _CAUCASIAN_ALBANIAN;
+    },
+    _CHAKMA {
+        /// The set of Unicode characters in script Chakma.
+        _CHAKMA;
+    },
+    _CHAM {
+        /// The set of Unicode characters in script Cham.
+        _CHAM;
+    },
+    _CHEROKEE {
+        /// The set of Unicode characters in script Cherokee.
+        _CHEROKEE;
+    },
+    _CHORASMIAN {
+        /// The set of Unicode characters in script Chorasmian.
+        CHORASMIAN;
+    },
+    _COMMON {
+        /// The set of Unicode characters in script Common.
+        _COMMON;
+    },
+    _COPTIC {
+        /// The set of Unicode characters in script Coptic.
+        _COPTIC;
+    },
+    _CUNEIFORM {
+        /// The set of Unicode characters in script Cuneiform.
+        _CUNEIFORM;
+    },
+    _CYPRIOT {
+        /// The set of Unicode characters in script Cypriot.
+        _CYPRIOT;
+    },
+    _CYRILLIC {
+        /// The set of Unicode characters in script Cyrillic.
+        _CYRILLIC;
+    },
+    _DESERET {
+        /// The set of Unicode characters in script Deseret.
+        _DESERET;
+    },
+    _DEVANAGARI {
+        /// The set of Unicode characters in script Devanagari.
+        _DEVANAGARI;
+    },
+    _DIVES_AKURU {
+        /// The set of Unicode characters in script Dives Akuru.
+        DIVES_AKURU;
+    },
+    _DOGRA {
+        /// The set of Unicode characters in script Dogra.
+        _DOGRA;
+    },
+    _DUPLOYAN {
+        /// The set of Unicode characters in script Duployan.
+        _DUPLOYAN;
+    },
+    _EGYPTIAN_HIEROGLYPHS {
+        /// The set of Unicode characters in script Egyptian Hieroglyphs.
+        EGYPTIAN_HIEROGLYPHS;
+    },
+    _ELBASAN {
+        /// The set of Unicode characters in script Elbasan.
+        ELBASAN;
+    },
+    _ELYMAIC {
+        /// The set of Unicode characters in script Elymaic.
+        ELYMAIC;
+    },
+    _ETHIOPIC {
+        /// The set of Unicode characters in script Ethiopic.
+        ETHIOPIC;
+    },
+    _GEORGIAN {
+        /// The set of Unicode characters in script Georgian.
+        GEORGIAN;
+    },
+    _GLAGOLITIC {
+        /// The set of Unicode characters in script Glagolitic.
+        GLAGOLITIC;
+    },
+    _GOTHIC {
+        /// The set of Unicode characters in script Gothic.
+        GOTHIC;
+    },
+    _GRANTHA {
+        /// The set of Unicode characters in script Grantha.
+        GRANTHA;
+    },
+    _GREEK {
+        /// The set of Unicode characters in script Greek.
+        GREEK;
+    },
+    _GUJARATI {
+        /// The set of Unicode characters in script Gujarati.
+        GUJARATI;
+    },
+    _GUNJALA_GONDI {
+        /// The set of Unicode characters in script Gunjala Gondi.
+        GUNJALA_GONDI;
+    },
+    _GURMUKHI {
+        /// The set of Unicode characters in script Gurmukhi.
+        GURMUKHI;
+    },
+    _HAN {
+        /// The set of Unicode characters in script Han.
+        HAN;
+    },
+    _HANGUL {
+        /// The set of Unicode characters in script Hangul.
+        HANGUL;
+    },
+    _HANIFI_ROHINGYA {
+        /// The set of Unicode characters in script Hanifi Rohingya.
+        HANIFI_ROHINGYA;
+    },
+    _HANUNOO {
+        /// The set of Unicode characters in script Hanunoo.
+        HANUNOO;
+    },
+    _HATRAN {
+        /// The set of Unicode characters in script Hatran.
+        HATRAN;
+    },
+    _HEBREW {
+        /// The set of Unicode characters in script Hebrew.
+        HEBREW;
+    },
+    _HIRAGANA {
+        /// The set of Unicode characters in script Hiragana.
+        HIRAGANA;
+    },
+    _IMPERIAL_ARAMAIC {
+        /// The set of Unicode characters in script Imperial Aramaic.
+        IMPERIAL_ARAMAIC;
+    },
+    _INHERITED {
+        /// The set of Unicode characters in script Inherited.
+        INHERITED;
+    },
+    _INSCRIPTIONAL_PAHLAVI {
+        /// The set of Unicode characters in script Inscriptional Pahlavi.
+        INSCRIPTIONAL_PAHLAVI;
+    },
+    _INSCRIPTIONAL_PARTHIAN {
+        /// The set of Unicode characters in script Inscriptional Parthian.
+        INSCRIPTIONAL_PARTHIAN;
+    },
+    _JAVANESE {
+        /// The set of Unicode characters in script Javanese.
+        JAVANESE;
+    },
+    _KAITHI {
+        /// The set of Unicode characters in script Kaithi.
+        KAITHI;
+    },
+    _KANNADA {
+        /// The set of Unicode characters in script Kannada.
+        KANNADA;
+    },
+    _KATAKANA {
+        /// The set of Unicode characters in script Katakana.
+        KATAKANA;
+    },
+    _KAYAH_LI {
+        /// The set of Unicode characters in script Kayah Li.
+        KAYAH_LI;
+    },
+    _KHAROSHTHI {
+        /// The set of Unicode characters in script Kharoshthi.
+        KHAROSHTHI;
+    },
+    _KHITAN_SMALL_SCRIPT {
+        /// The set of Unicode characters in script Khitan Small Script.
+        KHITAN_SMALL_SCRIPT;
+    },
+    _KHMER {
+        /// The set of Unicode characters in script Khmer.
+        KHMER;
+    },
+    _KHOJKI {
+        /// The set of Unicode characters in script Khojki.
+        KHOJKI;
+    },
+    _KHUDAWADI {
+        /// The set of Unicode characters in script Khudawadi.
+        KHUDAWADI;
+    },
+    _LAO {
+        /// The set of Unicode characters in script Lao.
+        LAO;
+    },
+    _LATIN {
+        /// The set of Unicode characters in script Latin.
+        LATIN;
+    },
+    _LEPCHA {
+        /// The set of Unicode characters in script Lepcha.
+        LEPCHA;
+    },
+    _LIMBU {
+        /// The set of Unicode characters in script Limbu.
+        LIMBU;
+    },
+    _LINEAR_A {
+        /// The set of Unicode characters in script Linear A.
+        LINEAR_A;
+    },
+    _LINEAR_B {
+        /// The set of Unicode characters in script Linear B.
+        LINEAR_B;
+    },
+    _LISU {
+        /// The set of Unicode characters in script Lisu.
+        LISU;
+    },
+    _LYCIAN {
+        /// The set of Unicode characters in script Lycian.
+        LYCIAN;
+    },
+    _LYDIAN {
+        /// The set of Unicode characters in script Lydian.
+        LYDIAN;
+    },
+    _MAHAJANI {
+        /// The set of Unicode characters in script Mahajani.
+        MAHAJANI;
+    },
+    _MAKASAR {
+        /// The set of Unicode characters in script Makasar.
+        MAKASAR;
+    },
+    _MALAYALAM {
+        /// The set of Unicode characters in script Malayalam.
+        MALAYALAM;
+    },
+    _MANDAIC {
+        /// The set of Unicode characters in script Mandaic.
+        MANDAIC;
+    },
+    _MANICHAEAN {
+        /// The set of Unicode characters in script Manichaean.
+        MANICHAEAN;
+    },
+    _MARCHEN {
+        /// The set of Unicode characters in script Marchen.
+        MARCHEN;
+    },
+    _MASARAM_GONDI {
+        /// The set of Unicode characters in script Masaram Gondi.
+        MASARAM_GONDI;
+    },
+    _MEDEFAIDRIN {
+        /// The set of Unicode characters in script Medefaidrin.
+        MEDEFAIDRIN;
+    },
+    _MEETEI_MAYEK {
+        /// The set of Unicode characters in script Meetei Mayek.
+        MEETEI_MAYEK;
+    },
+    _MENDE_KIKAKUI {
+        /// The set of Unicode characters in script Mende Kikakui.
+        MENDE_KIKAKUI;
+    },
+    _MEROITIC_CURSIVE {
+        /// The set of Unicode characters in script Meroitic Cursive.
+        MEROITIC_CURSIVE;
+    },
+    _MEROITIC_HIEROGLYPHS {
+        /// The set of Unicode characters in script Meroitic Hieroglyphs.
+        MEROITIC_HIEROGLYPHS;
+    },
+    _MIAO {
+        /// The set of Unicode characters in script Miao.
+        MIAO;
+    },
+    _MODI {
+        /// The set of Unicode characters in script Modi.
+        MODI;
+    },
+    _MONGOLIAN {
+        /// The set of Unicode characters in script Mongolian.
+        MONGOLIAN;
+    },
+    _MRO {
+        /// The set of Unicode characters in script Mro.
+        MRO;
+    },
+    _MULTANI {
+        /// The set of Unicode characters in script Multani.
+        MULTANI;
+    },
+    _MYANMAR {
+        /// The set of Unicode characters in script Myanmar.
+        MYANMAR;
+    },
+    _NABATAEAN {
+        /// The set of Unicode characters in script Nabataean.
+        NABATAEAN;
+    },
+    _NANDINAGARI {
+        /// The set of Unicode characters in script Nandinagari.
+        NANDINAGARI;
+    },
+    _NEW_TAI_LUE {
+        /// The set of Unicode characters in script New Tai Lue.
+        NEW_TAI_LUE;
+    },
+    _NEWA {
+        /// The set of Unicode characters in script Newa.
+        NEWA;
+    },
+    _NKO {
+        /// The set of Unicode characters in script Nko.
+        NKO;
+    },
+    _NUSHU {
+        /// The set of Unicode characters in script Nushu.
+        NUSHU;
+    },
+    _NYIAKENG_PUACHUE_HMONG {
+        /// The set of Unicode characters in script Nyiakeng Puachue Hmong.
+        NYIAKENG_PUACHUE_HMONG;
+    },
+    _OGHAM {
+        /// The set of Unicode characters in script Ogham.
+        OGHAM;
+    },
+    _OL_CHIKI {
+        /// The set of Unicode characters in script Ol Chiki.
+        OL_CHIKI;
+    },
+    _OLD_HUNGARIAN {
+        /// The set of Unicode characters in script Old Hungarian.
+        OLD_HUNGARIAN;
+    },
+    _OLD_ITALIC {
+        /// The set of Unicode characters in script Old Italic.
+        OLD_ITALIC;
+    },
+    _OLD_NORTH_ARABIAN {
+        /// The set of Unicode characters in script Old North Arabian.
+        OLD_NORTH_ARABIAN;
+    },
+    _OLD_PERMIC {
+        /// The set of Unicode characters in script Old Permic.
+        OLD_PERMIC;
+    },
+    _OLD_PERSIAN {
+        /// The set of Unicode characters in script Old Persian.
+        OLD_PERSIAN;
+    },
+    _OLD_SOGDIAN {
+        /// The set of Unicode characters in script Old Sogdian.
+        OLD_SOGDIAN;
+    },
+    _OLD_SOUTH_ARABIAN {
+        /// The set of Unicode characters in script Old South Arabian.
+        OLD_SOUTH_ARABIAN;
+    },
+    _OLD_TURKIC {
+        /// The set of Unicode characters in script Old Turkic.
+        OLD_TURKIC;
+    },
+    _ORIYA {
+        /// The set of Unicode characters in script Oriya.
+        ORIYA;
+    },
+    _OSAGE {
+        /// The set of Unicode characters in script Osage.
+        OSAGE;
+    },
+    _OSMANYA {
+        /// The set of Unicode characters in script Osmanya.
+        OSMANYA;
+    },
+    _PAHAWH_HMONG {
+        /// The set of Unicode characters in script Pahawh Hmong.
+        PAHAWH_HMONG;
+    },
+    _PALMYRENE {
+        /// The set of Unicode characters in script Palmyrene.
+        PALMYRENE;
+    },
+    _PAU_CIN_HAU {
+        /// The set of Unicode characters in script Pau Cin Hau.
+        PAU_CIN_HAU;
+    },
+    _PHAGS_PA {
+        /// The set of Unicode characters in script Phags Pa.
+        PHAGS_PA;
+    },
+    _PHOENICIAN {
+        /// The set of Unicode characters in script Phoenician.
+        PHOENICIAN;
+    },
+    _PSALTER_PAHLAVI {
+        /// The set of Unicode characters in script Psalter Pahlavi.
+        PSALTER_PAHLAVI;
+    },
+    _REJANG {
+        /// The set of Unicode characters in script Rejang.
+        REJANG;
+    },
+    _RUNIC {
+        /// The set of Unicode characters in script Runic.
+        RUNIC;
+    },
+    _SAMARITAN {
+        /// The set of Unicode characters in script Samaritan.
+        SAMARITAN;
+    },
+    _SAURASHTRA {
+        /// The set of Unicode characters in script Saurashtra.
+        SAURASHTRA;
+    },
+    _SHARADA {
+        /// The set of Unicode characters in script Sharada.
+        SHARADA;
+    },
+    _SHAVIAN {
+        /// The set of Unicode characters in script Shavian.
+        SHAVIAN;
+    },
+    _SIDDHAM {
+        /// The set of Unicode characters in script Siddham.
+        SIDDHAM;
+    },
+    _SIGN_WRITING {
+        /// The set of Unicode characters in script SignWriting.
+        SIGNWRITING;
+    },
+    _SINHALA {
+        /// The set of Unicode characters in script Sinhala.
+        SINHALA;
+    },
+    _SOGDIAN {
+        /// The set of Unicode characters in script Sogdian.
+        SOGDIAN;
+    },
+    _SORA_SOMPENG {
+        /// The set of Unicode characters in script Sora Sompeng.
+        SORA_SOMPENG;
+    },
+    _SOYOMBO {
+        /// The set of Unicode characters in script Soyombo.
+        SOYOMBO;
+    },
+    _SUNDANESE {
+        /// The set of Unicode characters in script Sundanese.
+        SUNDANESE;
+    },
+    _SYLOTI_NAGRI {
+        /// The set of Unicode characters in script Syloti Nagri.
+        SYLOTI_NAGRI;
+    },
+    _SYRIAC {
+        /// The set of Unicode characters in script Syriac.
+        SYRIAC;
+    },
+    _TAGALOG {
+        /// The set of Unicode characters in script Tagalog.
+        TAGALOG;
+    },
+    _TAGBANWA {
+        /// The set of Unicode characters in script Tagbanwa.
+        TAGBANWA;
+    },
+    _TAI_LE {
+        /// The set of Unicode characters in script Tai Le.
+        TAI_LE;
+    },
+    _TAI_THAM {
+        /// The set of Unicode characters in script Tai Tham.
+        TAI_THAM;
+    },
+    _TAI_VIET {
+        /// The set of Unicode characters in script Tai Viet.
+        TAI_VIET;
+    },
+    _TAKRI {
+        /// The set of Unicode characters in script Takri.
+        TAKRI;
+    },
+    _TAMIL {
+        /// The set of Unicode characters in script Tamil.
+        TAMIL;
+    },
+    _TANGUT {
+        /// The set of Unicode characters in script Tangut.
+        TANGUT;
+    },
+    _TELUGU {
+        /// The set of Unicode characters in script Telugu.
+        TELUGU;
+    },
+    _THAANA {
+        /// The set of Unicode characters in script Thaana.
+        THAANA;
+    },
+    _THAI {
+        /// The set of Unicode characters in script Thai.
+        THAI;
+    },
+    _TIBETAN {
+        /// The set of Unicode characters in script Tibetan.
+        TIBETAN;
+    },
+    _TIFINAGH {
+        /// The set of Unicode characters in script Tifinagh.
+        TIFINAGH;
+    },
+    _TIRHUTA {
+        /// The set of Unicode characters in script Tirhuta.
+        TIRHUTA;
+    },
+    _UGARITIC {
+        /// The set of Unicode characters in script Ugaritic.
+        UGARITIC;
+    },
+    _VAI {
+        /// The set of Unicode characters in script Vai.
+        VAI;
+    },
+    _WARANG_CITI {
+        /// The set of Unicode characters in script Warang Citi.
+        WARANG_CITI;
+    },
+    _YI {
+        /// The set of Unicode characters in script Yi.
+        YI;
+    },
+    _ZANABAZAR_SQUARE {
+        /// The set of Unicode characters in script Zanabazar Square.
+        ZANABAZAR_SQUARE;
+    },
+}
+
 rt! {
     name: _ADLAM,
     r32: {
@@ -5293,6 +5912,14 @@ rt! {
 }
 
 rt! {
+    name: _OSAGE,
+    r32: {
+        {0x104b0, 0x104d3, 1},
+		{0x104d8, 0x104fb, 1},
+    }
+}
+
+rt! {
     name: _OSMANYA,
     r32: {
         {0x10480, 0x1049d, 1},
@@ -5564,6 +6191,24 @@ rt! {
         {0x17001, 0x187f7, 1},
         {0x18800, 0x18aff, 1},
         {0x18d00, 0x18d08, 1},
+    }
+}
+
+rt! {
+    name: _TELUGU,
+    r16: {
+        {0x0c00, 0x0c0c, 1},
+		{0x0c0e, 0x0c10, 1},
+		{0x0c12, 0x0c28, 1},
+		{0x0c2a, 0x0c39, 1},
+		{0x0c3d, 0x0c44, 1},
+		{0x0c46, 0x0c48, 1},
+		{0x0c4a, 0x0c4d, 1},
+		{0x0c55, 0x0c56, 1},
+		{0x0c58, 0x0c5a, 1},
+		{0x0c60, 0x0c63, 1},
+		{0x0c66, 0x0c6f, 1},
+		{0x0c77, 0x0c7f, 1},
     }
 }
 
