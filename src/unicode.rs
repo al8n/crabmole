@@ -11,6 +11,12 @@ pub mod utf16;
 mod tables;
 pub use tables::*;
 
+mod graphic;
+pub use graphic::*;
+
+mod case_tables;
+pub use case_tables::*;
+
 /// Maximum Latin-1 value.
 pub const MAX_LATIN1: char = '\u{00FF}';
 
@@ -124,6 +130,80 @@ impl Range32 {
     }
 }
 
+/// Indices into the Delta arrays inside CaseRanges for case mapping.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u32)]
+pub enum CaseDelta {
+    /// Upper case
+    Upper = 0,
+    /// Lower case
+    Lower = 1,
+    /// Title case
+    Title = 2,
+    /// Max case
+    Max = 3,
+    /// If the Delta field of a [`CaseRange`] is [`CaseDelta::UpperLower`], it means
+    /// this [`CaseRange`] represents a sequence of the form (say)
+    /// Upper Lower Upper Lower.
+    ///
+    /// (Cannot be a valid delta.)
+    UpperLower = 1114111 + 1,
+}
+
+/// to make the CaseRanges text shorter
+type D = [i32; CaseDelta::Max as usize];
+
+/// CaseRange represents a range of Unicode code points for simple (one
+/// code point to one code point) case conversion.
+/// The range runs from Lo to Hi inclusive, with a fixed stride of 1. Deltas
+/// are the number to add to the code point to reach the code point for a
+/// different case for that character. They may be negative. If zero, it
+/// means the character is in the corresponding case. There is a special
+/// case representing sequences of alternating corresponding Upper and Lower
+/// pairs. It appears with a fixed Delta of
+///
+/// {UpperLower, UpperLower, UpperLower}
+///
+/// The constant UpperLower has an otherwise impossible delta value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct CaseRange {
+    lo: u32,
+    hi: u32,
+    delta: D,
+}
+
+/// [`SpecialCase`] represents language-specific case mappings such as Turkish.
+/// Methods of SpecialCase customize (by overriding) the standard mappings.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct SpecialCase<const N: usize>([CaseRange; N]);
+
+impl<const N: usize> SpecialCase<N> {
+    /// Maps the [`char`] to upper case giving priority to the special mapping.
+    #[inline]
+    pub fn to_upper(&self, ch: char) -> char {
+        todo!()
+    }
+
+    /// Maps the [`char`] to lower case giving priority to the special mapping.
+    #[inline]
+    pub fn to_title(&self, ch: char) -> char {
+        todo!()
+    }
+
+    /// Maps the [`char`] to title case giving priority to the special mapping.
+    pub fn to_lower(&self, ch: char) -> char {
+        todo!()
+    }
+}
+
+/// Right now all the entries fit in uint16, so use uint16. If that changes, compilation
+/// will fail (the constants in the composite literal will not fit in `u16`)
+/// and the types here can change to `u32`.
+pub struct FoldPair {
+    from: u16,
+    to: u16,
+}
+
 /// Reports whether the char is a decimal digit.
 pub const fn is_digit(ch: char) -> bool {
     let c = ch as u32;
@@ -135,6 +215,6 @@ pub const fn is_digit(ch: char) -> bool {
 }
 
 /// Reports whether the char is a letter.
-pub const fn is_excluding_latin(rt: &RangeTable, ch: char) -> bool {
+pub const fn is_excluding_latin(_rt: &RangeTable, _ch: char) -> bool {
     todo!()
 }

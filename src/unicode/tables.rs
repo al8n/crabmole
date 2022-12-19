@@ -90,12 +90,6 @@ macro_rules! rt_aliases {
     };
 }
 
-macro_rules! index_helper {
-    ($($key:literal:$val:ident),* $(,)?) => {
-        $($key => $val,)*
-    };
-}
-
 rt_aliases! {
     _C {
        /// The set of Unicode control and special characters, category C.
@@ -3925,62 +3919,62 @@ impl core::ops::Index<&str> for SrciptTables {
             "Inscriptional_Pahlavi" => _INSCRIPTIONAL_PAHLAVI,
             "Inscriptional_Parthian" => _INSCRIPTIONAL_PARTHIAN,
             "Javanese" => _JAVANESE,
-            "Kaithi" => Kaithi,
-            "Kannada" => Kannada,
-            "Katakana" => Katakana,
-            "Kayah_Li" => Kayah_Li,
-            "Kharoshthi" => Kharoshthi,
-            "Khitan_Small_Script" => Khitan_Small_Script,
-            "Khmer" => Khmer,
-            "Khojki" => Khojki,
-            "Khudawadi" => Khudawadi,
-            "Lao" => Lao,
-            "Latin" => Latin,
-            "Lepcha" => Lepcha,
-            "Limbu" => Limbu,
-            "Linear_A" => Linear_A,
-            "Linear_B" => Linear_B,
-            "Lisu" => Lisu,
-            "Lycian" => Lycian,
-            "Lydian" => Lydian,
-            "Mahajani" => Mahajani,
-            "Makasar" => Makasar,
-            "Malayalam" => Malayalam,
-            "Mandaic" => Mandaic,
-            "Manichaean" => Manichaean,
-            "Marchen" => Marchen,
-            "Masaram_Gondi" => Masaram_Gondi,
-            "Medefaidrin" => Medefaidrin,
-            "Meetei_Mayek" => Meetei_Mayek,
-            "Mende_Kikakui" => Mende_Kikakui,
-            "Meroitic_Cursive" => Meroitic_Cursive,
-            "Meroitic_Hieroglyphs" => Meroitic_Hieroglyphs,
-            "Miao" => Miao,
-            "Modi" => Modi,
-            "Mongolian" => Mongolian,
-            "Mro" => Mro,
-            "Multani" => Multani,
-            "Myanmar" => Myanmar,
-            "Nabataean" => Nabataean,
-            "Nandinagari" => Nandinagari,
-            "New_Tai_Lue" => New_Tai_Lue,
-            "Newa" => Newa,
-            "Nko" => Nko,
-            "Nushu" => Nushu,
-            "Nyiakeng_Puachue_Hmong" => Nyiakeng_Puachue_Hmong,
-            "Ogham" => Ogham,
-            "Ol_Chiki" => Ol_Chiki,
-            "Old_Hungarian" => Old_Hungarian,
-            "Old_Italic" => Old_Italic,
-            "Old_North_Arabian" => Old_North_Arabian,
-            "Old_Permic" => Old_Permic,
-            "Old_Persian" => Old_Persian,
-            "Old_Sogdian" => Old_Sogdian,
-            "Old_South_Arabian" => Old_South_Arabian,
-            "Old_Turkic" => Old_Turkic,
-            "Oriya" => Oriya,
-            "Osage" => Osage,
-            "Osmanya" => Osmanya,
+            "Kaithi" => _KAITHI,
+            "Kannada" => _KANNADA,
+            "Katakana" => _KATAKANA,
+            "Kayah_Li" => _KAYAH_LI,
+            "Kharoshthi" => _KHAROSHTHI,
+            "Khitan_Small_Script" => _KHITAN_SMALL_SCRIPT,
+            "Khmer" => _KHMER,
+            "Khojki" => _KHOJKI,
+            "Khudawadi" => _KHUDAWADI,
+            "Lao" => _LAO,
+            "Latin" => _LATIN,
+            "Lepcha" => _LEPCHA,
+            "Limbu" => _LIMBU,
+            "Linear_A" => _LINEAR_A,
+            "Linear_B" => _LINEAR_B,
+            "Lisu" => _LISU,
+            "Lycian" => _LYCIAN,
+            "Lydian" => _LYDIAN,
+            "Mahajani" => _MAHAJANI,
+            "Makasar" => _MAKASAR,
+            "Malayalam" => _MALAYALAM,
+            "Mandaic" => _MANDAIC,
+            "Manichaean" => _MANICHAEAN,
+            "Marchen" => _MARCHEN,
+            "Masaram_Gondi" => _MASARAM_GONDI,
+            "Medefaidrin" => _MEDEFAIDRIN,
+            "Meetei_Mayek" => _MEETEI_MAYEK,
+            "Mende_Kikakui" => _MENDE_KIKAKUI,
+            "Meroitic_Cursive" => _MEROITIC_CURSIVE,
+            "Meroitic_Hieroglyphs" => _MEROITIC_HIEROGLYPHS,
+            "Miao" => _MIAO,
+            "Modi" => _MODI,
+            "Mongolian" => _MONGOLIAN,
+            "Mro" => _MRO,
+            "Multani" => _MULTANI,
+            "Myanmar" => _MYANMAR,
+            "Nabataean" => _NABATAEAN,
+            "Nandinagari" => _NANDINAGARI,
+            "New_Tai_Lue" => _NEW_TAI_LUE,
+            "Newa" => _NEWA,
+            "Nko" => _NKO,
+            "Nushu" => _NUSHU,
+            "Nyiakeng_Puachue_Hmong" => _NYIAKENG_PUACHUE_HMONG,
+            "Ogham" => _OGHAM,
+            "Ol_Chiki" => _OL_CHIKI,
+            "Old_Hungarian" => _OLD_HUNGARIAN,
+            "Old_Italic" => _OLD_ITALIC,
+            "Old_North_Arabian" => _OLD_NORTH_ARABIAN,
+            "Old_Permic" => _OLD_PERMIC,
+            "Old_Persian" => _OLD_PERSIAN,
+            "Old_Sogdian" => _OLD_SOGDIAN,
+            "Old_South_Arabian" => _OLD_SOUTH_ARABIAN,
+            "Old_Turkic" => _OLD_TURKIC,
+            "Oriya" => _ORIYA,
+            "Osage" => _OSAGE,
+            "Osmanya" => _OSMANYA,
             "Pahawh_Hmong" => _PAHAWH_HMONG,
             "Palmyrene" => _PALMYRENE,
             "Pau_Cin_Hau" => _PAU_CIN_HAU,
@@ -4030,10 +4024,334 @@ impl core::ops::Index<&str> for SrciptTables {
 
 impl SrciptTables {
     /// Returns the number of scripts
-    pub const LEN: usize = 154;
+    pub const LEN: usize = 155;
+
+    /// Returns if the script name in the set
+    #[inline]
+    pub fn contains(&self, name: &str) -> bool {
+        matches!(
+            name,
+            "Adlam"
+                | "Ahom"
+                | "Anatolian_Hieroglyphs"
+                | "Arabic"
+                | "Armenian"
+                | "Avestan"
+                | "Balinese"
+                | "Bamum"
+                | "Bassa_Vah"
+                | "Batak"
+                | "Bengali"
+                | "Bhaiksuki"
+                | "Bopomofo"
+                | "Brahmi"
+                | "Braille"
+                | "Buginese"
+                | "Buhid"
+                | "Canadian_Aboriginal"
+                | "Carian"
+                | "Caucasian_Albanian"
+                | "Chakma"
+                | "Cham"
+                | "Cherokee"
+                | "Chorasmian"
+                | "Common"
+                | "Coptic"
+                | "Cuneiform"
+                | "Cypriot"
+                | "Cyrillic"
+                | "Deseret"
+                | "Devanagari"
+                | "Dives_Akuru"
+                | "Dogra"
+                | "Duployan"
+                | "Egyptian_Hieroglyphs"
+                | "Elbasan"
+                | "Elymaic"
+                | "Ethiopic"
+                | "Georgian"
+                | "Glagolitic"
+                | "Gothic"
+                | "Grantha"
+                | "Greek"
+                | "Gujarati"
+                | "Gunjala_Gondi"
+                | "Gurmukhi"
+                | "Han"
+                | "Hangul"
+                | "Hanifi_Rohingya"
+                | "Hanunoo"
+                | "Hatran"
+                | "Hebrew"
+                | "Hiragana"
+                | "Imperial_Aramaic"
+                | "Inherited"
+                | "Inscriptional_Pahlavi"
+                | "Inscriptional_Parthian"
+                | "Javanese"
+                | "Kaithi"
+                | "Kannada"
+                | "Katakana"
+                | "Kayah_Li"
+                | "Kharoshthi"
+                | "Khitan_Small_Script"
+                | "Khmer"
+                | "Khojki"
+                | "Khudawadi"
+                | "Lao"
+                | "Latin"
+                | "Lepcha"
+                | "Limbu"
+                | "Linear_A"
+                | "Linear_B"
+                | "Lisu"
+                | "Lycian"
+                | "Lydian"
+                | "Mahajani"
+                | "Makasar"
+                | "Malayalam"
+                | "Mandaic"
+                | "Manichaean"
+                | "Marchen"
+                | "Masaram_Gondi"
+                | "Medefaidrin"
+                | "Meetei_Mayek"
+                | "Mende_Kikakui"
+                | "Meroitic_Cursive"
+                | "Meroitic_Hieroglyphs"
+                | "Miao"
+                | "Modi"
+                | "Mongolian"
+                | "Mro"
+                | "Multani"
+                | "Myanmar"
+                | "Nabataean"
+                | "Nandinagari"
+                | "New_Tai_Lue"
+                | "Newa"
+                | "Nko"
+                | "Nushu"
+                | "Nyiakeng_Puachue_Hmong"
+                | "Ogham"
+                | "Ol_Chiki"
+                | "Old_Hungarian"
+                | "Old_Italic"
+                | "Old_North_Arabian"
+                | "Old_Permic"
+                | "Old_Persian"
+                | "Old_Sogdian"
+                | "Old_South_Arabian"
+                | "Old_Turkic"
+                | "Oriya"
+                | "Osage"
+                | "Osmanya"
+                | "Pahawh_Hmong"
+                | "Palmyrene"
+                | "Pau_Cin_Hau"
+                | "Phags_Pa"
+                | "Phoenician"
+                | "Psalter_Pahlavi"
+                | "Rejang"
+                | "Runic"
+                | "Samaritan"
+                | "Saurashtra"
+                | "Sharada"
+                | "Shavian"
+                | "Siddham"
+                | "SignWriting"
+                | "Sinhala"
+                | "Sogdian"
+                | "Sora_Sompeng"
+                | "Soyombo"
+                | "Sundanese"
+                | "Syloti_Nagri"
+                | "Syriac"
+                | "Tagalog"
+                | "Tagbanwa"
+                | "Tai_Le"
+                | "Tai_Tham"
+                | "Tai_Viet"
+                | "Takri"
+                | "Tamil"
+                | "Tangut"
+                | "Telugu"
+                | "Thaana"
+                | "Thai"
+                | "Tibetan"
+                | "Tifinagh"
+                | "Tirhuta"
+                | "Ugaritic"
+                | "Vai"
+                | "Wancho"
+                | "Warang_Citi"
+                | "Yezidi"
+                | "Yi"
+                | "Zanabazar_Square"
+        )
+    }
 
     /// Create a new iter on scripts
-    pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {}
+    #[inline]
+    pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {
+        static SCRIPT_TABLES: &[(&str, &RangeTable)] = &[
+            ("Adlam", _ADLAM),
+            ("Ahom", _AHOM),
+            ("Anatolian_Hieroglyphs", _ANATOLIAN_HIEROGLYPHS),
+            ("Arabic", _ARABIC),
+            ("Armenian", _ARMENIAN),
+            ("Avestan", _AVESTAN),
+            ("Balinese", _BALINESE),
+            ("Bamum", _BAMUM),
+            ("Bassa_Vah", _BASSA_VAH),
+            ("Batak", _BATAK),
+            ("Bengali", _BENGALI),
+            ("Bhaiksuki", _BHAIKSUKI),
+            ("Bopomofo", _BOPOMOFO),
+            ("Brahmi", _BRAHMI),
+            ("Braille", _BRAILLE),
+            ("Buginese", _BUGINESE),
+            ("Buhid", _BUHID),
+            ("Canadian_Aboriginal", _CANADIAN_ABORIGINAL),
+            ("Carian", _CARIAN),
+            ("Caucasian_Albanian", _CAUCASIAN_ALBANIAN),
+            ("Chakma", _CHAKMA),
+            ("Cham", _CHAM),
+            ("Cherokee", _CHEROKEE),
+            ("Common", _COMMON),
+            ("Coptic", _COPTIC),
+            ("Cuneiform", _CUNEIFORM),
+            ("Cypriot", _CYPRIOT),
+            ("Cyrillic", _CYRILLIC),
+            ("Deseret", _DESERET),
+            ("Devanagari", _DEVANAGARI),
+            ("Dives_Akuru", _DIVES_AKURU),
+            ("Dogra", _DOGRA),
+            ("Duployan", _DUPLOYAN),
+            ("Egyptian_Hieroglyphs", _EGYPTIAN_HIEROGLYPHS),
+            ("Elbasan", _ELBASAN),
+            ("Elymaic", _ELYMAIC),
+            ("Ethiopic", _ETHIOPIC),
+            ("Georgian", _GEORGIAN),
+            ("Glagolitic", _GLAGOLITIC),
+            ("Gothic", _GOTHIC),
+            ("Grantha", _GRANTHA),
+            ("Greek", _GREEK),
+            ("Gujarati", _GUJARATI),
+            ("Gunjala_Gondi", _GUNJALA_GONDI),
+            ("Gurmukhi", _GURMUKHI),
+            ("Han", _HAN),
+            ("Hangul", _HANGUL),
+            ("Hanifi_Rohingya", _HANIFI_ROHINGYA),
+            ("Hanunoo", _HANUNOO),
+            ("Hatran", _HATRAN),
+            ("Hebrew", _HEBREW),
+            ("Hiragana", _HIRAGANA),
+            ("Imperial_Aramaic", _IMPERIAL_ARAMAIC),
+            ("Inherited", _INHERITED),
+            ("Inscriptional_Pahlavi", _INSCRIPTIONAL_PAHLAVI),
+            ("Inscriptional_Parthian", _INSCRIPTIONAL_PARTHIAN),
+            ("Javanese", _JAVANESE),
+            ("Kaithi", _KAITHI),
+            ("Kannada", _KANNADA),
+            ("Katakana", _KATAKANA),
+            ("Kayah_Li", _KAYAH_LI),
+            ("Kharoshthi", _KHAROSHTHI),
+            ("Khitan_Small_Script", _KHITAN_SMALL_SCRIPT),
+            ("Khmer", _KHMER),
+            ("Khojki", _KHOJKI),
+            ("Khudawadi", _KHUDAWADI),
+            ("Lao", _LAO),
+            ("Latin", _LATIN),
+            ("Lepcha", _LEPCHA),
+            ("Limbu", _LIMBU),
+            ("Linear_A", _LINEAR_A),
+            ("Linear_B", _LINEAR_B),
+            ("Lisu", _LISU),
+            ("Lycian", _LYCIAN),
+            ("Lydian", _LYDIAN),
+            ("Mahajani", _MAHAJANI),
+            ("Makasar", _MAKASAR),
+            ("Malayalam", _MALAYALAM),
+            ("Mandaic", _MANDAIC),
+            ("Manichaean", _MANICHAEAN),
+            ("Marchen", _MARCHEN),
+            ("Masaram_Gondi", _MASARAM_GONDI),
+            ("Medefaidrin", _MEDEFAIDRIN),
+            ("Meetei_Mayek", _MEETEI_MAYEK),
+            ("Mende_Kikakui", _MENDE_KIKAKUI),
+            ("Meroitic_Cursive", _MEROITIC_CURSIVE),
+            ("Meroitic_Hieroglyphs", _MEROITIC_HIEROGLYPHS),
+            ("Miao", _MIAO),
+            ("Modi", _MODI),
+            ("Mongolian", _MONGOLIAN),
+            ("Mro", _MRO),
+            ("Multani", _MULTANI),
+            ("Myanmar", _MYANMAR),
+            ("Nabataean", _NABATAEAN),
+            ("Nandinagari", _NANDINAGARI),
+            ("New_Tai_Lue", _NEW_TAI_LUE),
+            ("Newa", _NEWA),
+            ("Nko", _NKO),
+            ("Nushu", _NUSHU),
+            ("Nyiakeng_Puachue_Hmong", _NYIAKENG_PUACHUE_HMONG),
+            ("Ogham", _OGHAM),
+            ("Ol_Chiki", _OL_CHIKI),
+            ("Old_Hungarian", _OLD_HUNGARIAN),
+            ("Old_Italic", _OLD_ITALIC),
+            ("Old_North_Arabian", _OLD_NORTH_ARABIAN),
+            ("Old_Permic", _OLD_PERMIC),
+            ("Old_Persian", _OLD_PERSIAN),
+            ("Old_Sogdian", _OLD_SOGDIAN),
+            ("Old_South_Arabian", _OLD_SOUTH_ARABIAN),
+            ("Old_Turkic", _OLD_TURKIC),
+            ("Oriya", _ORIYA),
+            ("Osage", _OSAGE),
+            ("Osmanya", _OSMANYA),
+            ("Pahawh_Hmong", _PAHAWH_HMONG),
+            ("Palmyrene", _PALMYRENE),
+            ("Pau_Cin_Hau", _PAU_CIN_HAU),
+            ("Phags_Pa", _PHAGS_PA),
+            ("Phoenician", _PHOENICIAN),
+            ("Psalter_Pahlavi", _PSALTER_PAHLAVI),
+            ("Rejang", _REJANG),
+            ("Runic", _RUNIC),
+            ("Samaritan", _SAMARITAN),
+            ("Saurashtra", _SAURASHTRA),
+            ("Sharada", _SHARADA),
+            ("Shavian", _SHAVIAN),
+            ("Siddham", _SIDDHAM),
+            ("SignWriting", _SIGN_WRITING),
+            ("Sinhala", _SINHALA),
+            ("Sogdian", _SOGDIAN),
+            ("Sora_Sompeng", _SORA_SOMPENG),
+            ("Soyombo", _SOYOMBO),
+            ("Sundanese", _SUNDANESE),
+            ("Syloti_Nagri", _SYLOTI_NAGRI),
+            ("Syriac", _SYRIAC),
+            ("Tagalog", _TAGALOG),
+            ("Tagbanwa", _TAGBANWA),
+            ("Tai_Le", _TAI_LE),
+            ("Tai_Tham", _TAI_THAM),
+            ("Tai_Viet", _TAI_VIET),
+            ("Takri", _TAKRI),
+            ("Tamil", _TAMIL),
+            ("Tangut", _TANGUT),
+            ("Telugu", _TELUGU),
+            ("Thaana", _THAANA),
+            ("Thai", _THAI),
+            ("Tibetan", _TIBETAN),
+            ("Tifinagh", _TIFINAGH),
+            ("Tirhuta", _TIRHUTA),
+            ("Ugaritic", _UGARITIC),
+            ("Vai", _VAI),
+            ("Wancho", _WANCHO),
+            ("Warang_Citi", _WARANG_CITI),
+            ("Yezidi", _YEZIDI),
+            ("Yi", _YI),
+            ("Zanabazar_Square", _ZANABAZAR_SQUARE),
+        ];
+        SCRIPT_TABLES.iter()
+    }
 }
 
 rt_aliases! {
@@ -6639,9 +6957,9 @@ rt_aliases! {
 
 /// The set of Unicode property tables.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Properties;
+pub struct PropertyTables;
 
-impl core::ops::Index<&str> for Properties {
+impl core::ops::Index<&str> for PropertyTables {
     type Output = RangeTable;
 
     fn index(&self, key: &str) -> &Self::Output {
@@ -6685,14 +7003,57 @@ impl core::ops::Index<&str> for Properties {
     }
 }
 
-impl Properties {
+impl PropertyTables {
     /// Returns the number of properties
     pub const LEN: usize = 35;
+
+    /// Returns if the property name in the set
+    #[inline]
+    pub fn contains(&self, name: &str) -> bool {
+        matches!(
+            name,
+            "ASCII_Hex_Digit"
+                | "Bidi_Control"
+                | "Dash"
+                | "Deprecated"
+                | "Diacritic"
+                | "Extender"
+                | "Hex_Digit"
+                | "Hyphen"
+                | "IDS_Binary_Operator"
+                | "IDS_Trinary_Operator"
+                | "Ideographic"
+                | "Join_Control"
+                | "Logical_Order_Exception"
+                | "Noncharacter_Code_Point"
+                | "Other_Alphabetic"
+                | "Other_Default_Ignorable_Code_Point"
+                | "Other_Grapheme_Extend"
+                | "Other_ID_Continue"
+                | "Other_ID_Start"
+                | "Other_Lowercase"
+                | "Other_Math"
+                | "Other_Uppercase"
+                | "Pattern_Syntax"
+                | "Pattern_White_Space"
+                | "Prepended_Concatenation_Mark"
+                | "Quotation_Mark"
+                | "Radical"
+                | "Regional_Indicator"
+                | "STerm"
+                | "Sentence_Terminal"
+                | "Soft_Dotted"
+                | "Terminal_Punctuation"
+                | "Unified_Ideograph"
+                | "Variation_Selector"
+                | "White_Space"
+        )
+    }
 
     /// Create a new iter on properties
     #[inline]
     pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {
-        static PROPERTIES: [(&str, &RangeTable); 35] = [
+        static PROPERTIES: &[(&str, &RangeTable)] = &[
             ("ASCII_Hex_Digit", _ASCII_HEX_DIGIT),
             ("Bidi_Control", _BIDI_CONTROL),
             ("Dash", _DASH),
@@ -8165,9 +8526,9 @@ rt! {
 /// simple case folding to code points inside the category.
 /// If there is no entry for a category name, there are no such points.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct FoldCategory;
+pub struct FoldCategoryTables;
 
-impl core::ops::Index<&str> for FoldCategory {
+impl core::ops::Index<&str> for FoldCategoryTables {
     type Output = RangeTable;
 
     fn index(&self, key: &str) -> &Self::Output {
@@ -8183,18 +8544,9 @@ impl core::ops::Index<&str> for FoldCategory {
     }
 }
 
-impl FoldCategory {
-    /// Returns the number of the category
-    #[inline]
-    pub const fn len(&self) -> usize {
-        6
-    }
-
-    /// Returns if the category is empty
-    #[inline]
-    pub const fn is_empty(&self) -> bool {
-        false
-    }
+impl FoldCategoryTables {
+    /// The number of the categories
+    pub const LEN: usize = 6;
 
     /// Returns if the category contains the category name
     #[inline]
@@ -8222,7 +8574,7 @@ impl FoldCategory {
     /// Create a new iter
     #[inline]
     pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {
-        static FOLD_CATEGORIES: [(&str, &RangeTable); 6] = [
+        static FOLD_CATEGORIES: &[(&str, &RangeTable)] = &[
             ("L", _FOLD_L),
             ("Ll", _FOLD_LL),
             ("Lt", _FOLD_LT),
@@ -8261,9 +8613,9 @@ rt! {
 /// simple case folding to code points inside the script.
 /// If there is no entry for a script name, there are no such points.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct FoldScript;
+pub struct FoldScriptTables;
 
-impl core::ops::Index<&str> for FoldScript {
+impl core::ops::Index<&str> for FoldScriptTables {
     type Output = RangeTable;
 
     fn index(&self, key: &str) -> &Self::Output {
@@ -8276,18 +8628,9 @@ impl core::ops::Index<&str> for FoldScript {
     }
 }
 
-impl FoldScript {
-    /// Returns the number of the script
-    #[inline]
-    pub const fn len(&self) -> usize {
-        3
-    }
-
-    /// Returns if the script is empty
-    #[inline]
-    pub const fn is_empty(&self) -> bool {
-        false
-    }
+impl FoldScriptTables {
+    /// The number of the fold script tables
+    pub const LEN: usize = 3;
 
     /// Returns if the script contains the script name
     #[inline]

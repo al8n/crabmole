@@ -753,7 +753,7 @@ mod tests {
 
     #[test]
     fn test_sequencing() {
-        fn test_sequence(s: Vec<u8>) {
+        fn test_sequence(_s: Vec<u8>) {
             // TODO: implement this
         }
 

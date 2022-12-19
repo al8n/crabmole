@@ -182,7 +182,6 @@ impl Base58 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
 
     #[test]
     fn test_encode() {}
