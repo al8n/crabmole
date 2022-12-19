@@ -90,6 +90,12 @@ macro_rules! rt_aliases {
     };
 }
 
+macro_rules! index_helper {
+    ($($key:literal:$val:ident),* $(,)?) => {
+        $($key => $val,)*
+    };
+}
+
 rt_aliases! {
     _C {
        /// The set of Unicode control and special characters, category C.
@@ -3852,6 +3858,184 @@ rt! {
 
 // TODO: Srcipts
 
+/// The set of Unicode script tables.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct SrciptTables;
+
+impl core::ops::Index<&str> for SrciptTables {
+    type Output = RangeTable;
+
+    fn index(&self, key: &str) -> &Self::Output {
+        match key {
+            "Adlam" => _ADLAM,
+            "Ahom" => _AHOM,
+            "Anatolian_Hieroglyphs" => _ANATOLIAN_HIEROGLYPHS,
+            "Arabic" => _ARABIC,
+            "Armenian" => _ARMENIAN,
+            "Avestan" => _AVESTAN,
+            "Balinese" => _BALINESE,
+            "Bamum" => _BAMUM,
+            "Bassa_Vah" => _BASSA_VAH,
+            "Batak" => _BATAK,
+            "Bengali" => _BENGALI,
+            "Bhaiksuki" => _BHAIKSUKI,
+            "Bopomofo" => _BOPOMOFO,
+            "Brahmi" => _BRAHMI,
+            "Braille" => _BRAILLE,
+            "Buginese" => _BUGINESE,
+            "Buhid" => _BUHID,
+            "Canadian_Aboriginal" => _CANADIAN_ABORIGINAL,
+            "Carian" => _CARIAN,
+            "Caucasian_Albanian" => _CAUCASIAN_ALBANIAN,
+            "Chakma" => _CHAKMA,
+            "Cham" => _CHAM,
+            "Cherokee" => _CHEROKEE,
+            "Chorasmian" => _CHORASMIAN,
+            "Common" => _COMMON,
+            "Coptic" => _COPTIC,
+            "Cuneiform" => _CUNEIFORM,
+            "Cypriot" => _CYPRIOT,
+            "Cyrillic" => _CYRILLIC,
+            "Deseret" => _DESERET,
+            "Devanagari" => _DEVANAGARI,
+            "Dives_Akuru" => _DIVES_AKURU,
+            "Dogra" => _DOGRA,
+            "Duployan" => _DUPLOYAN,
+            "Egyptian_Hieroglyphs" => _EGYPTIAN_HIEROGLYPHS,
+            "Elbasan" => _ELBASAN,
+            "Elymaic" => _ELYMAIC,
+            "Ethiopic" => _ETHIOPIC,
+            "Georgian" => _GEORGIAN,
+            "Glagolitic" => _GLAGOLITIC,
+            "Gothic" => _GOTHIC,
+            "Grantha" => _GRANTHA,
+            "Greek" => _GREEK,
+            "Gujarati" => _GUJARATI,
+            "Gunjala_Gondi" => _GUNJALA_GONDI,
+            "Gurmukhi" => _GURMUKHI,
+            "Han" => _HAN,
+            "Hangul" => _HANGUL,
+            "Hanifi_Rohingya" => _HANIFI_ROHINGYA,
+            "Hanunoo" => _HANUNOO,
+            "Hatran" => _HATRAN,
+            "Hebrew" => _HEBREW,
+            "Hiragana" => _HIRAGANA,
+            "Imperial_Aramaic" => _IMPERIAL_ARAMAIC,
+            "Inherited" => _INHERITED,
+            "Inscriptional_Pahlavi" => _INSCRIPTIONAL_PAHLAVI,
+            "Inscriptional_Parthian" => _INSCRIPTIONAL_PARTHIAN,
+            "Javanese" => _JAVANESE,
+            "Kaithi" => Kaithi,
+            "Kannada" => Kannada,
+            "Katakana" => Katakana,
+            "Kayah_Li" => Kayah_Li,
+            "Kharoshthi" => Kharoshthi,
+            "Khitan_Small_Script" => Khitan_Small_Script,
+            "Khmer" => Khmer,
+            "Khojki" => Khojki,
+            "Khudawadi" => Khudawadi,
+            "Lao" => Lao,
+            "Latin" => Latin,
+            "Lepcha" => Lepcha,
+            "Limbu" => Limbu,
+            "Linear_A" => Linear_A,
+            "Linear_B" => Linear_B,
+            "Lisu" => Lisu,
+            "Lycian" => Lycian,
+            "Lydian" => Lydian,
+            "Mahajani" => Mahajani,
+            "Makasar" => Makasar,
+            "Malayalam" => Malayalam,
+            "Mandaic" => Mandaic,
+            "Manichaean" => Manichaean,
+            "Marchen" => Marchen,
+            "Masaram_Gondi" => Masaram_Gondi,
+            "Medefaidrin" => Medefaidrin,
+            "Meetei_Mayek" => Meetei_Mayek,
+            "Mende_Kikakui" => Mende_Kikakui,
+            "Meroitic_Cursive" => Meroitic_Cursive,
+            "Meroitic_Hieroglyphs" => Meroitic_Hieroglyphs,
+            "Miao" => Miao,
+            "Modi" => Modi,
+            "Mongolian" => Mongolian,
+            "Mro" => Mro,
+            "Multani" => Multani,
+            "Myanmar" => Myanmar,
+            "Nabataean" => Nabataean,
+            "Nandinagari" => Nandinagari,
+            "New_Tai_Lue" => New_Tai_Lue,
+            "Newa" => Newa,
+            "Nko" => Nko,
+            "Nushu" => Nushu,
+            "Nyiakeng_Puachue_Hmong" => Nyiakeng_Puachue_Hmong,
+            "Ogham" => Ogham,
+            "Ol_Chiki" => Ol_Chiki,
+            "Old_Hungarian" => Old_Hungarian,
+            "Old_Italic" => Old_Italic,
+            "Old_North_Arabian" => Old_North_Arabian,
+            "Old_Permic" => Old_Permic,
+            "Old_Persian" => Old_Persian,
+            "Old_Sogdian" => Old_Sogdian,
+            "Old_South_Arabian" => Old_South_Arabian,
+            "Old_Turkic" => Old_Turkic,
+            "Oriya" => Oriya,
+            "Osage" => Osage,
+            "Osmanya" => Osmanya,
+            "Pahawh_Hmong" => _PAHAWH_HMONG,
+            "Palmyrene" => _PALMYRENE,
+            "Pau_Cin_Hau" => _PAU_CIN_HAU,
+            "Phags_Pa" => _PHAGS_PA,
+            "Phoenician" => _PHOENICIAN,
+            "Psalter_Pahlavi" => _PSALTER_PAHLAVI,
+            "Rejang" => _REJANG,
+            "Runic" => _RUNIC,
+            "Samaritan" => _SAMARITAN,
+            "Saurashtra" => _SAURASHTRA,
+            "Sharada" => _SHARADA,
+            "Shavian" => _SHAVIAN,
+            "Siddham" => _SIDDHAM,
+            "SignWriting" => _SIGN_WRITING,
+            "Sinhala" => _SINHALA,
+            "Sogdian" => _SOGDIAN,
+            "Sora_Sompeng" => _SORA_SOMPENG,
+            "Soyombo" => _SOYOMBO,
+            "Sundanese" => _SUNDANESE,
+            "Syloti_Nagri" => _SYLOTI_NAGRI,
+            "Syriac" => _SYRIAC,
+            "Tagalog" => _TAGALOG,
+            "Tagbanwa" => _TAGBANWA,
+            "Tai_Le" => _TAI_LE,
+            "Tai_Tham" => _TAI_THAM,
+            "Tai_Viet" => _TAI_VIET,
+            "Takri" => _TAKRI,
+            "Tamil" => _TAMIL,
+            "Tangut" => _TANGUT,
+            "Telugu" => _TELUGU,
+            "Thaana" => _THAANA,
+            "Thai" => _THAI,
+            "Tibetan" => _TIBETAN,
+            "Tifinagh" => _TIFINAGH,
+            "Tirhuta" => _TIRHUTA,
+            "Ugaritic" => _UGARITIC,
+            "Vai" => _VAI,
+            "Wancho" => _WANCHO,
+            "Warang_Citi" => _WARANG_CITI,
+            "Yezidi" => _YEZIDI,
+            "Yi" => _YI,
+            "Zanabazar_Square" => _ZANABAZAR_SQUARE,
+            _ => panic!("invalid script name"),
+        }
+    }
+}
+
+impl SrciptTables {
+    /// Returns the number of scripts
+    pub const LEN: usize = 154;
+
+    /// Create a new iter on scripts
+    pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {}
+}
+
 rt_aliases! {
     _ADLAM {
         /// The set of Unicode characters in script Adlam.
@@ -5915,7 +6099,7 @@ rt! {
     name: _OSAGE,
     r32: {
         {0x104b0, 0x104d3, 1},
-		{0x104d8, 0x104fb, 1},
+        {0x104d8, 0x104fb, 1},
     }
 }
 
@@ -6198,17 +6382,17 @@ rt! {
     name: _TELUGU,
     r16: {
         {0x0c00, 0x0c0c, 1},
-		{0x0c0e, 0x0c10, 1},
-		{0x0c12, 0x0c28, 1},
-		{0x0c2a, 0x0c39, 1},
-		{0x0c3d, 0x0c44, 1},
-		{0x0c46, 0x0c48, 1},
-		{0x0c4a, 0x0c4d, 1},
-		{0x0c55, 0x0c56, 1},
-		{0x0c58, 0x0c5a, 1},
-		{0x0c60, 0x0c63, 1},
-		{0x0c66, 0x0c6f, 1},
-		{0x0c77, 0x0c7f, 1},
+        {0x0c0e, 0x0c10, 1},
+        {0x0c12, 0x0c28, 1},
+        {0x0c2a, 0x0c39, 1},
+        {0x0c3d, 0x0c44, 1},
+        {0x0c46, 0x0c48, 1},
+        {0x0c4a, 0x0c4d, 1},
+        {0x0c55, 0x0c56, 1},
+        {0x0c58, 0x0c5a, 1},
+        {0x0c60, 0x0c63, 1},
+        {0x0c66, 0x0c6f, 1},
+        {0x0c77, 0x0c7f, 1},
     }
 }
 
@@ -6312,4 +6496,1824 @@ rt! {
     }
 }
 
-// TODO: properties map
+rt_aliases! {
+    _ASCII_HEX_DIGIT {
+        /// The set of Unicode characters with property ASCII_Hex_Digit.
+        ASCII_HEX_DIGIT;
+    },
+    _BIDI_CONTROL {
+        /// The set of Unicode characters with property Bidi_Control.
+        BIDI_CONTROL;
+    },
+    _DASH {
+        /// The set of Unicode characters with property Dash.
+        DASH;
+    },
+    _DEPRECATED {
+        /// The set of Unicode characters with property Deprecated.
+        DEPRECATED;
+    },
+    _DIACRITIC {
+        /// The set of Unicode characters with property Diacritic.
+        DIACRITIC;
+    },
+    _EXTENDER {
+        /// The set of Unicode characters with property Extender.
+        EXTENDER;
+    },
+    _HEX_DIGIT {
+        /// The set of Unicode characters with property Hex_Digit.
+        HEX_DIGIT;
+    },
+    _HYPHEN {
+        /// The set of Unicode characters with property Hyphen.
+        HYPHEN;
+    },
+    _IDS_BINARY_OPERATOR {
+        /// The set of Unicode characters with property IDS_Binary_Operator.
+        IDS_BINARY_OPERATOR;
+    },
+    _IDS_TRINARY_OPERATOR {
+        /// The set of Unicode characters with property IDS_Trinary_Operator.
+        IDS_TRINARY_OPERATOR;
+    },
+    _IDEOGRAPHIC {
+        /// The set of Unicode characters with property Ideographic.
+        IDEOGRAPHIC;
+    },
+    _JOIN_CONTROL {
+        /// The set of Unicode characters with property Join_Control.
+        JOIN_CONTROL;
+    },
+    _LOGICAL_ORDER_EXCEPTION {
+        /// The set of Unicode characters with property Logical_Order_Exception.
+        LOGICAL_ORDER_EXCEPTION;
+    },
+    _NONCHARACTER_CODE_POINT {
+        /// The set of Unicode characters with property Noncharacter_Code_Point.
+        NONCHARACTER_CODE_POINT;
+    },
+    _OTHER_ALPHABETIC {
+        /// The set of Unicode characters with property Other_Alphabetic.
+        OTHER_ALPHABETIC;
+    },
+    _OTHER_DEFAULT_IGNORABLE_CODE_POINT {
+        /// The set of Unicode characters with property Other_Default_Ignorable_Code_Point.
+        OTHER_DEFAULT_IGNORABLE_CODE_POINT;
+    },
+    _OTHER_GRAPHEME_EXTEND {
+        /// The set of Unicode characters with property Other_Grapheme_Extend.
+        OTHER_GRAPHEME_EXTEND;
+    },
+    _OTHER_ID_CONTINUE {
+        /// The set of Unicode characters with property Other_ID_Continue.
+        OTHER_ID_CONTINUE;
+    },
+    _OTHER_ID_START {
+        /// The set of Unicode characters with property Other_ID_Start.
+        OTHER_ID_START;
+    },
+    _OTHER_LOWERCASE {
+        /// The set of Unicode characters with property Other_Lowercase.
+        OTHER_LOWERCASE;
+    },
+    _OTHER_MATH {
+        /// The set of Unicode characters with property Other_Math.
+        OTHER_MATH;
+    },
+    _OTHER_UPPERCASE {
+        /// The set of Unicode characters with property Other_Uppercase.
+        OTHER_UPPERCASE;
+    },
+    _PATTERN_SYNTAX {
+        /// The set of Unicode characters with property Pattern_Syntax.
+        PATTERN_SYNTAX;
+    },
+    _PATTERN_WHITE_SPACE {
+        /// The set of Unicode characters with property Pattern_White_Space.
+        PATTERN_WHITE_SPACE;
+    },
+    _PREPENDED_CONCATENATION_MARK {
+        /// The set of Unicode characters with property Prepended_Concatenation_Mark.
+        PREPENDED_CONCATENATION_MARK;
+    },
+    _QUOTATION_MARK {
+        /// The set of Unicode characters with property Quotation_Mark.
+        QUOTATION_MARK;
+    },
+    _RADICAL {
+        /// The set of Unicode characters with property Radical.
+        RADICAL;
+    },
+    _REGIONAL_INDICATOR {
+        /// The set of Unicode characters with property Regional_Indicator.
+        REGIONAL_INDICATOR;
+    },
+    _SENTENCE_TERMINAL {
+        /// The set of Unicode characters with property Sentence Terminal.
+        STERM;
+        /// The set of Unicode characters with property Sentence Terminal.
+        SENTENCE_TERMINAL;
+    },
+    _SOFT_DOTTED {
+        /// The set of Unicode characters with property Soft_Dotted.
+        SOFT_DOTTED;
+    },
+    _TERMINAL_PUNCTUATION {
+        /// The set of Unicode characters with property Terminal_Punctuation.
+        TERMINAL_PUNCTUATION;
+    },
+    _UNIFIED_IDEOGRAPH {
+        /// The set of Unicode characters with property Unified_Ideograph.
+        UNIFIED_IDEOGRAPH;
+    },
+    _VARIATION_SELECTOR {
+        /// The set of Unicode characters with property Variation_Selector.
+        VARIATION_SELECTOR;
+    },
+    _WHITE_SPACE {
+        /// The set of Unicode characters with property White_Space.
+        WHITE_SPACE;
+    },
+}
+
+/// The set of Unicode property tables.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Properties;
+
+impl core::ops::Index<&str> for Properties {
+    type Output = RangeTable;
+
+    fn index(&self, key: &str) -> &Self::Output {
+        match key {
+            "ASCII_Hex_Digit" => _ASCII_HEX_DIGIT,
+            "Bidi_Control" => _BIDI_CONTROL,
+            "Dash" => _DASH,
+            "Deprecated" => _DEPRECATED,
+            "Diacritic" => _DIACRITIC,
+            "Extender" => _EXTENDER,
+            "Hex_Digit" => _HEX_DIGIT,
+            "Hyphen" => _HYPHEN,
+            "IDS_Binary_Operator" => _IDS_BINARY_OPERATOR,
+            "IDS_Trinary_Operator" => _IDS_TRINARY_OPERATOR,
+            "Ideographic" => _IDEOGRAPHIC,
+            "Join_Control" => _JOIN_CONTROL,
+            "Logical_Order_Exception" => _LOGICAL_ORDER_EXCEPTION,
+            "Noncharacter_Code_Point" => _NONCHARACTER_CODE_POINT,
+            "Other_Alphabetic" => _OTHER_ALPHABETIC,
+            "Other_Default_Ignorable_Code_Point" => _OTHER_DEFAULT_IGNORABLE_CODE_POINT,
+            "Other_Grapheme_Extend" => _OTHER_GRAPHEME_EXTEND,
+            "Other_ID_Continue" => _OTHER_ID_CONTINUE,
+            "Other_ID_Start" => _OTHER_ID_START,
+            "Other_Lowercase" => _OTHER_LOWERCASE,
+            "Other_Math" => _OTHER_MATH,
+            "Other_Uppercase" => _OTHER_UPPERCASE,
+            "Pattern_Syntax" => _PATTERN_SYNTAX,
+            "Pattern_White_Space" => _PATTERN_WHITE_SPACE,
+            "Prepended_Concatenation_Mark" => _PREPENDED_CONCATENATION_MARK,
+            "Quotation_Mark" => _QUOTATION_MARK,
+            "Radical" => _RADICAL,
+            "Regional_Indicator" => _REGIONAL_INDICATOR,
+            "STerm" | "Sentence_Terminal" => _SENTENCE_TERMINAL,
+            "Soft_Dotted" => _SOFT_DOTTED,
+            "Terminal_Punctuation" => _TERMINAL_PUNCTUATION,
+            "Unified_Ideograph" => _UNIFIED_IDEOGRAPH,
+            "Variation_Selector" => _VARIATION_SELECTOR,
+            "White_Space" => _WHITE_SPACE,
+            _ => panic!("unknown property name"),
+        }
+    }
+}
+
+impl Properties {
+    /// Returns the number of properties
+    pub const LEN: usize = 35;
+
+    /// Create a new iter on properties
+    #[inline]
+    pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {
+        static PROPERTIES: [(&str, &RangeTable); 35] = [
+            ("ASCII_Hex_Digit", _ASCII_HEX_DIGIT),
+            ("Bidi_Control", _BIDI_CONTROL),
+            ("Dash", _DASH),
+            ("Deprecated", _DEPRECATED),
+            ("Diacritic", _DIACRITIC),
+            ("Extender", _EXTENDER),
+            ("Hex_Digit", _HEX_DIGIT),
+            ("Hyphen", _HYPHEN),
+            ("IDS_Binary_Operator", _IDS_BINARY_OPERATOR),
+            ("IDS_Trinary_Operator", _IDS_TRINARY_OPERATOR),
+            ("Ideographic", _IDEOGRAPHIC),
+            ("Join_Control", _JOIN_CONTROL),
+            ("Logical_Order_Exception", _LOGICAL_ORDER_EXCEPTION),
+            ("Noncharacter_Code_Point", _NONCHARACTER_CODE_POINT),
+            ("Other_Alphabetic", _OTHER_ALPHABETIC),
+            (
+                "Other_Default_Ignorable_Code_Point",
+                _OTHER_DEFAULT_IGNORABLE_CODE_POINT,
+            ),
+            ("Other_Grapheme_Extend", _OTHER_GRAPHEME_EXTEND),
+            ("Other_ID_Continue", _OTHER_ID_CONTINUE),
+            ("Other_ID_Start", _OTHER_ID_START),
+            ("Other_Lowercase", _OTHER_LOWERCASE),
+            ("Other_Math", _OTHER_MATH),
+            ("Other_Uppercase", _OTHER_UPPERCASE),
+            ("Pattern_Syntax", _PATTERN_SYNTAX),
+            ("Pattern_White_Space", _PATTERN_WHITE_SPACE),
+            (
+                "Prepended_Concatenation_Mark",
+                _PREPENDED_CONCATENATION_MARK,
+            ),
+            ("Quotation_Mark", _QUOTATION_MARK),
+            ("Radical", _RADICAL),
+            ("Regional_Indicator", _REGIONAL_INDICATOR),
+            ("STerm", _SENTENCE_TERMINAL),
+            ("Sentence_Terminal", _SENTENCE_TERMINAL),
+            ("Soft_Dotted", _SOFT_DOTTED),
+            ("Terminal_Punctuation", _TERMINAL_PUNCTUATION),
+            ("Unified_Ideograph", _UNIFIED_IDEOGRAPH),
+            ("Variation_Selector", _VARIATION_SELECTOR),
+            ("White_Space", _WHITE_SPACE),
+        ];
+        PROPERTIES.iter()
+    }
+}
+
+rt! {
+    name: _ASCII_HEX_DIGIT,
+    r16: {
+        {0x0030, 0x0039, 1},
+        {0x0041, 0x0046, 1},
+        {0x0061, 0x0066, 1},
+    },
+    latin_offset: 3,
+}
+
+rt! {
+    name: _BIDI_CONTROL,
+    r16: {
+        {0x061c, 0x200e, 6642},
+        {0x200f, 0x202a, 27},
+        {0x202b, 0x202e, 1},
+        {0x2066, 0x2069, 1},
+    },
+}
+
+rt! {
+    name: _DASH,
+    r16: {
+        {0x002d, 0x058a, 1373},
+        {0x05be, 0x1400, 3650},
+        {0x1806, 0x2010, 2058},
+        {0x2011, 0x2015, 1},
+        {0x2053, 0x207b, 40},
+        {0x208b, 0x2212, 391},
+        {0x2e17, 0x2e1a, 3},
+        {0x2e3a, 0x2e3b, 1},
+        {0x2e40, 0x301c, 476},
+        {0x3030, 0x30a0, 112},
+        {0xfe31, 0xfe32, 1},
+        {0xfe58, 0xfe63, 11},
+        {0xff0d, 0xff0d, 1},
+    },
+    r32: {
+        {0x10ead, 0x10ead, 1},
+    }
+}
+
+rt! {
+    name: _DEPRECATED,
+    r16: {
+        {0x0149, 0x0673, 1322},
+        {0x0f77, 0x0f79, 2},
+        {0x17a3, 0x17a4, 1},
+        {0x206a, 0x206f, 1},
+        {0x2329, 0x232a, 1},
+    },
+    r32: {
+        {0xe0001, 0xe0001, 1},
+    }
+}
+
+rt! {
+    name: _DIACRITIC,
+    r16: {
+        {0x005e, 0x0060, 2},
+        {0x00a8, 0x00af, 7},
+        {0x00b4, 0x00b7, 3},
+        {0x00b8, 0x02b0, 504},
+        {0x02b1, 0x034e, 1},
+        {0x0350, 0x0357, 1},
+        {0x035d, 0x0362, 1},
+        {0x0374, 0x0375, 1},
+        {0x037a, 0x0384, 10},
+        {0x0385, 0x0483, 254},
+        {0x0484, 0x0487, 1},
+        {0x0559, 0x0591, 56},
+        {0x0592, 0x05a1, 1},
+        {0x05a3, 0x05bd, 1},
+        {0x05bf, 0x05c1, 2},
+        {0x05c2, 0x05c4, 2},
+        {0x064b, 0x0652, 1},
+        {0x0657, 0x0658, 1},
+        {0x06df, 0x06e0, 1},
+        {0x06e5, 0x06e6, 1},
+        {0x06ea, 0x06ec, 1},
+        {0x0730, 0x074a, 1},
+        {0x07a6, 0x07b0, 1},
+        {0x07eb, 0x07f5, 1},
+        {0x0818, 0x0819, 1},
+        {0x08e3, 0x08fe, 1},
+        {0x093c, 0x094d, 17},
+        {0x0951, 0x0954, 1},
+        {0x0971, 0x09bc, 75},
+        {0x09cd, 0x0a3c, 111},
+        {0x0a4d, 0x0abc, 111},
+        {0x0acd, 0x0afd, 48},
+        {0x0afe, 0x0aff, 1},
+        {0x0b3c, 0x0b4d, 17},
+        {0x0b55, 0x0bcd, 120},
+        {0x0c4d, 0x0cbc, 111},
+        {0x0ccd, 0x0d3b, 110},
+        {0x0d3c, 0x0d4d, 17},
+        {0x0dca, 0x0e47, 125},
+        {0x0e48, 0x0e4c, 1},
+        {0x0e4e, 0x0eba, 108},
+        {0x0ec8, 0x0ecc, 1},
+        {0x0f18, 0x0f19, 1},
+        {0x0f35, 0x0f39, 2},
+        {0x0f3e, 0x0f3f, 1},
+        {0x0f82, 0x0f84, 1},
+        {0x0f86, 0x0f87, 1},
+        {0x0fc6, 0x1037, 113},
+        {0x1039, 0x103a, 1},
+        {0x1063, 0x1064, 1},
+        {0x1069, 0x106d, 1},
+        {0x1087, 0x108d, 1},
+        {0x108f, 0x109a, 11},
+        {0x109b, 0x135d, 706},
+        {0x135e, 0x135f, 1},
+        {0x17c9, 0x17d3, 1},
+        {0x17dd, 0x1939, 348},
+        {0x193a, 0x193b, 1},
+        {0x1a75, 0x1a7c, 1},
+        {0x1a7f, 0x1ab0, 49},
+        {0x1ab1, 0x1abd, 1},
+        {0x1b34, 0x1b44, 16},
+        {0x1b6b, 0x1b73, 1},
+        {0x1baa, 0x1bab, 1},
+        {0x1c36, 0x1c37, 1},
+        {0x1c78, 0x1c7d, 1},
+        {0x1cd0, 0x1ce8, 1},
+        {0x1ced, 0x1cf4, 7},
+        {0x1cf7, 0x1cf9, 1},
+        {0x1d2c, 0x1d6a, 1},
+        {0x1dc4, 0x1dcf, 1},
+        {0x1df5, 0x1df9, 1},
+        {0x1dfd, 0x1dff, 1},
+        {0x1fbd, 0x1fbf, 2},
+        {0x1fc0, 0x1fc1, 1},
+        {0x1fcd, 0x1fcf, 1},
+        {0x1fdd, 0x1fdf, 1},
+        {0x1fed, 0x1fef, 1},
+        {0x1ffd, 0x1ffe, 1},
+        {0x2cef, 0x2cf1, 1},
+        {0x2e2f, 0x302a, 507},
+        {0x302b, 0x302f, 1},
+        {0x3099, 0x309c, 1},
+        {0x30fc, 0xa66f, 30067},
+        {0xa67c, 0xa67d, 1},
+        {0xa67f, 0xa69c, 29},
+        {0xa69d, 0xa6f0, 83},
+        {0xa6f1, 0xa700, 15},
+        {0xa701, 0xa721, 1},
+        {0xa788, 0xa78a, 1},
+        {0xa7f8, 0xa7f9, 1},
+        {0xa8c4, 0xa8e0, 28},
+        {0xa8e1, 0xa8f1, 1},
+        {0xa92b, 0xa92e, 1},
+        {0xa953, 0xa9b3, 96},
+        {0xa9c0, 0xa9e5, 37},
+        {0xaa7b, 0xaa7d, 1},
+        {0xaabf, 0xaac2, 1},
+        {0xaaf6, 0xab5b, 101},
+        {0xab5c, 0xab5f, 1},
+        {0xab69, 0xab6b, 1},
+        {0xabec, 0xabed, 1},
+        {0xfb1e, 0xfe20, 770},
+        {0xfe21, 0xfe2f, 1},
+        {0xff3e, 0xff40, 2},
+        {0xff70, 0xff9e, 46},
+        {0xff9f, 0xffe3, 68},
+    },
+    r32: {
+        {0x102e0, 0x10ae5, 2053},
+        {0x10ae6, 0x10d22, 572},
+        {0x10d23, 0x10d27, 1},
+        {0x10f46, 0x10f50, 1},
+        {0x110b9, 0x110ba, 1},
+        {0x11133, 0x11134, 1},
+        {0x11173, 0x111c0, 77},
+        {0x111ca, 0x111cc, 1},
+        {0x11235, 0x11236, 1},
+        {0x112e9, 0x112ea, 1},
+        {0x1133c, 0x1134d, 17},
+        {0x11366, 0x1136c, 1},
+        {0x11370, 0x11374, 1},
+        {0x11442, 0x11446, 4},
+        {0x114c2, 0x114c3, 1},
+        {0x115bf, 0x115c0, 1},
+        {0x1163f, 0x116b6, 119},
+        {0x116b7, 0x1172b, 116},
+        {0x11839, 0x1183a, 1},
+        {0x1193d, 0x1193e, 1},
+        {0x11943, 0x119e0, 157},
+        {0x11a34, 0x11a47, 19},
+        {0x11a99, 0x11c3f, 422},
+        {0x11d42, 0x11d44, 2},
+        {0x11d45, 0x11d97, 82},
+        {0x16af0, 0x16af4, 1},
+        {0x16b30, 0x16b36, 1},
+        {0x16f8f, 0x16f9f, 1},
+        {0x16ff0, 0x16ff1, 1},
+        {0x1d167, 0x1d169, 1},
+        {0x1d16d, 0x1d172, 1},
+        {0x1d17b, 0x1d182, 1},
+        {0x1d185, 0x1d18b, 1},
+        {0x1d1aa, 0x1d1ad, 1},
+        {0x1e130, 0x1e136, 1},
+        {0x1e2ec, 0x1e2ef, 1},
+        {0x1e8d0, 0x1e8d6, 1},
+        {0x1e944, 0x1e946, 1},
+        {0x1e948, 0x1e94a, 1},
+    },
+    latin_offset: 3,
+}
+
+rt! {
+    name: _EXTENDER,
+    r16: {
+        {0x00b7, 0x02d0, 537},
+        {0x02d1, 0x0640, 879},
+        {0x07fa, 0x0b55, 859},
+        {0x0e46, 0x0ec6, 128},
+        {0x180a, 0x1843, 57},
+        {0x1aa7, 0x1c36, 399},
+        {0x1c7b, 0x3005, 5002},
+        {0x3031, 0x3035, 1},
+        {0x309d, 0x309e, 1},
+        {0x30fc, 0x30fe, 1},
+        {0xa015, 0xa60c, 1527},
+        {0xa9cf, 0xa9e6, 23},
+        {0xaa70, 0xaadd, 109},
+        {0xaaf3, 0xaaf4, 1},
+        {0xff70, 0xff70, 1},
+    },
+    r32: {
+        {0x1135d, 0x115c6, 617},
+        {0x115c7, 0x115c8, 1},
+        {0x11a98, 0x16b42, 20650},
+        {0x16b43, 0x16fe0, 1181},
+        {0x16fe1, 0x16fe3, 2},
+        {0x1e13c, 0x1e13d, 1},
+        {0x1e944, 0x1e946, 1},
+    }
+}
+
+rt! {
+    name: _HEX_DIGIT,
+    r16: {
+        {0x0030, 0x0039, 1},
+        {0x0041, 0x0046, 1},
+        {0x0061, 0x0066, 1},
+        {0xff10, 0xff19, 1},
+        {0xff21, 0xff26, 1},
+        {0xff41, 0xff46, 1},
+    },
+    latin_offset: 3,
+}
+
+rt! {
+    name: _HYPHEN,
+    r16: {
+        {0x002d, 0x00ad, 128},
+        {0x058a, 0x1806, 4732},
+        {0x2010, 0x2011, 1},
+        {0x2e17, 0x30fb, 740},
+        {0xfe63, 0xff0d, 170},
+        {0xff65, 0xff65, 1},
+    },
+    latin_offset: 1,
+}
+
+rt! {
+    name: _IDS_BINARY_OPERATOR,
+    r16: {
+        {0x2ff0, 0x2ff1, 1},
+        {0x2ff4, 0x2ffb, 1},
+    }
+}
+
+rt! {
+    name: _IDS_TRINARY_OPERATOR,
+    r16: {
+        {0x2ff2, 0x2ff3, 1},
+    }
+}
+
+rt! {
+    name: _IDEOGRAPHIC,
+    r16: {
+        {0x3006, 0x3007, 1},
+        {0x3021, 0x3029, 1},
+        {0x3038, 0x303a, 1},
+        {0x3400, 0x4dbf, 1},
+        {0x4e00, 0x9ffc, 1},
+        {0xf900, 0xfa6d, 1},
+        {0xfa70, 0xfad9, 1},
+    },
+    r32: {
+        {0x16fe4, 0x17000, 28},
+        {0x17001, 0x187f7, 1},
+        {0x18800, 0x18cd5, 1},
+        {0x18d00, 0x18d08, 1},
+        {0x1b170, 0x1b2fb, 1},
+        {0x20000, 0x2a6dd, 1},
+        {0x2a700, 0x2b734, 1},
+        {0x2b740, 0x2b81d, 1},
+        {0x2b820, 0x2cea1, 1},
+        {0x2ceb0, 0x2ebe0, 1},
+        {0x2f800, 0x2fa1d, 1},
+        {0x30000, 0x3134a, 1},
+    }
+}
+
+rt! {
+    name: _JOIN_CONTROL,
+    r16: {
+        {0x200c, 0x200d, 1},
+    }
+}
+
+rt! {
+    name: _LOGICAL_ORDER_EXCEPTION,
+    r16: {
+        {0x0e40, 0x0e44, 1},
+        {0x0ec0, 0x0ec4, 1},
+        {0x19b5, 0x19b7, 1},
+        {0x19ba, 0xaab5, 37115},
+        {0xaab6, 0xaab9, 3},
+        {0xaabb, 0xaabc, 1},
+    }
+}
+
+rt! {
+    name: _NONCHARACTER_CODE_POINT,
+    r16: {
+        {0xfdd0, 0xfdef, 1},
+        {0xfffe, 0xffff, 1},
+    },
+    r32: {
+        {0x1fffe, 0x1ffff, 1},
+        {0x2fffe, 0x2ffff, 1},
+        {0x3fffe, 0x3ffff, 1},
+        {0x4fffe, 0x4ffff, 1},
+        {0x5fffe, 0x5ffff, 1},
+        {0x6fffe, 0x6ffff, 1},
+        {0x7fffe, 0x7ffff, 1},
+        {0x8fffe, 0x8ffff, 1},
+        {0x9fffe, 0x9ffff, 1},
+        {0xafffe, 0xaffff, 1},
+        {0xbfffe, 0xbffff, 1},
+        {0xcfffe, 0xcffff, 1},
+        {0xdfffe, 0xdffff, 1},
+        {0xefffe, 0xeffff, 1},
+        {0xffffe, 0xfffff, 1},
+        {0x10fffe, 0x10ffff, 1},
+    }
+}
+
+rt! {
+    name: _OTHER_ALPHABETIC,
+    r16: {
+        {0x0345, 0x05b0, 619},
+        {0x05b1, 0x05bd, 1},
+        {0x05bf, 0x05c1, 2},
+        {0x05c2, 0x05c4, 2},
+        {0x05c5, 0x05c7, 2},
+        {0x0610, 0x061a, 1},
+        {0x064b, 0x0657, 1},
+        {0x0659, 0x065f, 1},
+        {0x0670, 0x06d6, 102},
+        {0x06d7, 0x06dc, 1},
+        {0x06e1, 0x06e4, 1},
+        {0x06e7, 0x06e8, 1},
+        {0x06ed, 0x0711, 36},
+        {0x0730, 0x073f, 1},
+        {0x07a6, 0x07b0, 1},
+        {0x0816, 0x0817, 1},
+        {0x081b, 0x0823, 1},
+        {0x0825, 0x0827, 1},
+        {0x0829, 0x082c, 1},
+        {0x08d4, 0x08df, 1},
+        {0x08e3, 0x08e9, 1},
+        {0x08f0, 0x0903, 1},
+        {0x093a, 0x093b, 1},
+        {0x093e, 0x094c, 1},
+        {0x094e, 0x094f, 1},
+        {0x0955, 0x0957, 1},
+        {0x0962, 0x0963, 1},
+        {0x0981, 0x0983, 1},
+        {0x09be, 0x09c4, 1},
+        {0x09c7, 0x09c8, 1},
+        {0x09cb, 0x09cc, 1},
+        {0x09d7, 0x09e2, 11},
+        {0x09e3, 0x0a01, 30},
+        {0x0a02, 0x0a03, 1},
+        {0x0a3e, 0x0a42, 1},
+        {0x0a47, 0x0a48, 1},
+        {0x0a4b, 0x0a4c, 1},
+        {0x0a51, 0x0a70, 31},
+        {0x0a71, 0x0a75, 4},
+        {0x0a81, 0x0a83, 1},
+        {0x0abe, 0x0ac5, 1},
+        {0x0ac7, 0x0ac9, 1},
+        {0x0acb, 0x0acc, 1},
+        {0x0ae2, 0x0ae3, 1},
+        {0x0afa, 0x0afc, 1},
+        {0x0b01, 0x0b03, 1},
+        {0x0b3e, 0x0b44, 1},
+        {0x0b47, 0x0b48, 1},
+        {0x0b4b, 0x0b4c, 1},
+        {0x0b56, 0x0b57, 1},
+        {0x0b62, 0x0b63, 1},
+        {0x0b82, 0x0bbe, 60},
+        {0x0bbf, 0x0bc2, 1},
+        {0x0bc6, 0x0bc8, 1},
+        {0x0bca, 0x0bcc, 1},
+        {0x0bd7, 0x0c00, 41},
+        {0x0c01, 0x0c03, 1},
+        {0x0c3e, 0x0c44, 1},
+        {0x0c46, 0x0c48, 1},
+        {0x0c4a, 0x0c4c, 1},
+        {0x0c55, 0x0c56, 1},
+        {0x0c62, 0x0c63, 1},
+        {0x0c81, 0x0c83, 1},
+        {0x0cbe, 0x0cc4, 1},
+        {0x0cc6, 0x0cc8, 1},
+        {0x0cca, 0x0ccc, 1},
+        {0x0cd5, 0x0cd6, 1},
+        {0x0ce2, 0x0ce3, 1},
+        {0x0d00, 0x0d03, 1},
+        {0x0d3e, 0x0d44, 1},
+        {0x0d46, 0x0d48, 1},
+        {0x0d4a, 0x0d4c, 1},
+        {0x0d57, 0x0d62, 11},
+        {0x0d63, 0x0d81, 30},
+        {0x0d82, 0x0d83, 1},
+        {0x0dcf, 0x0dd4, 1},
+        {0x0dd6, 0x0dd8, 2},
+        {0x0dd9, 0x0ddf, 1},
+        {0x0df2, 0x0df3, 1},
+        {0x0e31, 0x0e34, 3},
+        {0x0e35, 0x0e3a, 1},
+        {0x0e4d, 0x0eb1, 100},
+        {0x0eb4, 0x0eb9, 1},
+        {0x0ebb, 0x0ebc, 1},
+        {0x0ecd, 0x0f71, 164},
+        {0x0f72, 0x0f81, 1},
+        {0x0f8d, 0x0f97, 1},
+        {0x0f99, 0x0fbc, 1},
+        {0x102b, 0x1036, 1},
+        {0x1038, 0x103b, 3},
+        {0x103c, 0x103e, 1},
+        {0x1056, 0x1059, 1},
+        {0x105e, 0x1060, 1},
+        {0x1062, 0x1064, 1},
+        {0x1067, 0x106d, 1},
+        {0x1071, 0x1074, 1},
+        {0x1082, 0x108d, 1},
+        {0x108f, 0x109a, 11},
+        {0x109b, 0x109d, 1},
+        {0x1712, 0x1713, 1},
+        {0x1732, 0x1733, 1},
+        {0x1752, 0x1753, 1},
+        {0x1772, 0x1773, 1},
+        {0x17b6, 0x17c8, 1},
+        {0x1885, 0x1886, 1},
+        {0x18a9, 0x1920, 119},
+        {0x1921, 0x192b, 1},
+        {0x1930, 0x1938, 1},
+        {0x1a17, 0x1a1b, 1},
+        {0x1a55, 0x1a5e, 1},
+        {0x1a61, 0x1a74, 1},
+        {0x1abf, 0x1ac0, 1},
+        {0x1b00, 0x1b04, 1},
+        {0x1b35, 0x1b43, 1},
+        {0x1b80, 0x1b82, 1},
+        {0x1ba1, 0x1ba9, 1},
+        {0x1bac, 0x1bad, 1},
+        {0x1be7, 0x1bf1, 1},
+        {0x1c24, 0x1c36, 1},
+        {0x1de7, 0x1df4, 1},
+        {0x24b6, 0x24e9, 1},
+        {0x2de0, 0x2dff, 1},
+        {0xa674, 0xa67b, 1},
+        {0xa69e, 0xa69f, 1},
+        {0xa802, 0xa80b, 9},
+        {0xa823, 0xa827, 1},
+        {0xa880, 0xa881, 1},
+        {0xa8b4, 0xa8c3, 1},
+        {0xa8c5, 0xa8ff, 58},
+        {0xa926, 0xa92a, 1},
+        {0xa947, 0xa952, 1},
+        {0xa980, 0xa983, 1},
+        {0xa9b4, 0xa9bf, 1},
+        {0xa9e5, 0xaa29, 68},
+        {0xaa2a, 0xaa36, 1},
+        {0xaa43, 0xaa4c, 9},
+        {0xaa4d, 0xaa7b, 46},
+        {0xaa7c, 0xaa7d, 1},
+        {0xaab0, 0xaab2, 2},
+        {0xaab3, 0xaab4, 1},
+        {0xaab7, 0xaab8, 1},
+        {0xaabe, 0xaaeb, 45},
+        {0xaaec, 0xaaef, 1},
+        {0xaaf5, 0xabe3, 238},
+        {0xabe4, 0xabea, 1},
+        {0xfb1e, 0xfb1e, 1},
+    },
+    r32: {
+        {0x10376, 0x1037a, 1},
+        {0x10a01, 0x10a03, 1},
+        {0x10a05, 0x10a06, 1},
+        {0x10a0c, 0x10a0f, 1},
+        {0x10d24, 0x10d27, 1},
+        {0x10eab, 0x10eac, 1},
+        {0x11000, 0x11002, 1},
+        {0x11038, 0x11045, 1},
+        {0x11082, 0x110b0, 46},
+        {0x110b1, 0x110b8, 1},
+        {0x11100, 0x11102, 1},
+        {0x11127, 0x11132, 1},
+        {0x11145, 0x11146, 1},
+        {0x11180, 0x11182, 1},
+        {0x111b3, 0x111bf, 1},
+        {0x111ce, 0x111cf, 1},
+        {0x1122c, 0x11234, 1},
+        {0x11237, 0x1123e, 7},
+        {0x112df, 0x112e8, 1},
+        {0x11300, 0x11303, 1},
+        {0x1133e, 0x11344, 1},
+        {0x11347, 0x11348, 1},
+        {0x1134b, 0x1134c, 1},
+        {0x11357, 0x11362, 11},
+        {0x11363, 0x11435, 210},
+        {0x11436, 0x11441, 1},
+        {0x11443, 0x11445, 1},
+        {0x114b0, 0x114c1, 1},
+        {0x115af, 0x115b5, 1},
+        {0x115b8, 0x115be, 1},
+        {0x115dc, 0x115dd, 1},
+        {0x11630, 0x1163e, 1},
+        {0x11640, 0x116ab, 107},
+        {0x116ac, 0x116b5, 1},
+        {0x1171d, 0x1172a, 1},
+        {0x1182c, 0x11838, 1},
+        {0x11930, 0x11935, 1},
+        {0x11937, 0x11938, 1},
+        {0x1193b, 0x1193c, 1},
+        {0x11940, 0x11942, 2},
+        {0x119d1, 0x119d7, 1},
+        {0x119da, 0x119df, 1},
+        {0x119e4, 0x11a01, 29},
+        {0x11a02, 0x11a0a, 1},
+        {0x11a35, 0x11a39, 1},
+        {0x11a3b, 0x11a3e, 1},
+        {0x11a51, 0x11a5b, 1},
+        {0x11a8a, 0x11a97, 1},
+        {0x11c2f, 0x11c36, 1},
+        {0x11c38, 0x11c3e, 1},
+        {0x11c92, 0x11ca7, 1},
+        {0x11ca9, 0x11cb6, 1},
+        {0x11d31, 0x11d36, 1},
+        {0x11d3a, 0x11d3c, 2},
+        {0x11d3d, 0x11d3f, 2},
+        {0x11d40, 0x11d41, 1},
+        {0x11d43, 0x11d47, 4},
+        {0x11d8a, 0x11d8e, 1},
+        {0x11d90, 0x11d91, 1},
+        {0x11d93, 0x11d96, 1},
+        {0x11ef3, 0x11ef6, 1},
+        {0x16f4f, 0x16f51, 2},
+        {0x16f52, 0x16f87, 1},
+        {0x16f8f, 0x16f92, 1},
+        {0x16ff0, 0x16ff1, 1},
+        {0x1bc9e, 0x1e000, 9058},
+        {0x1e001, 0x1e006, 1},
+        {0x1e008, 0x1e018, 1},
+        {0x1e01b, 0x1e021, 1},
+        {0x1e023, 0x1e024, 1},
+        {0x1e026, 0x1e02a, 1},
+        {0x1e947, 0x1f130, 2025},
+        {0x1f131, 0x1f149, 1},
+        {0x1f150, 0x1f169, 1},
+        {0x1f170, 0x1f189, 1},
+    }
+}
+
+rt! {
+    name: _OTHER_DEFAULT_IGNORABLE_CODE_POINT,
+    r16: {
+        {0x034f, 0x115f, 3600},
+        {0x1160, 0x17b4, 1620},
+        {0x17b5, 0x2065, 2224},
+        {0x3164, 0xffa0, 52796},
+        {0xfff0, 0xfff8, 1},
+    },
+    r32: {
+        {0xe0000, 0xe0002, 2},
+        {0xe0003, 0xe001f, 1},
+        {0xe0080, 0xe00ff, 1},
+        {0xe01f0, 0xe0fff, 1},
+    }
+}
+
+rt! {
+    name: _OTHER_GRAPHEME_EXTEND,
+    r16: {
+        {0x09be, 0x09d7, 25},
+        {0x0b3e, 0x0b57, 25},
+        {0x0bbe, 0x0bd7, 25},
+        {0x0cc2, 0x0cd5, 19},
+        {0x0cd6, 0x0d3e, 104},
+        {0x0d57, 0x0dcf, 120},
+        {0x0ddf, 0x1b35, 3414},
+        {0x200c, 0x302e, 4130},
+        {0x302f, 0xff9e, 53103},
+        {0xff9f, 0xff9f, 1},
+    },
+    r32: {
+        {0x1133e, 0x11357, 25},
+        {0x114b0, 0x114bd, 13},
+        {0x115af, 0x11930, 897},
+        {0x1d165, 0x1d16e, 9},
+        {0x1d16f, 0x1d172, 1},
+        {0xe0020, 0xe007f, 1},
+    }
+}
+
+rt! {
+    name: _OTHER_ID_CONTINUE,
+    r16: {
+        {0x00b7, 0x0387, 720},
+        {0x1369, 0x1371, 1},
+        {0x19da, 0x19da, 1},
+    },
+}
+
+rt! {
+    name: _OTHER_ID_START,
+    r16: {
+        {0x1885, 0x1886, 1},
+        {0x2118, 0x212e, 22},
+        {0x309b, 0x309c, 1},
+    },
+}
+
+rt! {
+    name: _OTHER_LOWERCASE,
+    r16: {
+        {0x00aa, 0x00ba, 16},
+        {0x02b0, 0x02b8, 1},
+        {0x02c0, 0x02c1, 1},
+        {0x02e0, 0x02e4, 1},
+        {0x0345, 0x037a, 53},
+        {0x1d2c, 0x1d6a, 1},
+        {0x1d78, 0x1d9b, 35},
+        {0x1d9c, 0x1dbf, 1},
+        {0x2071, 0x207f, 14},
+        {0x2090, 0x209c, 1},
+        {0x2170, 0x217f, 1},
+        {0x24d0, 0x24e9, 1},
+        {0x2c7c, 0x2c7d, 1},
+        {0xa69c, 0xa69d, 1},
+        {0xa770, 0xa7f8, 136},
+        {0xa7f9, 0xab5c, 867},
+        {0xab5d, 0xab5f, 1},
+    },
+    latin_offset: 1,
+}
+
+rt! {
+    name: _OTHER_MATH,
+    r16: {
+        {0x005e, 0x03d0, 882},
+        {0x03d1, 0x03d2, 1},
+        {0x03d5, 0x03f0, 27},
+        {0x03f1, 0x03f4, 3},
+        {0x03f5, 0x2016, 7201},
+        {0x2032, 0x2034, 1},
+        {0x2040, 0x2061, 33},
+        {0x2062, 0x2064, 1},
+        {0x207d, 0x207e, 1},
+        {0x208d, 0x208e, 1},
+        {0x20d0, 0x20dc, 1},
+        {0x20e1, 0x20e5, 4},
+        {0x20e6, 0x20eb, 5},
+        {0x20ec, 0x20ef, 1},
+        {0x2102, 0x2107, 5},
+        {0x210a, 0x2113, 1},
+        {0x2115, 0x2119, 4},
+        {0x211a, 0x211d, 1},
+        {0x2124, 0x2128, 4},
+        {0x2129, 0x212c, 3},
+        {0x212d, 0x212f, 2},
+        {0x2130, 0x2131, 1},
+        {0x2133, 0x2138, 1},
+        {0x213c, 0x213f, 1},
+        {0x2145, 0x2149, 1},
+        {0x2195, 0x2199, 1},
+        {0x219c, 0x219f, 1},
+        {0x21a1, 0x21a2, 1},
+        {0x21a4, 0x21a5, 1},
+        {0x21a7, 0x21a9, 2},
+        {0x21aa, 0x21ad, 1},
+        {0x21b0, 0x21b1, 1},
+        {0x21b6, 0x21b7, 1},
+        {0x21bc, 0x21cd, 1},
+        {0x21d0, 0x21d1, 1},
+        {0x21d3, 0x21d5, 2},
+        {0x21d6, 0x21db, 1},
+        {0x21dd, 0x21e4, 7},
+        {0x21e5, 0x2308, 291},
+        {0x2309, 0x230b, 1},
+        {0x23b4, 0x23b5, 1},
+        {0x23b7, 0x23d0, 25},
+        {0x23e2, 0x25a0, 446},
+        {0x25a1, 0x25ae, 13},
+        {0x25af, 0x25b6, 1},
+        {0x25bc, 0x25c0, 1},
+        {0x25c6, 0x25c7, 1},
+        {0x25ca, 0x25cb, 1},
+        {0x25cf, 0x25d3, 1},
+        {0x25e2, 0x25e4, 2},
+        {0x25e7, 0x25ec, 1},
+        {0x2605, 0x2606, 1},
+        {0x2640, 0x2642, 2},
+        {0x2660, 0x2663, 1},
+        {0x266d, 0x266e, 1},
+        {0x27c5, 0x27c6, 1},
+        {0x27e6, 0x27ef, 1},
+        {0x2983, 0x2998, 1},
+        {0x29d8, 0x29db, 1},
+        {0x29fc, 0x29fd, 1},
+        {0xfe61, 0xfe63, 2},
+        {0xfe68, 0xff3c, 212},
+        {0xff3e, 0xff3e, 1},
+    },
+    r32: {
+        {0x1d400, 0x1d454, 1},
+        {0x1d456, 0x1d49c, 1},
+        {0x1d49e, 0x1d49f, 1},
+        {0x1d4a2, 0x1d4a5, 3},
+        {0x1d4a6, 0x1d4a9, 3},
+        {0x1d4aa, 0x1d4ac, 1},
+        {0x1d4ae, 0x1d4b9, 1},
+        {0x1d4bb, 0x1d4bd, 2},
+        {0x1d4be, 0x1d4c3, 1},
+        {0x1d4c5, 0x1d505, 1},
+        {0x1d507, 0x1d50a, 1},
+        {0x1d50d, 0x1d514, 1},
+        {0x1d516, 0x1d51c, 1},
+        {0x1d51e, 0x1d539, 1},
+        {0x1d53b, 0x1d53e, 1},
+        {0x1d540, 0x1d544, 1},
+        {0x1d546, 0x1d54a, 4},
+        {0x1d54b, 0x1d550, 1},
+        {0x1d552, 0x1d6a5, 1},
+        {0x1d6a8, 0x1d6c0, 1},
+        {0x1d6c2, 0x1d6da, 1},
+        {0x1d6dc, 0x1d6fa, 1},
+        {0x1d6fc, 0x1d714, 1},
+        {0x1d716, 0x1d734, 1},
+        {0x1d736, 0x1d74e, 1},
+        {0x1d750, 0x1d76e, 1},
+        {0x1d770, 0x1d788, 1},
+        {0x1d78a, 0x1d7a8, 1},
+        {0x1d7aa, 0x1d7c2, 1},
+        {0x1d7c4, 0x1d7cb, 1},
+        {0x1d7ce, 0x1d7ff, 1},
+        {0x1ee00, 0x1ee03, 1},
+        {0x1ee05, 0x1ee1f, 1},
+        {0x1ee21, 0x1ee22, 1},
+        {0x1ee24, 0x1ee27, 3},
+        {0x1ee29, 0x1ee32, 1},
+        {0x1ee34, 0x1ee37, 1},
+        {0x1ee39, 0x1ee3b, 2},
+        {0x1ee42, 0x1ee47, 5},
+        {0x1ee49, 0x1ee4d, 2},
+        {0x1ee4e, 0x1ee4f, 1},
+        {0x1ee51, 0x1ee52, 1},
+        {0x1ee54, 0x1ee57, 3},
+        {0x1ee59, 0x1ee61, 2},
+        {0x1ee62, 0x1ee64, 2},
+        {0x1ee67, 0x1ee6a, 1},
+        {0x1ee6c, 0x1ee72, 1},
+        {0x1ee74, 0x1ee77, 1},
+        {0x1ee79, 0x1ee7c, 1},
+        {0x1ee7e, 0x1ee80, 2},
+        {0x1ee81, 0x1ee89, 1},
+        {0x1ee8b, 0x1ee9b, 1},
+        {0x1eea1, 0x1eea3, 1},
+        {0x1eea5, 0x1eea9, 1},
+        {0x1eeab, 0x1eebb, 1},
+    }
+}
+
+rt! {
+    name: _OTHER_UPPERCASE,
+    r16: {
+        {0x2160, 0x216f, 1},
+        {0x24b6, 0x24cf, 1},
+    },
+    r32: {
+        {0x1f130, 0x1f149, 1},
+        {0x1f150, 0x1f169, 1},
+        {0x1f170, 0x1f189, 1},
+    }
+}
+
+rt! {
+    name: _PATTERN_SYNTAX,
+    r16: {
+        {0x0021, 0x002f, 1},
+        {0x003a, 0x0040, 1},
+        {0x005b, 0x005e, 1},
+        {0x0060, 0x007b, 27},
+        {0x007c, 0x007e, 1},
+        {0x00a1, 0x00a7, 1},
+        {0x00a9, 0x00ab, 2},
+        {0x00ac, 0x00b0, 2},
+        {0x00b1, 0x00bb, 5},
+        {0x00bf, 0x00d7, 24},
+        {0x00f7, 0x2010, 7961},
+        {0x2011, 0x2027, 1},
+        {0x2030, 0x203e, 1},
+        {0x2041, 0x2053, 1},
+        {0x2055, 0x205e, 1},
+        {0x2190, 0x245f, 1},
+        {0x2500, 0x2775, 1},
+        {0x2794, 0x2bff, 1},
+        {0x2e00, 0x2e7f, 1},
+        {0x3001, 0x3003, 1},
+        {0x3008, 0x3020, 1},
+        {0x3030, 0xfd3e, 52494},
+        {0xfd3f, 0xfe45, 262},
+        {0xfe46, 0xfe46, 1},
+    },
+    latin_offset: 10,
+}
+
+rt! {
+    name: _PATTERN_WHITE_SPACE,
+    r16: {
+        {0x0009, 0x000d, 1},
+        {0x0020, 0x0085, 101},
+        {0x200e, 0x200f, 1},
+        {0x2028, 0x2029, 1},
+    },
+    latin_offset: 2,
+}
+
+rt! {
+    name: _PREPENDED_CONCATENATION_MARK,
+    r16: {
+        {0x0600, 0x0605, 1},
+        {0x06dd, 0x070f, 50},
+        {0x08e2, 0x08e2, 1},
+    },
+    r32: {
+        {0x110bd, 0x110cd, 16},
+    }
+}
+
+rt! {
+    name: _QUOTATION_MARK,
+    r16: {
+        {0x0022, 0x0027, 5},
+        {0x00ab, 0x00bb, 16},
+        {0x2018, 0x201f, 1},
+        {0x2039, 0x203a, 1},
+        {0x2e42, 0x300c, 458},
+        {0x300d, 0x300f, 1},
+        {0x301d, 0x301f, 1},
+        {0xfe41, 0xfe44, 1},
+        {0xff02, 0xff07, 5},
+        {0xff62, 0xff63, 1},
+    },
+    latin_offset: 2,
+}
+
+rt! {
+    name: _RADICAL,
+    r16: {
+        {0x2e80, 0x2e99, 1},
+        {0x2e9b, 0x2ef3, 1},
+        {0x2f00, 0x2fd5, 1},
+    }
+}
+
+rt! {
+    name: _REGIONAL_INDICATOR,
+    r32: {
+        {0x1f1e6, 0x1f1ff, 1},
+    }
+}
+
+rt! {
+    name: _SENTENCE_TERMINAL,
+    r16: {
+        {0x0021, 0x002e, 13},
+        {0x003f, 0x0589, 1354},
+        {0x061e, 0x061f, 1},
+        {0x06d4, 0x0700, 44},
+        {0x0701, 0x0702, 1},
+        {0x07f9, 0x0837, 62},
+        {0x0839, 0x083d, 4},
+        {0x083e, 0x0964, 294},
+        {0x0965, 0x104a, 1765},
+        {0x104b, 0x1362, 791},
+        {0x1367, 0x1368, 1},
+        {0x166e, 0x1735, 199},
+        {0x1736, 0x1803, 205},
+        {0x1809, 0x1944, 315},
+        {0x1945, 0x1aa8, 355},
+        {0x1aa9, 0x1aab, 1},
+        {0x1b5a, 0x1b5b, 1},
+        {0x1b5e, 0x1b5f, 1},
+        {0x1c3b, 0x1c3c, 1},
+        {0x1c7e, 0x1c7f, 1},
+        {0x203c, 0x203d, 1},
+        {0x2047, 0x2049, 1},
+        {0x2e2e, 0x2e3c, 14},
+        {0x3002, 0xa4ff, 29949},
+        {0xa60e, 0xa60f, 1},
+        {0xa6f3, 0xa6f7, 4},
+        {0xa876, 0xa877, 1},
+        {0xa8ce, 0xa8cf, 1},
+        {0xa92f, 0xa9c8, 153},
+        {0xa9c9, 0xaa5d, 148},
+        {0xaa5e, 0xaa5f, 1},
+        {0xaaf0, 0xaaf1, 1},
+        {0xabeb, 0xfe52, 21095},
+        {0xfe56, 0xfe57, 1},
+        {0xff01, 0xff0e, 13},
+        {0xff1f, 0xff61, 66},
+    },
+    r32: {
+        {0x10a56, 0x10a57, 1},
+        {0x10f55, 0x10f59, 1},
+        {0x11047, 0x11048, 1},
+        {0x110be, 0x110c1, 1},
+        {0x11141, 0x11143, 1},
+        {0x111c5, 0x111c6, 1},
+        {0x111cd, 0x111de, 17},
+        {0x111df, 0x11238, 89},
+        {0x11239, 0x1123b, 2},
+        {0x1123c, 0x112a9, 109},
+        {0x1144b, 0x1144c, 1},
+        {0x115c2, 0x115c3, 1},
+        {0x115c9, 0x115d7, 1},
+        {0x11641, 0x11642, 1},
+        {0x1173c, 0x1173e, 1},
+        {0x11944, 0x11946, 2},
+        {0x11a42, 0x11a43, 1},
+        {0x11a9b, 0x11a9c, 1},
+        {0x11c41, 0x11c42, 1},
+        {0x11ef7, 0x11ef8, 1},
+        {0x16a6e, 0x16a6f, 1},
+        {0x16af5, 0x16b37, 66},
+        {0x16b38, 0x16b44, 12},
+        {0x16e98, 0x1bc9f, 19975},
+        {0x1da88, 0x1da88, 1},
+    },
+    latin_offset: 1,
+}
+
+rt! {
+    name: _SOFT_DOTTED,
+    r16: {
+        {0x0069, 0x006a, 1},
+        {0x012f, 0x0249, 282},
+        {0x0268, 0x029d, 53},
+        {0x02b2, 0x03f3, 321},
+        {0x0456, 0x0458, 2},
+        {0x1d62, 0x1d96, 52},
+        {0x1da4, 0x1da8, 4},
+        {0x1e2d, 0x1ecb, 158},
+        {0x2071, 0x2148, 215},
+        {0x2149, 0x2c7c, 2867},
+    },
+    r32: {
+        {0x1d422, 0x1d423, 1},
+        {0x1d456, 0x1d457, 1},
+        {0x1d48a, 0x1d48b, 1},
+        {0x1d4be, 0x1d4bf, 1},
+        {0x1d4f2, 0x1d4f3, 1},
+        {0x1d526, 0x1d527, 1},
+        {0x1d55a, 0x1d55b, 1},
+        {0x1d58e, 0x1d58f, 1},
+        {0x1d5c2, 0x1d5c3, 1},
+        {0x1d5f6, 0x1d5f7, 1},
+        {0x1d62a, 0x1d62b, 1},
+        {0x1d65e, 0x1d65f, 1},
+        {0x1d692, 0x1d693, 1},
+    },
+    latin_offset: 1
+}
+
+rt! {
+    name: _TERMINAL_PUNCTUATION,
+    r16: {
+        {0x0021, 0x002c, 11},
+        {0x002e, 0x003a, 12},
+        {0x003b, 0x003f, 4},
+        {0x037e, 0x0387, 9},
+        {0x0589, 0x05c3, 58},
+        {0x060c, 0x061b, 15},
+        {0x061e, 0x061f, 1},
+        {0x06d4, 0x0700, 44},
+        {0x0701, 0x070a, 1},
+        {0x070c, 0x07f8, 236},
+        {0x07f9, 0x0830, 55},
+        {0x0831, 0x083e, 1},
+        {0x085e, 0x0964, 262},
+        {0x0965, 0x0e5a, 1269},
+        {0x0e5b, 0x0f08, 173},
+        {0x0f0d, 0x0f12, 1},
+        {0x104a, 0x104b, 1},
+        {0x1361, 0x1368, 1},
+        {0x166e, 0x16eb, 125},
+        {0x16ec, 0x16ed, 1},
+        {0x1735, 0x1736, 1},
+        {0x17d4, 0x17d6, 1},
+        {0x17da, 0x1802, 40},
+        {0x1803, 0x1805, 1},
+        {0x1808, 0x1809, 1},
+        {0x1944, 0x1945, 1},
+        {0x1aa8, 0x1aab, 1},
+        {0x1b5a, 0x1b5b, 1},
+        {0x1b5d, 0x1b5f, 1},
+        {0x1c3b, 0x1c3f, 1},
+        {0x1c7e, 0x1c7f, 1},
+        {0x203c, 0x203d, 1},
+        {0x2047, 0x2049, 1},
+        {0x2e2e, 0x2e3c, 14},
+        {0x2e41, 0x2e4c, 11},
+        {0x2e4e, 0x2e4f, 1},
+        {0x3001, 0x3002, 1},
+        {0xa4fe, 0xa4ff, 1},
+        {0xa60d, 0xa60f, 1},
+        {0xa6f3, 0xa6f7, 1},
+        {0xa876, 0xa877, 1},
+        {0xa8ce, 0xa8cf, 1},
+        {0xa92f, 0xa9c7, 152},
+        {0xa9c8, 0xa9c9, 1},
+        {0xaa5d, 0xaa5f, 1},
+        {0xaadf, 0xaaf0, 17},
+        {0xaaf1, 0xabeb, 250},
+        {0xfe50, 0xfe52, 1},
+        {0xfe54, 0xfe57, 1},
+        {0xff01, 0xff0c, 11},
+        {0xff0e, 0xff1a, 12},
+        {0xff1b, 0xff1f, 4},
+        {0xff61, 0xff64, 3},
+    },
+    r32: {
+        {0x1039f, 0x103d0, 49},
+        {0x10857, 0x1091f, 200},
+        {0x10a56, 0x10a57, 1},
+        {0x10af0, 0x10af5, 1},
+        {0x10b3a, 0x10b3f, 1},
+        {0x10b99, 0x10b9c, 1},
+        {0x10f55, 0x10f59, 1},
+        {0x11047, 0x1104d, 1},
+        {0x110be, 0x110c1, 1},
+        {0x11141, 0x11143, 1},
+        {0x111c5, 0x111c6, 1},
+        {0x111cd, 0x111de, 17},
+        {0x111df, 0x11238, 89},
+        {0x11239, 0x1123c, 1},
+        {0x112a9, 0x1144b, 418},
+        {0x1144c, 0x1144d, 1},
+        {0x1145a, 0x1145b, 1},
+        {0x115c2, 0x115c5, 1},
+        {0x115c9, 0x115d7, 1},
+        {0x11641, 0x11642, 1},
+        {0x1173c, 0x1173e, 1},
+        {0x11944, 0x11946, 2},
+        {0x11a42, 0x11a43, 1},
+        {0x11a9b, 0x11a9c, 1},
+        {0x11aa1, 0x11aa2, 1},
+        {0x11c41, 0x11c43, 1},
+        {0x11c71, 0x11ef7, 646},
+        {0x11ef8, 0x12470, 1400},
+        {0x12471, 0x12474, 1},
+        {0x16a6e, 0x16a6f, 1},
+        {0x16af5, 0x16b37, 66},
+        {0x16b38, 0x16b39, 1},
+        {0x16b44, 0x16e97, 851},
+        {0x16e98, 0x1bc9f, 19975},
+        {0x1da87, 0x1da8a, 1},
+    },
+    latin_offset: 3,
+}
+
+rt! {
+    name: _UNIFIED_IDEOGRAPH,
+    r16: {
+        {0x3400, 0x4dbf, 1},
+        {0x4e00, 0x9ffc, 1},
+        {0xfa0e, 0xfa0f, 1},
+        {0xfa11, 0xfa13, 2},
+        {0xfa14, 0xfa1f, 11},
+        {0xfa21, 0xfa23, 2},
+        {0xfa24, 0xfa27, 3},
+        {0xfa28, 0xfa29, 1},
+    },
+    r32: {
+        {0x20000, 0x2a6dd, 1},
+        {0x2a700, 0x2b734, 1},
+        {0x2b740, 0x2b81d, 1},
+        {0x2b820, 0x2cea1, 1},
+        {0x2ceb0, 0x2ebe0, 1},
+        {0x30000, 0x3134a, 1},
+    }
+}
+
+rt! {
+    name: _VARIATION_SELECTOR,
+    r16: {
+        {0x180b, 0x180d, 1},
+        {0xfe00, 0xfe0f, 1},
+    },
+    r32: {
+        {0xe0100, 0xe01ef, 1},
+    }
+}
+
+rt! {
+    name: _WHITE_SPACE,
+    r16: {
+        {0x0009, 0x000d, 1},
+        {0x0020, 0x0085, 101},
+        {0x00a0, 0x1680, 5600},
+        {0x2000, 0x200a, 1},
+        {0x2028, 0x2029, 1},
+        {0x202f, 0x205f, 48},
+        {0x3000, 0x3000, 1},
+    },
+    latin_offset: 2,
+}
+
+rt! {
+    name: _FOLD_L,
+    r16: {
+        {0x0345, 0x0345, 1},
+    }
+}
+
+rt! {
+    name: _FOLD_LL,
+    r16: {
+        {0x0041, 0x005a, 1},
+        {0x00c0, 0x00d6, 1},
+        {0x00d8, 0x00de, 1},
+        {0x0100, 0x012e, 2},
+        {0x0132, 0x0136, 2},
+        {0x0139, 0x0147, 2},
+        {0x014a, 0x0178, 2},
+        {0x0179, 0x017d, 2},
+        {0x0181, 0x0182, 1},
+        {0x0184, 0x0186, 2},
+        {0x0187, 0x0189, 2},
+        {0x018a, 0x018b, 1},
+        {0x018e, 0x0191, 1},
+        {0x0193, 0x0194, 1},
+        {0x0196, 0x0198, 1},
+        {0x019c, 0x019d, 1},
+        {0x019f, 0x01a0, 1},
+        {0x01a2, 0x01a6, 2},
+        {0x01a7, 0x01a9, 2},
+        {0x01ac, 0x01ae, 2},
+        {0x01af, 0x01b1, 2},
+        {0x01b2, 0x01b3, 1},
+        {0x01b5, 0x01b7, 2},
+        {0x01b8, 0x01bc, 4},
+        {0x01c4, 0x01c5, 1},
+        {0x01c7, 0x01c8, 1},
+        {0x01ca, 0x01cb, 1},
+        {0x01cd, 0x01db, 2},
+        {0x01de, 0x01ee, 2},
+        {0x01f1, 0x01f2, 1},
+        {0x01f4, 0x01f6, 2},
+        {0x01f7, 0x01f8, 1},
+        {0x01fa, 0x0232, 2},
+        {0x023a, 0x023b, 1},
+        {0x023d, 0x023e, 1},
+        {0x0241, 0x0243, 2},
+        {0x0244, 0x0246, 1},
+        {0x0248, 0x024e, 2},
+        {0x0345, 0x0370, 43},
+        {0x0372, 0x0376, 4},
+        {0x037f, 0x0386, 7},
+        {0x0388, 0x038a, 1},
+        {0x038c, 0x038e, 2},
+        {0x038f, 0x0391, 2},
+        {0x0392, 0x03a1, 1},
+        {0x03a3, 0x03ab, 1},
+        {0x03cf, 0x03d8, 9},
+        {0x03da, 0x03ee, 2},
+        {0x03f4, 0x03f7, 3},
+        {0x03f9, 0x03fa, 1},
+        {0x03fd, 0x042f, 1},
+        {0x0460, 0x0480, 2},
+        {0x048a, 0x04c0, 2},
+        {0x04c1, 0x04cd, 2},
+        {0x04d0, 0x052e, 2},
+        {0x0531, 0x0556, 1},
+        {0x10a0, 0x10c5, 1},
+        {0x10c7, 0x10cd, 6},
+        {0x13a0, 0x13f5, 1},
+        {0x1c90, 0x1cba, 1},
+        {0x1cbd, 0x1cbf, 1},
+        {0x1e00, 0x1e94, 2},
+        {0x1e9e, 0x1efe, 2},
+        {0x1f08, 0x1f0f, 1},
+        {0x1f18, 0x1f1d, 1},
+        {0x1f28, 0x1f2f, 1},
+        {0x1f38, 0x1f3f, 1},
+        {0x1f48, 0x1f4d, 1},
+        {0x1f59, 0x1f5f, 2},
+        {0x1f68, 0x1f6f, 1},
+        {0x1f88, 0x1f8f, 1},
+        {0x1f98, 0x1f9f, 1},
+        {0x1fa8, 0x1faf, 1},
+        {0x1fb8, 0x1fbc, 1},
+        {0x1fc8, 0x1fcc, 1},
+        {0x1fd8, 0x1fdb, 1},
+        {0x1fe8, 0x1fec, 1},
+        {0x1ff8, 0x1ffc, 1},
+        {0x2126, 0x212a, 4},
+        {0x212b, 0x2132, 7},
+        {0x2183, 0x2c00, 2685},
+        {0x2c01, 0x2c2e, 1},
+        {0x2c60, 0x2c62, 2},
+        {0x2c63, 0x2c64, 1},
+        {0x2c67, 0x2c6d, 2},
+        {0x2c6e, 0x2c70, 1},
+        {0x2c72, 0x2c75, 3},
+        {0x2c7e, 0x2c80, 1},
+        {0x2c82, 0x2ce2, 2},
+        {0x2ceb, 0x2ced, 2},
+        {0x2cf2, 0xa640, 31054},
+        {0xa642, 0xa66c, 2},
+        {0xa680, 0xa69a, 2},
+        {0xa722, 0xa72e, 2},
+        {0xa732, 0xa76e, 2},
+        {0xa779, 0xa77d, 2},
+        {0xa77e, 0xa786, 2},
+        {0xa78b, 0xa78d, 2},
+        {0xa790, 0xa792, 2},
+        {0xa796, 0xa7aa, 2},
+        {0xa7ab, 0xa7ae, 1},
+        {0xa7b0, 0xa7b4, 1},
+        {0xa7b6, 0xa7be, 2},
+        {0xa7c2, 0xa7c4, 2},
+        {0xa7c5, 0xa7c7, 1},
+        {0xa7c9, 0xa7f5, 44},
+        {0xff21, 0xff3a, 1},
+    },
+    r32: {
+        {0x10400, 0x10427, 1},
+        {0x104b0, 0x104d3, 1},
+        {0x10c80, 0x10cb2, 1},
+        {0x118a0, 0x118bf, 1},
+        {0x16e40, 0x16e5f, 1},
+        {0x1e900, 0x1e921, 1},
+    },
+    latin_offset: 3,
+}
+
+rt! {
+    name: _FOLD_LT,
+    r16: {
+        {0x01c4, 0x01c6, 2},
+        {0x01c7, 0x01c9, 2},
+        {0x01ca, 0x01cc, 2},
+        {0x01f1, 0x01f3, 2},
+        {0x1f80, 0x1f87, 1},
+        {0x1f90, 0x1f97, 1},
+        {0x1fa0, 0x1fa7, 1},
+        {0x1fb3, 0x1fc3, 16},
+        {0x1ff3, 0x1ff3, 1},
+    }
+}
+
+rt! {
+    name: _FOLD_LU,
+    r16: {
+        {0x0061, 0x007a, 1},
+        {0x00b5, 0x00df, 42},
+        {0x00e0, 0x00f6, 1},
+        {0x00f8, 0x00ff, 1},
+        {0x0101, 0x012f, 2},
+        {0x0133, 0x0137, 2},
+        {0x013a, 0x0148, 2},
+        {0x014b, 0x0177, 2},
+        {0x017a, 0x017e, 2},
+        {0x017f, 0x0180, 1},
+        {0x0183, 0x0185, 2},
+        {0x0188, 0x018c, 4},
+        {0x0192, 0x0195, 3},
+        {0x0199, 0x019a, 1},
+        {0x019e, 0x01a1, 3},
+        {0x01a3, 0x01a5, 2},
+        {0x01a8, 0x01ad, 5},
+        {0x01b0, 0x01b4, 4},
+        {0x01b6, 0x01b9, 3},
+        {0x01bd, 0x01bf, 2},
+        {0x01c5, 0x01c6, 1},
+        {0x01c8, 0x01c9, 1},
+        {0x01cb, 0x01cc, 1},
+        {0x01ce, 0x01dc, 2},
+        {0x01dd, 0x01ef, 2},
+        {0x01f2, 0x01f3, 1},
+        {0x01f5, 0x01f9, 4},
+        {0x01fb, 0x021f, 2},
+        {0x0223, 0x0233, 2},
+        {0x023c, 0x023f, 3},
+        {0x0240, 0x0242, 2},
+        {0x0247, 0x024f, 2},
+        {0x0250, 0x0254, 1},
+        {0x0256, 0x0257, 1},
+        {0x0259, 0x025b, 2},
+        {0x025c, 0x0260, 4},
+        {0x0261, 0x0265, 2},
+        {0x0266, 0x0268, 2},
+        {0x0269, 0x026c, 1},
+        {0x026f, 0x0271, 2},
+        {0x0272, 0x0275, 3},
+        {0x027d, 0x0280, 3},
+        {0x0282, 0x0283, 1},
+        {0x0287, 0x028c, 1},
+        {0x0292, 0x029d, 11},
+        {0x029e, 0x0345, 167},
+        {0x0371, 0x0373, 2},
+        {0x0377, 0x037b, 4},
+        {0x037c, 0x037d, 1},
+        {0x03ac, 0x03af, 1},
+        {0x03b1, 0x03ce, 1},
+        {0x03d0, 0x03d1, 1},
+        {0x03d5, 0x03d7, 1},
+        {0x03d9, 0x03ef, 2},
+        {0x03f0, 0x03f3, 1},
+        {0x03f5, 0x03fb, 3},
+        {0x0430, 0x045f, 1},
+        {0x0461, 0x0481, 2},
+        {0x048b, 0x04bf, 2},
+        {0x04c2, 0x04ce, 2},
+        {0x04cf, 0x052f, 2},
+        {0x0561, 0x0586, 1},
+        {0x10d0, 0x10fa, 1},
+        {0x10fd, 0x10ff, 1},
+        {0x13f8, 0x13fd, 1},
+        {0x1c80, 0x1c88, 1},
+        {0x1d79, 0x1d7d, 4},
+        {0x1d8e, 0x1e01, 115},
+        {0x1e03, 0x1e95, 2},
+        {0x1e9b, 0x1ea1, 6},
+        {0x1ea3, 0x1eff, 2},
+        {0x1f00, 0x1f07, 1},
+        {0x1f10, 0x1f15, 1},
+        {0x1f20, 0x1f27, 1},
+        {0x1f30, 0x1f37, 1},
+        {0x1f40, 0x1f45, 1},
+        {0x1f51, 0x1f57, 2},
+        {0x1f60, 0x1f67, 1},
+        {0x1f70, 0x1f7d, 1},
+        {0x1fb0, 0x1fb1, 1},
+        {0x1fbe, 0x1fd0, 18},
+        {0x1fd1, 0x1fe0, 15},
+        {0x1fe1, 0x1fe5, 4},
+        {0x214e, 0x2184, 54},
+        {0x2c30, 0x2c5e, 1},
+        {0x2c61, 0x2c65, 4},
+        {0x2c66, 0x2c6c, 2},
+        {0x2c73, 0x2c76, 3},
+        {0x2c81, 0x2ce3, 2},
+        {0x2cec, 0x2cee, 2},
+        {0x2cf3, 0x2d00, 13},
+        {0x2d01, 0x2d25, 1},
+        {0x2d27, 0x2d2d, 6},
+        {0xa641, 0xa66d, 2},
+        {0xa681, 0xa69b, 2},
+        {0xa723, 0xa72f, 2},
+        {0xa733, 0xa76f, 2},
+        {0xa77a, 0xa77c, 2},
+        {0xa77f, 0xa787, 2},
+        {0xa78c, 0xa791, 5},
+        {0xa793, 0xa794, 1},
+        {0xa797, 0xa7a9, 2},
+        {0xa7b5, 0xa7bf, 2},
+        {0xa7c3, 0xa7c8, 5},
+        {0xa7ca, 0xa7f6, 44},
+        {0xab53, 0xab70, 29},
+        {0xab71, 0xabbf, 1},
+        {0xff41, 0xff5a, 1},
+    },
+    r32: {
+        {0x10428, 0x1044f, 1},
+        {0x104d8, 0x104fb, 1},
+        {0x10cc0, 0x10cf2, 1},
+        {0x118c0, 0x118df, 1},
+        {0x16e60, 0x16e7f, 1},
+        {0x1e922, 0x1e943, 1},
+    },
+    latin_offset: 4,
+}
+
+rt! {
+    name: _FOLD_M,
+    r16: {
+        {0x0399, 0x03b9, 32},
+        {0x1fbe, 0x1fbe, 1},
+    }
+}
+
+rt! {
+    name: _FOLD_MN,
+    r16: {
+        {0x0399, 0x03b9, 32},
+        {0x1fbe, 0x1fbe, 1},
+    }
+}
+
+/// FoldCategory maps a category name to a table of
+/// code points outside the category that are equivalent under
+/// simple case folding to code points inside the category.
+/// If there is no entry for a category name, there are no such points.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct FoldCategory;
+
+impl core::ops::Index<&str> for FoldCategory {
+    type Output = RangeTable;
+
+    fn index(&self, key: &str) -> &Self::Output {
+        match key {
+            "L" | "l" => _FOLD_L,
+            "Ll" | "ll" | "LL" => _FOLD_LL,
+            "Lt" | "lt" | "LT" => _FOLD_LT,
+            "Lu" | "lu" | "LU" => _FOLD_LU,
+            "M" | "m" => _FOLD_M,
+            "Mn" | "mn" | "MN" => _FOLD_MN,
+            _ => panic!("unkown category name"),
+        }
+    }
+}
+
+impl FoldCategory {
+    /// Returns the number of the category
+    #[inline]
+    pub const fn len(&self) -> usize {
+        6
+    }
+
+    /// Returns if the category is empty
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        false
+    }
+
+    /// Returns if the category contains the category name
+    #[inline]
+    pub fn contains(&self, key: &str) -> bool {
+        matches!(
+            key,
+            "L" | "l"
+                | "Ll"
+                | "ll"
+                | "LL"
+                | "Lt"
+                | "lt"
+                | "LT"
+                | "Lu"
+                | "lu"
+                | "LU"
+                | "M"
+                | "m"
+                | "Mn"
+                | "mn"
+                | "MN"
+        )
+    }
+
+    /// Create a new iter
+    #[inline]
+    pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {
+        static FOLD_CATEGORIES: [(&str, &RangeTable); 6] = [
+            ("L", _FOLD_L),
+            ("Ll", _FOLD_LL),
+            ("Lt", _FOLD_LT),
+            ("Lu", _FOLD_LU),
+            ("M", _FOLD_M),
+            ("Mn", _FOLD_MN),
+        ];
+        FOLD_CATEGORIES.iter()
+    }
+}
+
+rt! {
+    name: _FOLD_COMMON,
+    r16: {
+        {0x039c, 0x03bc, 32},
+    }
+}
+
+rt! {
+    name: _FOLD_GREEK,
+    r16: {
+        {0x00b5, 0x0345, 656},
+    }
+}
+
+rt! {
+    name: _FOLD_INHERITED,
+    r16: {
+        {0x0399, 0x03b9, 32},
+        {0x1fbe, 0x1fbe, 1},
+    }
+}
+
+/// FoldScript maps a script name to a table of
+/// code points outside the script that are equivalent under
+/// simple case folding to code points inside the script.
+/// If there is no entry for a script name, there are no such points.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct FoldScript;
+
+impl core::ops::Index<&str> for FoldScript {
+    type Output = RangeTable;
+
+    fn index(&self, key: &str) -> &Self::Output {
+        match key {
+            "Common" | "common" | "COMMON" => _FOLD_COMMON,
+            "Greek" | "greek" | "GREEK" => _FOLD_GREEK,
+            "Inherited" | "inherited" | "INHERITED" => _FOLD_INHERITED,
+            _ => panic!("unkown script name"),
+        }
+    }
+}
+
+impl FoldScript {
+    /// Returns the number of the script
+    #[inline]
+    pub const fn len(&self) -> usize {
+        3
+    }
+
+    /// Returns if the script is empty
+    #[inline]
+    pub const fn is_empty(&self) -> bool {
+        false
+    }
+
+    /// Returns if the script contains the script name
+    #[inline]
+    pub fn contains(&self, key: &str) -> bool {
+        matches!(
+            key,
+            "Common"
+                | "common"
+                | "COMMON"
+                | "Greek"
+                | "greek"
+                | "GREEK"
+                | "Inherited"
+                | "inherited"
+                | "INHERITED"
+        )
+    }
+
+    /// Create a new iter
+    #[inline]
+    pub fn iter(&self) -> core::slice::Iter<'_, (&'static str, &'static RangeTable)> {
+        static FOLD_SCRIPTS: [(&str, &RangeTable); 3] = [
+            ("Common", _FOLD_COMMON),
+            ("Greek", _FOLD_GREEK),
+            ("Inherited", _FOLD_INHERITED),
+        ];
+        FOLD_SCRIPTS.iter()
+    }
+}
