@@ -34,9 +34,7 @@ pipe = ["std", "crossbeam-channel", "parking_lot"]
 async-pipe = ["std", "async-channel", "futures-util/io", "async-lock"]
 
 # unicode related features
-unicode = ["utf8", "utf16", "bitflags"]
-utf8 = []
-utf16 = []
+unicode = ["bitflags"]
 
 
 [dependencies]

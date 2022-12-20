@@ -37,9 +37,9 @@ crabmole = "0.0.1"
 | `encoding/binary` | 🚧 | ✅ | ✅ | |
 | `encoding/hex` | ✅ | ✅ | ✅ | |
 | `encoding/pem` | ✅ | ✅ | ✅ | |
-| `unicode/utf8` | ✅ | ✅ | ✅ | |
+| `unicode/utf8` | ✅ | ✅ | ❌ | |
 | `unicode/utf16` | ✅ | ✅ | ✅ | |
-| `unicode` | 🚧 | ✅ | ✅ | |
+| `unicode` | ✅ | ✅ | ❌ | |
 | `io/pipe` | ✅ | ❌ | ✅ | [<img alt="github" src="https://img.shields.io/badge/dynamic/json?label=&style=for-the-badge&color=success&query=%24.totals.coverage&url=https%3A%2F%2Fcodecov.io%2Fapi%2Fv2%2Fgithub%2Fal8n%2Frepos%2Fcrabmole%2Freport%2F%3Fbranch%3Dmain%26path%3Dsrc%252Fio%252Fpipe.rs" height="22">](https://app.codecov.io/gh/al8n/crabmole/blob/main/src/io/pipe.rs) |
 | `async-io/pipe` | ✅ | ❌ | ✅ | [<img alt="github" src="https://img.shields.io/badge/dynamic/json?label=&style=for-the-badge&color=success&query=%24.totals.coverage&url=https%3A%2F%2Fcodecov.io%2Fapi%2Fv2%2Fgithub%2Fal8n%2Frepos%2Fcrabmole%2Freport%2F%3Fbranch%3Dmain%26path%3Dsrc%252Fio%252Fasync_pipe.rs" height="22">](https://app.codecov.io/gh/al8n/crabmole/blob/main/src/io/async_pipe.rs) |
 | `time` | - | ❌ | ✅ | |

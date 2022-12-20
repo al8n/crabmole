@@ -98,6 +98,7 @@ impl<const N: usize> SpecialCase<N> {
     }
 
     /// Maps the [`char`] to title case giving priority to the special mapping.
+    #[inline]
     pub const fn to_lower(&self, ch: char) -> char {
         let (r1, had_mapping) = to_(CaseDelta::Lower, ch, &self.0);
         if r1 == ch && !had_mapping {
