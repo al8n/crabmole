@@ -1,6 +1,6 @@
 #![allow(non_upper_case_globals)]
 
-use super::{CaseDelta, CaseRange, FoldPair, Range16, Range32, RangeTable};
+use super::{graphic::*, CaseDelta, CaseRange, FoldPair, Range16, Range32, RangeTable};
 
 macro_rules! rt {
     (name: $name:ident, r16: {$({$lo16:expr, $hi16:expr, $stride16: expr}),* $(,)?}, r32: {$({$lo32:expr, $hi32:expr, $stride32: expr}),* $(,)?}, latin_offset: $latin_offset:expr $(,)?) => {
@@ -3851,8 +3851,6 @@ rt! {
     },
     latin_offset: 1,
 }
-
-// TODO: Srcipts
 
 /// The set of Unicode script tables.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -9009,17 +9007,6 @@ macro_rules! properties_array {
         }
     };
 }
-
-const pC: u8 = super::GraphicFlags::pC.bits();
-const pP: u8 = super::GraphicFlags::pP.bits();
-const pN: u8 = super::GraphicFlags::pN.bits();
-const pS: u8 = super::GraphicFlags::pS.bits();
-const pZ: u8 = super::GraphicFlags::pZ.bits();
-const pLu: u8 = super::GraphicFlags::pLu.bits();
-const pLl: u8 = super::GraphicFlags::pLl.bits();
-const pp: u8 = super::GraphicFlags::pp.bits();
-const pg: u8 = super::GraphicFlags::pg.bits();
-const pLo: u8 = super::GraphicFlags::pLo.bits();
 
 pub(crate) const PROPERTIES: [u8; 256] = properties_array! {
     0x00: pC,       // '\x00'

@@ -264,7 +264,7 @@ pub const fn valid_char(r: Option<char>) -> bool {
 }
 
 /// Writes into p (which must be large enough) the UTF-8 encoding of the rune.
-/// If the rune is out of range, it writes the encoding of CharError.
+/// If the rune is out of range, it writes the encoding of [`ERROR_CHAR`].
 /// It returns the number of bytes written.
 #[inline]
 pub fn encode_char(p: &mut [u8], r: char) -> usize {
@@ -345,8 +345,8 @@ pub fn append_char(p: &mut alloc::vec::Vec<u8>, r: char) {
 }
 
 /// Unpacks the first UTF-8 encoding in p and returns the rune and
-/// its width in bytes. If p is empty it returns (CharError, 0). Otherwise, if
-/// the encoding is invalid, it returns (CharError, 1). Both are impossible
+/// its width in bytes. If p is empty it returns ([`ERROR_CHAR`], 0). Otherwise, if
+/// the encoding is invalid, it returns ([`ERROR_CHAR`], 1). Both are impossible
 /// results for correct, non-empty UTF-8.
 ///
 /// An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
@@ -354,8 +354,8 @@ pub fn append_char(p: &mut alloc::vec::Vec<u8>, r: char) {
 /// value. No other validation is performed.
 #[allow(clippy::manual_range_contains)]
 #[inline]
-// TODO: const this function when rust issue#89259 stable
-pub fn decode_char(p: &[u8]) -> (char, usize) {
+// TODO: const this function when rust issue#89259 stable and remove the unsafe blocks
+pub const fn decode_char(p: &[u8]) -> (char, usize) {
     let n = p.len();
     if n < 1 {
         return (ERROR_CHAR, 0);
@@ -370,8 +370,11 @@ pub fn decode_char(p: &[u8]) -> (char, usize) {
 
         let mask = (x as i32) << 31 >> 31; // Create 0x0000 or 0xFFFF
         return (
-            char::from_u32((((p[0] as i32) & !mask) | ((ERROR_CHAR as i32) & mask)) as u32)
-                .unwrap_or(ERROR_CHAR),
+            unsafe {
+                core::mem::transmute(
+                    (((p[0] as i32) & !mask) | ((ERROR_CHAR as i32) & mask)) as u32,
+                )
+            },
             1,
         );
     }
@@ -389,8 +392,7 @@ pub fn decode_char(p: &[u8]) -> (char, usize) {
 
     if sz <= 2 {
         return (
-            char::from_u32((((p0 & MASK_2) as u32) << 6) | ((b1 & MASK_X) as u32))
-                .unwrap_or(ERROR_CHAR),
+            unsafe { core::mem::transmute((((p0 & MASK_2) as u32) << 6) | ((b1 & MASK_X) as u32)) },
             2,
         );
     }
@@ -402,12 +404,13 @@ pub fn decode_char(p: &[u8]) -> (char, usize) {
 
     if sz <= 3 {
         return (
-            char::from_u32(
-                (((p0 & MASK_3) as u32) << 12)
-                    | (((b1 & MASK_X) as u32) << 6)
-                    | ((b2 & MASK_X) as u32),
-            )
-            .unwrap_or(ERROR_CHAR),
+            unsafe {
+                core::mem::transmute(
+                    (((p0 & MASK_3) as u32) << 12)
+                        | (((b1 & MASK_X) as u32) << 6)
+                        | ((b2 & MASK_X) as u32),
+                )
+            },
             3,
         );
     }
@@ -418,13 +421,14 @@ pub fn decode_char(p: &[u8]) -> (char, usize) {
     }
 
     (
-        char::from_u32(
-            (((p0 & MASK_4) as u32) << 18)
-                | (((b1 & MASK_X) as u32) << 12)
-                | (((b2 & MASK_X) as u32) << 6)
-                | ((b3 & MASK_X) as u32),
-        )
-        .unwrap_or(ERROR_CHAR),
+        unsafe {
+            core::mem::transmute(
+                (((p0 & MASK_4) as u32) << 18)
+                    | (((b1 & MASK_X) as u32) << 12)
+                    | (((b2 & MASK_X) as u32) << 6)
+                    | ((b3 & MASK_X) as u32),
+            )
+        },
         4,
     )
 }
@@ -439,8 +443,7 @@ pub fn decode_char(p: &[u8]) -> (char, usize) {
 /// value. No other validation is performed.
 #[allow(clippy::manual_range_contains)]
 #[inline]
-// TODO: const this function when rust issue#89259 stable
-pub fn decode_last_char(p: &[u8]) -> (char, usize) {
+pub const fn decode_last_char(p: &[u8]) -> (char, usize) {
     let end = p.len() as isize;
     if end == 0 {
         return (ERROR_CHAR, 0);
@@ -467,7 +470,11 @@ pub fn decode_last_char(p: &[u8]) -> (char, usize) {
     if start < 0 {
         start = 0;
     }
-    let (r, size) = decode_char(&p[start as usize..end as usize]);
+
+    // Safety: the same as &p[start..end]
+    let (r, size) = decode_char(unsafe {
+        core::slice::from_raw_parts(p.as_ptr().add(start as usize), (end - start) as usize)
+    });
     if start + (size as isize) != end {
         return (ERROR_CHAR, 1);
     }
