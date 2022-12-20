@@ -25,7 +25,7 @@ on:
 env:
   RUSTFLAGS: -Dwarnings
   RUST_BACKTRACE: 1
-  nightly: nightly-2022-06-27
+  nightly: nightly-2022-11-06
 
 defaults:
   run:
@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust
-        run: rustup update 1.61.0 && rustup default 1.61.0
+        run: rustup update 1.65.0 && rustup default 1.65.0
       - name: Check
         run: . ci/test-stable.sh check
 
