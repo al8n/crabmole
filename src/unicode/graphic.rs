@@ -3,7 +3,7 @@
 use super::RangeTable;
 
 bitflags::bitflags! {
-    struct P: u8 {
+    pub(crate) struct GraphicFlags: u8 {
         const pC = 1;
         const pP = 2;
         const pN = 4;

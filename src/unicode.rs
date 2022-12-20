@@ -172,6 +172,14 @@ pub struct CaseRange {
     delta: D,
 }
 
+impl CaseRange {
+    /// Constructs a new CaseRange
+    #[inline]
+    pub const fn new(lo: u32, hi: u32, delta: D) -> Self {
+        Self { lo, hi, delta }
+    }
+}
+
 /// [`SpecialCase`] represents language-specific case mappings such as Turkish.
 /// Methods of SpecialCase customize (by overriding) the standard mappings.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -199,9 +207,17 @@ impl<const N: usize> SpecialCase<N> {
 /// Right now all the entries fit in uint16, so use uint16. If that changes, compilation
 /// will fail (the constants in the composite literal will not fit in `u16`)
 /// and the types here can change to `u32`.
-pub struct FoldPair {
-    from: u16,
-    to: u16,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) struct FoldPair {
+    pub(crate) from: u16,
+    pub(crate) to: u16,
+}
+
+impl FoldPair {
+    /// Creates a new [`FoldPair`].
+    pub const fn new(from: u16, to: u16) -> Self {
+        Self { from, to }
+    }
 }
 
 /// Reports whether the char is a decimal digit.
