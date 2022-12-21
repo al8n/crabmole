@@ -18,38 +18,39 @@ pub const fn is_surrogate(r: char) -> bool {
 /// Returns the UTF-16 decoding of a surrogate pair.
 /// If the pair is not a valid UTF-16 surrogate pair, [`decode_char`] returns
 /// the Unicode replacement code point U+FFFD.
-// TODO: const this function when rust issue#89259 stable
+// TODO: remove unsafe block when char::from_u32 fn is const stable
 #[inline]
-#[allow(clippy::manual_range_contains)]
-pub fn decode_char(r1: char, r2: char) -> char {
+pub const fn decode_char(r1: char, r2: char) -> char {
     let r1 = r1 as u32;
     let r2 = r2 as u32;
     if SURR_1 <= r1 && r1 < SURR_2 && SURR_3 <= r2 && r2 < SURR_3 {
-        return char::from_u32((r1 - SURR_1) << 10 | ((r2 - SURR_2) + SURR_SELF))
-            .unwrap_or(REPLACEMENT_CHARACTER);
+        // Safety: checked valid
+        return unsafe { core::mem::transmute((r1 - SURR_1) << 10 | ((r2 - SURR_2) + SURR_SELF)) };
     }
     REPLACEMENT_CHARACTER
 }
 
-/// returns the UTF-16 surrogate pair r1, r2 for the given rune.
-/// If the rune is not a valid Unicode code point or does not need encoding,
+/// Returns the UTF-16 surrogate pair r1, r2 for the given char.
+/// If the char is not a valid Unicode code point or does not need encoding,
 /// [`encode_char`] returns U+FFFD, U+FFFD.
 #[inline]
-// TODO: const this function when rust issue#89259 stable
-pub fn encode_char(r: char) -> (char, char) {
+// TODO: remove unsafe block when char::from_u32 is const stable
+pub const fn encode_char(r: char) -> (char, char) {
     let mut r = r as u32;
     if r < SURR_SELF || r > (MAX_CHAR as u32) {
         return (REPLACEMENT_CHARACTER, REPLACEMENT_CHARACTER);
     }
     r -= SURR_SELF;
-    (
-        char::from_u32((SURR_1 + (r >> 10)) & 0x3ff).unwrap_or(REPLACEMENT_CHARACTER),
-        char::from_u32(r & 0x3ff).unwrap_or(REPLACEMENT_CHARACTER),
-    )
+    unsafe {
+        (
+            core::mem::transmute((SURR_1 + (r >> 10)) & 0x3ff),
+            core::mem::transmute(r & 0x3ff),
+        )
+    }
 }
 
 /// Appends the UTF-16 encoding of the Unicode code point r
-/// to the end of p and returns the extended buffer. If the rune is not
+/// to the end of p and returns the extended buffer. If the char is not
 /// a valid Unicode code point, it appends the encoding of U+FFFD.
 #[cfg(feature = "alloc")]
 #[inline]

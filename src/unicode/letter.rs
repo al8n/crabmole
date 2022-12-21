@@ -244,7 +244,7 @@ pub const fn is_excluding_latin(rt: &RangeTable, ch: char) -> bool {
     false
 }
 
-/// Reports whether the rune is an upper case letter.
+/// Reports whether the char is an upper case letter.
 #[inline]
 pub const fn is_upper(ch: char) -> bool {
     if (ch as u32) <= (MAX_ASCII as u32) {
@@ -254,7 +254,7 @@ pub const fn is_upper(ch: char) -> bool {
     is_excluding_latin(RangeTable::UPPER, ch)
 }
 
-/// Reports whether the rune is a lower case letter.
+/// Reports whether the char is a lower case letter.
 #[inline]
 pub fn is_lower(ch: char) -> bool {
     if (ch as u32) <= (MAX_ASCII as u32) {
@@ -264,7 +264,7 @@ pub fn is_lower(ch: char) -> bool {
     is_excluding_latin(RangeTable::LOWER, ch)
 }
 
-/// Reports whether the rune is a title case letter.
+/// Reports whether the char is a title case letter.
 #[inline]
 pub const fn is_title(ch: char) -> bool {
     if (ch as u32) <= (MAX_ASCII as u32) {
@@ -282,16 +282,19 @@ pub const fn is_title(ch: char) -> bool {
 ///
 /// For example:
 ///
-/// simple_fold('A') = 'a'
-/// simple_fold('a') = 'A'
+/// `simple_fold('A') = 'a'`
 ///
-/// simple_fold('K') = 'k'
-/// simple_fold('k') = '\u212A' (Kelvin symbol, K)
-/// simple_fold('\u212A') = 'K'
+/// `simple_fold('a') = 'A'`
 ///
-/// simple_fold('1') = '1'
+/// `simple_fold('K') = 'k'`
 ///
-/// simple_fold(-2) = -2
+/// `simple_fold('k') = '\u212A' (Kelvin symbol, K)`
+///
+/// `simple_fold('\u212A') = 'K'`
+///
+/// `simple_fold('1') = '1'`
+///
+/// `simple_fold(-2) = -2`
 // TODO: remove unsafe block in this fn when feature = "const_option" is stable
 pub const fn simple_fold(ch: char) -> char {
     if (ch as u32) > (char::MAX as u32) {

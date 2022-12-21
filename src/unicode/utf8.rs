@@ -94,8 +94,8 @@ const ACCEPT_RANGES: [AcceptRange; 16] = [
     AcceptRange::new(),
 ];
 
-/// Reports whether the bytes in p begin with a full UTF-8 encoding of a rune.
-/// An invalid encoding is considered a full Char since it will convert as a width-1 error rune.
+/// Reports whether the bytes in p begin with a full UTF-8 encoding of a char.
+/// An invalid encoding is considered a full Char since it will convert as a width-1 error char.
 #[inline]
 pub const fn full_char(p: &[u8]) -> bool {
     let n = p.len();
@@ -117,8 +117,8 @@ pub const fn full_char(p: &[u8]) -> bool {
     false
 }
 
-/// Returns the number of bytes required to encode the rune.
-/// It returns [`Option::None`] if the rune is not a valid value to encode in UTF-8.
+/// Returns the number of bytes required to encode the char.
+/// It returns [`Option::None`] if the char is not a valid value to encode in UTF-8.
 #[inline]
 pub const fn char_len(r: Option<char>) -> Option<usize> {
     match r {
@@ -132,8 +132,8 @@ pub const fn char_len(r: Option<char>) -> Option<usize> {
     }
 }
 
-/// Returns the number of runes in p. Erroneous and short
-/// encodings are treated as single runes of width 1 byte.
+/// Returns the number of chars in p. Erroneous and short
+/// encodings are treated as single chars of width 1 byte.
 #[inline]
 pub const fn char_count(p: &[u8]) -> usize {
     let np = p.len();
@@ -190,7 +190,7 @@ pub const fn char_count(p: &[u8]) -> usize {
 }
 
 /// Reports whether the byte could be the first byte of an encoded,
-/// possibly invalid rune. Second and subsequent bytes always have the top two
+/// possibly invalid char. Second and subsequent bytes always have the top two
 /// bits set to 10.
 #[inline]
 pub const fn char_start(b: u8) -> bool {
@@ -199,8 +199,7 @@ pub const fn char_start(b: u8) -> bool {
 
 /// Reports whether p consists entirely of valid UTF-8-encoded chars.
 #[inline]
-#[allow(clippy::manual_range_contains)]
-pub fn valid(mut p: &[u8]) -> bool {
+pub const fn valid(mut p: &[u8]) -> bool {
     // Fast path. Check for and skip 8 bytes of ASCII characters per iteration.
     while p.len() >= 8 {
         // Combining two 32 bit loads allows the same code to be used
@@ -217,7 +216,8 @@ pub fn valid(mut p: &[u8]) -> bool {
             break;
         }
 
-        p = &p[8..];
+        // Safety: the same as &p[8..]
+        p = unsafe { core::slice::from_raw_parts(p.as_ptr().add(8), p.len() - 8) };
     }
 
     let n = p.len();
@@ -255,16 +255,12 @@ pub fn valid(mut p: &[u8]) -> bool {
 /// Reports whether r can be legally encoded as UTF-8.
 /// Code points that are out of range or a surrogate half are illegal.
 #[inline]
-pub const fn valid_char(r: Option<char>) -> bool {
-    match r {
-        Some(r) if 0 <= (r as i32) && (r as i32) < SURROGATE_MIN => true,
-        Some(r) if SURROGATE_MAX < (r as i32) && (r as i32) <= MAX_CHAR as i32 => true,
-        _ => false,
-    }
+pub const fn valid_char(r: char) -> bool {
+    ((r as u32) ^ 0xD800).wrapping_sub(0x800) < 0x110000 - 0x800
 }
 
-/// Writes into p (which must be large enough) the UTF-8 encoding of the rune.
-/// If the rune is out of range, it writes the encoding of [`ERROR_CHAR`].
+/// Writes into p (which must be large enough) the UTF-8 encoding of the char.
+/// If the char is out of range, it writes the encoding of [`ERROR_CHAR`].
 /// It returns the number of bytes written.
 #[inline]
 pub fn encode_char(p: &mut [u8], r: char) -> usize {
@@ -306,7 +302,7 @@ pub fn encode_char(p: &mut [u8], r: char) -> usize {
 }
 
 /// Appends the UTF-8 encoding of r to the end of p and
-/// returns the extended buffer. If the rune is out of range,
+/// returns the extended buffer. If the char is out of range,
 /// it appends the encoding of [`ERROR_CHAR`].
 #[inline]
 #[cfg(feature = "alloc")]
@@ -344,12 +340,12 @@ pub fn append_char(p: &mut alloc::vec::Vec<u8>, r: char) {
     }
 }
 
-/// Unpacks the first UTF-8 encoding in p and returns the rune and
+/// Unpacks the first UTF-8 encoding in p and returns the char and
 /// its width in bytes. If p is empty it returns ([`ERROR_CHAR`], 0). Otherwise, if
 /// the encoding is invalid, it returns ([`ERROR_CHAR`], 1). Both are impossible
 /// results for correct, non-empty UTF-8.
 ///
-/// An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
+/// An encoding is invalid if it is incorrect UTF-8, encodes a char that is
 /// out of range, or is not the shortest possible UTF-8 encoding for the
 /// value. No other validation is performed.
 #[allow(clippy::manual_range_contains)]
@@ -433,12 +429,12 @@ pub const fn decode_char(p: &[u8]) -> (char, usize) {
     )
 }
 
-/// Unpacks the last UTF-8 encoding in p and returns the rune and
+/// Unpacks the last UTF-8 encoding in p and returns the char and
 /// its width in bytes. If p is empty it returns (CharError, 0). Otherwise, if
 /// the encoding is invalid, it returns (CharError, 1). Both are impossible
 /// results for correct, non-empty UTF-8.
 ///
-/// An encoding is invalid if it is incorrect UTF-8, encodes a rune that is
+/// An encoding is invalid if it is incorrect UTF-8, encodes a char that is
 /// out of range, or is not the shortest possible UTF-8 encoding for the
 /// value. No other validation is performed.
 #[allow(clippy::manual_range_contains)]
@@ -982,54 +978,55 @@ mod tests {
     }
 
     struct ValidCharTest {
-        r: Option<char>,
+        r: char,
         ok: bool,
     }
 
+    #[allow(clippy::transmute_int_to_char)]
     fn valid_char_tests() -> Vec<ValidCharTest> {
         vec![
             ValidCharTest {
-                r: std::char::from_u32(0),
+                r: std::char::from_u32(0).unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: Some('e'),
+                r: Some('e').unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: Some('é'),
+                r: Some('é').unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: Some('☺'),
+                r: Some('☺').unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: Some(ERROR_CHAR),
+                r: Some(ERROR_CHAR).unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: Some(MAX_CHAR),
+                r: Some(MAX_CHAR).unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: std::char::from_u32(0xD7FF),
+                r: std::char::from_u32(0xD7FF).unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: std::char::from_u32(0xD800),
+                r: unsafe { core::mem::transmute(0xD800u32) },
                 ok: false,
             },
             ValidCharTest {
-                r: std::char::from_u32(0xDFFF),
+                r: unsafe { core::mem::transmute(0xDFFFu32) },
                 ok: false,
             },
             ValidCharTest {
-                r: std::char::from_u32(0xE000),
+                r: std::char::from_u32(0xE000).unwrap(),
                 ok: true,
             },
             ValidCharTest {
-                r: std::char::from_u32(MAX_CHAR as u32 + 1),
+                r: unsafe { core::mem::transmute(MAX_CHAR as u32 + 1) },
                 ok: false,
             },
         ]

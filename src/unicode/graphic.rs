@@ -50,7 +50,7 @@ pub const PRINT_RANGES: &[RangeTable] = &[
     *RangeTable::S,
 ];
 
-/// Reports whether the rune is defined as a Graphic by Unicode.
+/// Reports whether the char is defined as a Graphic by Unicode.
 /// Such characters include letters, marks, numbers, punctuation, symbols, and
 /// spaces, from categories L, M, N, P, S, Zs.
 #[inline]
