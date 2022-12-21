@@ -13,10 +13,10 @@ pub mod binary;
 #[cfg_attr(docsrs, doc(cfg(feature = "base32")))]
 pub mod base32;
 
-/// base58 library
-#[cfg(feature = "base58")]
-#[cfg_attr(docsrs, doc(cfg(feature = "base58")))]
-pub mod base58;
+// /// base58 library
+// #[cfg(feature = "base58")]
+// #[cfg_attr(docsrs, doc(cfg(feature = "base58")))]
+// pub mod base58;
 
 /// Go `encoding/base64` library
 #[cfg(feature = "base64")]

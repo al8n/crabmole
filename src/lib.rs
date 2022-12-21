@@ -35,6 +35,9 @@ pub mod sort;
 )]
 pub mod encoding;
 
+mod macros;
+pub use macros::*;
+
 /// Go io library
 #[cfg(any(
     feature = "io",

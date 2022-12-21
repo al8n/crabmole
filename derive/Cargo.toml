@@ -1,0 +1,18 @@
+[package]
+name = "crabmole-derive"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0 OR BSD-3-Clause"
+description = "Crabmole derives"
+repository = "https://github.com/al8n/crabmole"
+homepage = "https://github.com/al8n/crabmole"
+documentation = "https://docs.rs/crabmole-derive/"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+proc_macro = true
+
+[dependencies]
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "1", features = ["full"] }
