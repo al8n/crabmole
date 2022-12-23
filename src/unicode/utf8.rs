@@ -430,8 +430,8 @@ pub const fn decode_char(p: &[u8]) -> (char, usize) {
 }
 
 /// Unpacks the last UTF-8 encoding in p and returns the char and
-/// its width in bytes. If p is empty it returns (CharError, 0). Otherwise, if
-/// the encoding is invalid, it returns (CharError, 1). Both are impossible
+/// its width in bytes. If p is empty it returns ([`ERROR_CHAR`], 0). Otherwise, if
+/// the encoding is invalid, it returns ([`ERROR_CHAR`], 1). Both are impossible
 /// results for correct, non-empty UTF-8.
 ///
 /// An encoding is invalid if it is incorrect UTF-8, encodes a char that is
@@ -454,7 +454,10 @@ pub const fn decode_last_char(p: &[u8]) -> (char, usize) {
     // guard against O(n^2) behavior when traversing
     // backwards through strings with long sequences of
     // invalid UTF-8.
-    let lim = end - (UTF_MAX as isize);
+    let mut lim = end - (UTF_MAX as isize);
+    if lim < 0 {
+        lim = 0;
+    }
     start -= 1;
     while start >= lim {
         if char_start(p[start as usize]) {
@@ -477,8 +480,11 @@ pub const fn decode_last_char(p: &[u8]) -> (char, usize) {
     (r, size)
 }
 
+
 #[cfg(test)]
 mod tests {
+    use core::str::{Utf8Error, CharIndices};
+
     use crate::unicode::utf8::*;
 
     #[derive(Debug)]
@@ -494,6 +500,7 @@ mod tests {
                 str: vec![0],
             },
             Utf8Map {
+
                 r: std::char::from_u32(0x0001).unwrap_or(ERROR_CHAR),
                 str: vec![1],
             },
@@ -640,7 +647,7 @@ mod tests {
             "☺☻☹".as_bytes().to_vec(),
             "日a本b語ç日ð本Ê語þ日¥本¼語i日©".as_bytes().to_vec(),
             "日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©".as_bytes().to_vec(),
-            vec![128, 128, 128, 128]
+            vec![128, 128, 128, 128], 
         ]
     }
 
@@ -707,7 +714,8 @@ mod tests {
             assert_eq!(size, b.len());
 
             // there's an extra byte that bytes left behind - make sure trailing byte works
-            let (r, size) = decode_char(&b[..b.capacity()]);
+            let (r, size
+            ) = decode_char(&b[..b.capacity()]);
             assert_eq!(r, m.r);
             assert_eq!(size, b.len());
 
@@ -750,14 +758,178 @@ mod tests {
         }
     }
 
+    fn invalid_sequence_test() -> Vec<Vec<u8>> {
+        vec![
+            b"\xed\xa0\x80\x80".to_vec(), // surrogate min
+            b"\xed\xbf\xbf\x80".to_vec(), // surrogate max
+
+            // xx
+            b"\x91\x80\x80\x80".to_vec(),
+
+            // s1
+            b"\xC2\x7F\x80\x80".to_vec(),
+            b"\xC2\xC0\x80\x80".to_vec(),
+            b"\xDF\x7F\x80\x80".to_vec(),
+            b"\xDF\xC0\x80\x80".to_vec(),
+
+            // s2
+            b"\xE0\x9F\xBF\x80".to_vec(),
+            b"\xE0\xA0\x7F\x80".to_vec(),
+            b"\xE0\xBF\xC0\x80".to_vec(),
+            b"\xE0\xC0\x80\x80".to_vec(),
+
+            // s3
+            b"\xE1\x7F\xBF\x80".to_vec(),
+            b"\xE1\x80\x7F\x80".to_vec(),
+            b"\xE1\xBF\xC0\x80".to_vec(),
+            b"\xE1\xC0\x80\x80".to_vec(),
+
+            //s4
+            b"\xED\x7F\xBF\x80".to_vec(),
+            b"\xED\x80\x7F\x80".to_vec(),
+            b"\xED\x9F\xC0\x80".to_vec(),
+            b"\xED\xA0\x80\x80".to_vec(),
+
+            // s5
+            b"\xF0\x8F\xBF\xBF".to_vec(),
+            b"\xF0\x90\x7F\xBF".to_vec(),
+            b"\xF0\x90\x80\x7F".to_vec(),
+            b"\xF0\xBF\xBF\xC0".to_vec(),
+            b"\xF0\xBF\xC0\x80".to_vec(),
+            b"\xF0\xC0\x80\x80".to_vec(),
+
+            // s6
+            b"\xF1\x7F\xBF\xBF".to_vec(),
+            b"\xF1\x80\x7F\xBF".to_vec(),
+            b"\xF1\x80\x80\x7F".to_vec(),
+            b"\xF1\xBF\xBF\xC0".to_vec(),
+            b"\xF1\xBF\xC0\x80".to_vec(),
+            b"\xF1\xC0\x80\x80".to_vec(),
+
+            // s7
+            b"\xF4\x7F\xBF\xBF".to_vec(),
+            b"\xF4\x80\x7F\xBF".to_vec(),
+            b"\xF4\x80\x80\x7F".to_vec(),
+            b"\xF4\x8F\xBF\xC0".to_vec(),
+            b"\xF4\x8F\xC0\x80".to_vec(),
+            b"\xF4\x90\x80\x80".to_vec(),
+        ]
+    }
+
+    fn runtime_decode_char(s: Vec<u8>) -> char {
+        let replace = ERROR_CHAR.to_string();
+        let s1 = std::str::from_utf8(&s).unwrap_or(&replace).chars();
+        for r in s1  {
+            return r;
+        }
+        return ERROR_CHAR;
+    }
+
     #[test]
-    // TODO: implement this
-    fn test_decode_invalid_sequence() {}
+    fn test_decode_invalid_sequence() {
+        for s in invalid_sequence_test() {
+        let (r1, _) = decode_char(&s);
+        let want = ERROR_CHAR;
+        assert_eq!(r1, want);
+        let r3 = runtime_decode_char(s);
+        assert_eq!(r1, r3);
+        }
+    }
+        
+    fn bytes_order_before_lossy(_s: Vec<u8>) -> Vec<usize> { 
+        let mut err_order: Vec<usize> = vec![];
+        let mut char_order: Vec<usize> = vec![];
+        let mut l = 0;
+        while !(&_s[l..]).is_empty() && l < _s.len() {
+            match std::str::from_utf8(&_s[l..]) {
+                Ok(r) => {
+                    l = _s.len();
+                    for (i, _) in r.char_indices() {
+                        char_order.push(i);
+                    }
+                },
+                Err(err) => {
+                    l += err.valid_up_to();
+                    err_order.push(l);
+                    l += 1;
+                },
+            }
+        }
+        if err_order.len() > 0 {
+            for i in 0..char_order.len() {
+                char_order[i] += err_order[err_order.len() - 1] + 1;
+            }
+        }
+        if err_order.len() > 1 {
+            for i in 0..err_order.len() - 1 {
+                for (j,_) in std::str::from_utf8(&_s[err_order[i] + 1..err_order[i+1]]).unwrap().char_indices() {
+                    char_order.push(err_order[i] + 1 + j);
+                }
+            }
+        } 
+        if err_order.len() > 0{
+            if  err_order[0] > 0  {
+                for (j,_) in std::str::from_utf8(&_s[..err_order[0]]).unwrap().char_indices() {
+                    char_order.push(j);
+                }
+            }
+        }
+        for i in 0..err_order.len() {
+            char_order.push(err_order[i]);
+        }
+        char_order.sort();
+        char_order
+    }
 
     #[test]
     fn test_sequencing() {
         fn test_sequence(_s: Vec<u8>) {
-            // TODO: implement this
+            #[derive(Debug, Clone, Copy, Eq, PartialEq)]
+            struct Info {
+                index: usize,
+                ch: char,
+            }
+            let s2 = String::from_utf8_lossy(&_s).to_string();
+            let char_pos = bytes_order_before_lossy(_s.clone());
+            assert_eq!(char_pos.len(), s2.chars().collect::<Vec<char>>().len());
+            let mut s1 = (&s2).char_indices();
+            let mut index = vec![
+                Info {
+                    index: 0,
+                    ch: ERROR_CHAR,
+                };
+                char_pos.len()
+            ];
+            
+            let b = _s.as_slice();
+            let mut si = 0;
+            let mut j: isize = 0;
+            for i in char_pos {
+                let (_, r) = match s1.next(){
+                    Some((i, r)) => (i,r),
+                    _ => continue,
+                };
+                assert_eq!(si, i);
+                index[j as usize] = Info {
+                    index: i,
+                    ch: r,
+                };
+                j += 1;
+                let (r1, size1) = decode_char(&b[i..]);
+                assert_eq!(r, r1);
+                si += size1;
+            } 
+            
+            j -= 1;
+            si = b.len();
+            while si > 0 {
+                let (r1, size1) = decode_last_char(&_s[..si]);
+                assert_eq!(r1, index[j as usize].ch);
+                si -= size1;
+                assert_eq!(si, index[j as usize].index);
+                j -= 1;
+            }
+            assert_eq!(si, 0);
         }
 
         for ts in strings_tests() {
@@ -777,7 +949,9 @@ mod tests {
                         let mut x = ts.clone();
                         x.extend(m.str.iter());
                         x.extend(ts.iter());
+                        assert_ne!(x, ts);
                         x
+                        
                     },
                 ] {
                     test_sequence(s);
