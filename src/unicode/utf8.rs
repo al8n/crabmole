@@ -480,11 +480,8 @@ pub const fn decode_last_char(p: &[u8]) -> (char, usize) {
     (r, size)
 }
 
-
 #[cfg(test)]
 mod tests {
-    use core::str::{Utf8Error, CharIndices};
-
     use crate::unicode::utf8::*;
 
     #[derive(Debug)]
@@ -500,7 +497,6 @@ mod tests {
                 str: vec![0],
             },
             Utf8Map {
-
                 r: std::char::from_u32(0x0001).unwrap_or(ERROR_CHAR),
                 str: vec![1],
             },
@@ -647,7 +643,18 @@ mod tests {
             "☺☻☹".as_bytes().to_vec(),
             "日a本b語ç日ð本Ê語þ日¥本¼語i日©".as_bytes().to_vec(),
             "日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©".as_bytes().to_vec(),
-            vec![128, 128, 128, 128], 
+            vec![128, 128, 128, 128]
+        ]
+    }
+
+    fn string_tests() -> Vec<String> {
+        vec![
+            "".to_string(),
+            "abcd".to_string(),
+            "☺☻☹".to_string(),
+            "日a本b語ç日ð本Ê語þ日¥本¼語i日©".to_string(),
+            "日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©日a本b語ç日ð本Ê語þ日¥本¼語i日©".to_string(),
+            String::from_utf8_lossy(&[128, 128, 128, 128]).to_string()
         ]
     }
 
@@ -714,8 +721,7 @@ mod tests {
             assert_eq!(size, b.len());
 
             // there's an extra byte that bytes left behind - make sure trailing byte works
-            let (r, size
-            ) = decode_char(&b[..b.capacity()]);
+            let (r, size) = decode_char(&b[..b.capacity()]);
             assert_eq!(r, m.r);
             assert_eq!(size, b.len());
 
@@ -762,34 +768,28 @@ mod tests {
         vec![
             b"\xed\xa0\x80\x80".to_vec(), // surrogate min
             b"\xed\xbf\xbf\x80".to_vec(), // surrogate max
-
             // xx
             b"\x91\x80\x80\x80".to_vec(),
-
             // s1
             b"\xC2\x7F\x80\x80".to_vec(),
             b"\xC2\xC0\x80\x80".to_vec(),
             b"\xDF\x7F\x80\x80".to_vec(),
             b"\xDF\xC0\x80\x80".to_vec(),
-
             // s2
             b"\xE0\x9F\xBF\x80".to_vec(),
             b"\xE0\xA0\x7F\x80".to_vec(),
             b"\xE0\xBF\xC0\x80".to_vec(),
             b"\xE0\xC0\x80\x80".to_vec(),
-
             // s3
             b"\xE1\x7F\xBF\x80".to_vec(),
             b"\xE1\x80\x7F\x80".to_vec(),
             b"\xE1\xBF\xC0\x80".to_vec(),
             b"\xE1\xC0\x80\x80".to_vec(),
-
             //s4
             b"\xED\x7F\xBF\x80".to_vec(),
             b"\xED\x80\x7F\x80".to_vec(),
             b"\xED\x9F\xC0\x80".to_vec(),
             b"\xED\xA0\x80\x80".to_vec(),
-
             // s5
             b"\xF0\x8F\xBF\xBF".to_vec(),
             b"\xF0\x90\x7F\xBF".to_vec(),
@@ -797,7 +797,6 @@ mod tests {
             b"\xF0\xBF\xBF\xC0".to_vec(),
             b"\xF0\xBF\xC0\x80".to_vec(),
             b"\xF0\xC0\x80\x80".to_vec(),
-
             // s6
             b"\xF1\x7F\xBF\xBF".to_vec(),
             b"\xF1\x80\x7F\xBF".to_vec(),
@@ -805,7 +804,6 @@ mod tests {
             b"\xF1\xBF\xBF\xC0".to_vec(),
             b"\xF1\xBF\xC0\x80".to_vec(),
             b"\xF1\xC0\x80\x80".to_vec(),
-
             // s7
             b"\xF4\x7F\xBF\xBF".to_vec(),
             b"\xF4\x80\x7F\xBF".to_vec(),
@@ -819,7 +817,7 @@ mod tests {
     fn runtime_decode_char(s: Vec<u8>) -> char {
         let replace = ERROR_CHAR.to_string();
         let s1 = std::str::from_utf8(&s).unwrap_or(&replace).chars();
-        for r in s1  {
+        for r in s1 {
             return r;
         }
         return ERROR_CHAR;
@@ -828,54 +826,58 @@ mod tests {
     #[test]
     fn test_decode_invalid_sequence() {
         for s in invalid_sequence_test() {
-        let (r1, _) = decode_char(&s);
-        let want = ERROR_CHAR;
-        assert_eq!(r1, want);
-        let r3 = runtime_decode_char(s);
-        assert_eq!(r1, r3);
+            let (r1, _) = decode_char(&s);
+            let want = ERROR_CHAR;
+            assert_eq!(r1, want);
+            let r3 = runtime_decode_char(s);
+            assert_eq!(r1, r3);
         }
     }
-        
-    fn bytes_order_before_lossy(_s: Vec<u8>) -> Vec<usize> { 
+
+    fn bytes_order_before_lossy(_s: Vec<u8>) -> Vec<usize> {
         let mut err_order: Vec<usize> = vec![];
         let mut char_order: Vec<usize> = vec![];
         let mut l = 0;
-        while !(&_s[l..]).is_empty() && l < _s.len() {
+        while !_s[l..].is_empty() && l < _s.len() {
             match std::str::from_utf8(&_s[l..]) {
                 Ok(r) => {
                     l = _s.len();
                     for (i, _) in r.char_indices() {
                         char_order.push(i);
                     }
-                },
+                }
                 Err(err) => {
                     l += err.valid_up_to();
                     err_order.push(l);
                     l += 1;
-                },
+                }
             }
         }
-        if err_order.len() > 0 {
+        if !err_order.is_empty() {
             for i in 0..char_order.len() {
                 char_order[i] += err_order[err_order.len() - 1] + 1;
             }
         }
         if err_order.len() > 1 {
             for i in 0..err_order.len() - 1 {
-                for (j,_) in std::str::from_utf8(&_s[err_order[i] + 1..err_order[i+1]]).unwrap().char_indices() {
+                for (j, _) in std::str::from_utf8(&_s[err_order[i] + 1..err_order[i + 1]])
+                    .unwrap()
+                    .char_indices()
+                {
                     char_order.push(err_order[i] + 1 + j);
                 }
             }
-        } 
-        if err_order.len() > 0{
-            if  err_order[0] > 0  {
-                for (j,_) in std::str::from_utf8(&_s[..err_order[0]]).unwrap().char_indices() {
-                    char_order.push(j);
-                }
+        }
+        if !err_order.is_empty() && err_order[0] > 0 {
+            for (j, _) in std::str::from_utf8(&_s[..err_order[0]])
+                .unwrap()
+                .char_indices()
+            {
+                char_order.push(j);
             }
         }
-        for i in 0..err_order.len() {
-            char_order.push(err_order[i]);
+        for i in err_order {
+            char_order.push(i);
         }
         char_order.sort();
         char_order
@@ -891,8 +893,8 @@ mod tests {
             }
             let s2 = String::from_utf8_lossy(&_s).to_string();
             let char_pos = bytes_order_before_lossy(_s.clone());
-            assert_eq!(char_pos.len(), s2.chars().collect::<Vec<char>>().len());
-            let mut s1 = (&s2).char_indices();
+            assert_eq!(char_pos.len(), s2.chars().count());
+            let mut s1 = s2.char_indices();
             let mut index = vec![
                 Info {
                     index: 0,
@@ -900,26 +902,23 @@ mod tests {
                 };
                 char_pos.len()
             ];
-            
+
             let b = _s.as_slice();
             let mut si = 0;
             let mut j: isize = 0;
             for i in char_pos {
-                let (_, r) = match s1.next(){
-                    Some((i, r)) => (i,r),
+                let (_, r) = match s1.next() {
+                    Some((i, r)) => (i, r),
                     _ => continue,
                 };
                 assert_eq!(si, i);
-                index[j as usize] = Info {
-                    index: i,
-                    ch: r,
-                };
+                index[j as usize] = Info { index: i, ch: r };
                 j += 1;
                 let (r1, size1) = decode_char(&b[i..]);
                 assert_eq!(r, r1);
                 si += size1;
-            } 
-            
+            }
+
             j -= 1;
             si = b.len();
             while si > 0 {
@@ -951,11 +950,31 @@ mod tests {
                         x.extend(ts.iter());
                         assert_ne!(x, ts);
                         x
-                        
                     },
                 ] {
                     test_sequence(s);
                 }
+            }
+        }
+    }
+
+    fn runtime_char_count(s: String) -> usize {
+        return s.chars().count();
+    }
+
+    #[test]
+    fn test_runtime_conversion() {
+        for ts in string_tests() {
+            let count = char_count(ts.as_bytes());
+            let n = runtime_char_count(ts.clone());
+            assert_eq!(count, n);
+
+            let chars = ts.chars().collect::<Vec<char>>();
+            let n = chars.len();
+            assert_eq!(count, n);
+
+            for (i, r) in ts.chars().enumerate() {
+                assert_eq!(r, chars[i]);
             }
         }
     }
