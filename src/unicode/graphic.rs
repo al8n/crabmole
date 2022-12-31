@@ -142,7 +142,7 @@ pub const fn is_number(ch: char) -> bool {
 ///
 /// [`RangeTable::P`]: struct.RangeTable.html#methods.P
 #[inline]
-pub const fn is_punt(ch: char) -> bool {
+pub const fn is_punct(ch: char) -> bool {
     if ch as u32 <= MAX_LATIN1 as u32 {
         PROPERTIES[ch as usize] & pP != 0
     } else {
@@ -175,5 +175,161 @@ pub const fn is_symbol(ch: char) -> bool {
         PROPERTIES[ch as usize] & pS != 0
     } else {
         is_excluding_latin(RangeTable::SYMBOL, ch)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::unicode::{is_lower, is_upper};
+
+    use super::*;
+
+    #[test]
+    fn test_is_control_latin1() {
+        let mut i: u32 = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_control(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let mut want = false;
+            match () {
+                () if (i <= 0x1F) => {
+                    want = true;
+                }
+                () if (0x7F..=0x9F).contains(&i) => {
+                    want = true;
+                }
+                _ => (),
+            }
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_letter_lattin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_letter(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::LETTER,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_upper_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_upper(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::UPPER,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_lower_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_lower(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::LOWER,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_number_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_number(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::NUMBER,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_print_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_print(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let mut want = contains(
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+                PRINT_RANGES,
+            );
+            if char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER) == ' ' {
+                want = true;
+            }
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_graphic_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_graphic(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = contains(
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+                GRAPHIC_RANGES,
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_punct_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_punct(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::PUNCT,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_space_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_space(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::WHITE_SPACE,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_is_symbol_latin1() {
+        let mut i = 0;
+        while i <= crate::unicode::MAX_LATIN1 as u32 {
+            let _got = is_symbol(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER));
+            let want = is(
+                RangeTable::SYMBOL,
+                char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER),
+            );
+            assert_eq!(_got, want);
+            i += 1;
+        }
     }
 }

@@ -247,7 +247,7 @@ pub const fn is_excluding_latin(rt: &RangeTable, ch: char) -> bool {
 /// Reports whether the char is an upper case letter.
 #[inline]
 pub const fn is_upper(ch: char) -> bool {
-    if (ch as u32) <= (MAX_ASCII as u32) {
+    if (ch as u32) <= (MAX_LATIN1 as u32) {
         return PROPERTIES[ch as usize] & pLmask == pLu;
     }
 
@@ -257,7 +257,7 @@ pub const fn is_upper(ch: char) -> bool {
 /// Reports whether the char is a lower case letter.
 #[inline]
 pub fn is_lower(ch: char) -> bool {
-    if (ch as u32) <= (MAX_ASCII as u32) {
+    if (ch as u32) <= (MAX_LATIN1 as u32) {
         return PROPERTIES[ch as usize] & pLmask == pLl;
     }
 

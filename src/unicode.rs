@@ -16,6 +16,9 @@ pub use case_tables::*;
 mod letter;
 pub use letter::*;
 
+mod digit;
+pub use digit::*;
+
 /// Maximum Latin-1 value.
 pub const MAX_LATIN1: char = '\u{00FF}';
 
