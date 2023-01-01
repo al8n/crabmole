@@ -172,11 +172,11 @@ mod tests {
             },
             EncodeTest {
                 _in: vec![
-                    std::char::from_u32(0xFFFFu32).unwrap(),
-                    std::char::from_u32(0x10000u32).unwrap(),
-                    std::char::from_u32(0x10001u32).unwrap(),
-                    std::char::from_u32(0x12345u32).unwrap(),
-                    std::char::from_u32(0x10FFFFu32).unwrap(),
+                    char::from_u32(0xFFFFu32).unwrap(),
+                    char::from_u32(0x10000u32).unwrap(),
+                    char::from_u32(0x10001u32).unwrap(),
+                    char::from_u32(0x12345u32).unwrap(),
+                    char::from_u32(0x10FFFFu32).unwrap(),
                 ],
                 out: vec![
                     0xFFFF, 0xD800, 0xDC00, 0xD800, 0xDC01, 0xD808, 0xDF45, 0xDBFF, 0xDFFF,
@@ -186,11 +186,11 @@ mod tests {
                 _in: vec![
                     'a',
                     'b',
-                    unsafe { core::mem::transmute(0xD7FFu32) },
-                    unsafe { core::mem::transmute(0xD800u32) },
-                    unsafe { core::mem::transmute(0xDFFFu32) },
-                    unsafe { core::mem::transmute(0xE000u32) },
-                    unsafe { core::mem::transmute(0x110000u32) },
+                    char::from_u32(0xD7FF).unwrap(),
+                    char::from_u32(0xD800).unwrap_or(ERROR_CHAR),
+                    char::from_u32(0xDFFF).unwrap_or(ERROR_CHAR),
+                    char::from_u32(0xE000).unwrap(),
+                    char::from_u32(0x110000).unwrap_or(ERROR_CHAR),
                     ERROR_CHAR,
                 ],
                 out: vec![

@@ -120,7 +120,7 @@ jobs:
       - name: cross build --target ${{ matrix.target }}
         run: |
           cargo install cross
-          cross build --target ${{ matrix.target }}
+          cross build --all-features --target ${{ matrix.target }}
         if: matrix.target != 'wasm32-unknown-unknown'
       # WASM support
       - name: cargo build --target ${{ matrix.target }}
