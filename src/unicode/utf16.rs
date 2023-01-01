@@ -48,12 +48,7 @@ pub const fn encode_char(r: char) -> (char, char) {
     let r1 = SURR_1 as i32 + ((r >> 10) & 0x3ff);
     let r2 = SURR_2 as i32 + (r & 0x3ff);
 
-    unsafe {
-        (
-            core::mem::transmute(r1),
-            core::mem::transmute(r2),
-        )
-    }
+    unsafe { (core::mem::transmute(r1), core::mem::transmute(r2)) }
 }
 
 /// Appends the UTF-16 encoding of the Unicode code point r
