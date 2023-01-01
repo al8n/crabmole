@@ -817,10 +817,11 @@ mod tests {
     fn runtime_decode_char(s: Vec<u8>) -> char {
         let replace = ERROR_CHAR.to_string();
         let s1 = std::str::from_utf8(&s).unwrap_or(&replace).chars();
+        #[allow(clippy::never_loop)]
         for r in s1 {
             return r;
         }
-        return ERROR_CHAR;
+        ERROR_CHAR
     }
 
     #[test]
@@ -854,6 +855,7 @@ mod tests {
             }
         }
         if !err_order.is_empty() {
+            #[allow(clippy::needless_range_loop)]
             for i in 0..char_order.len() {
                 char_order[i] += err_order[err_order.len() - 1] + 1;
             }

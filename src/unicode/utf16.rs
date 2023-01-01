@@ -112,6 +112,7 @@ pub fn encode(s: &[char]) -> alloc::vec::Vec<u16> {
 /// Returns the Unicode code point sequence represented
 /// by the UTF-16 encoding s.
 #[cfg(feature = "alloc")]
+#[allow(clippy::transmute_int_to_char)]
 pub fn decode(s: &[u16]) -> alloc::vec::Vec<char> {
     let mut a = alloc::vec::Vec::with_capacity(s.len());
     let mut i = 0;
@@ -143,6 +144,7 @@ pub fn decode(s: &[u16]) -> alloc::vec::Vec<char> {
 }
 
 #[cfg(test)]
+#[allow(clippy::transmute_int_to_char)]
 mod tests {
 
     use alloc::vec;
@@ -169,15 +171,13 @@ mod tests {
                 out: vec![1, 2, 3, 4],
             },
             EncodeTest {
-                _in: unsafe {
-                    vec![
-                        core::mem::transmute(0xFFFFu32),
-                        core::mem::transmute(0x10000u32),
-                        core::mem::transmute(0x10001u32),
-                        core::mem::transmute(0x12345u32),
-                        core::mem::transmute(0x10FFFFu32),
-                    ]
-                },
+                _in: vec![
+                    std::char::from_u32(0xFFFFu32).unwrap(),
+                    std::char::from_u32(0x10000u32).unwrap(),
+                    std::char::from_u32(0x10001u32).unwrap(),
+                    std::char::from_u32(0x12345u32).unwrap(),
+                    std::char::from_u32(0x10FFFFu32).unwrap(),
+                ],
                 out: vec![
                     0xFFFF, 0xD800, 0xDC00, 0xD800, 0xDC01, 0xD808, 0xDF45, 0xDBFF, 0xDFFF,
                 ],

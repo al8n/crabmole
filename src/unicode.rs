@@ -131,14 +131,3 @@ impl Range32 {
         self.stride
     }
 }
-
-/// Reports whether the char is a decimal digit.
-#[inline]
-pub const fn is_digit(ch: char) -> bool {
-    let c = ch as u32;
-    if c <= MAX_LATIN1 as u32 {
-        ('0' as u32) <= c && c <= '9' as u32
-    } else {
-        is_excluding_latin(RangeTable::DIGIT, ch)
-    }
-}

@@ -1,19 +1,21 @@
 #![allow(non_upper_case_globals)]
-use super::{is, is_excluding_latin, RangeTable, MAX_LATIN1};
+use super::{is_excluding_latin, RangeTable, MAX_LATIN1};
 
-/// Reports whether the rune is a decimal digit.
+/// Reports whether the char is a decimal digit.
 #[inline]
 pub const fn is_digit(ch: char) -> bool {
-    if ch as u32 <= MAX_LATIN1 as u32 {
-        return '0' as u32 <= ch as u32 && ch as u32 <= '9' as u32;
+    let c = ch as u32;
+    if c <= MAX_LATIN1 as u32 {
+        ('0' as u32) <= c && c <= '9' as u32
+    } else {
+        is_excluding_latin(RangeTable::DIGIT, ch)
     }
-    is_excluding_latin(RangeTable::DIGIT, ch)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::unicode::digit::is_digit;
+    use crate::unicode::{is, is_digit};
 
     fn digit_tests() -> Vec<char> {
         vec![
