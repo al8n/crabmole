@@ -45,10 +45,13 @@ pub const fn encode_char(r: char) -> (char, char) {
         return (REPLACEMENT_CHARACTER, REPLACEMENT_CHARACTER);
     }
     r -= SURR_SELF as i32;
+    let r1 = SURR_1 as i32 + ((r >> 10) & 0x3ff);
+    let r2 = SURR_2 as i32 + (r & 0x3ff);
+
     unsafe {
         (
-            core::mem::transmute(SURR_1 as i32 + ((r >> 10) & 0x3ff)),
-            core::mem::transmute(SURR_2 as i32 + (r & 0x3FF)),
+            core::mem::transmute(r1),
+            core::mem::transmute(r2),
         )
     }
 }
