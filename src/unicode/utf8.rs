@@ -482,10 +482,7 @@ pub const fn decode_last_char(p: &[u8]) -> (char, usize) {
 
 #[cfg(test)]
 mod tests {
-
     use crate::unicode::utf8::*;
-    use criterion::Criterion;
-    use criterion_macro::criterion;
 
     #[derive(Debug)]
     struct Utf8Map {
@@ -1237,33 +1234,4 @@ mod tests {
             assert_eq!(ok, tt.ok);
         }
     }
-
-    #[criterion]
-    fn test_benchmark_char_count_ten_ascii_chars(c: &mut Criterion) {
-        let _s = "0123456789".as_bytes();
-        c.bench_function(
-            "ten_ascii_chars",
-            |b| b.iter(|| char_count(_s))
-        );
-    }
-    
-    #[criterion]
-    fn test_benchmark_char_count_ten_japanese_chars(c: &mut Criterion) {
-        let _s = "日本語日本語日本語日".as_bytes();
-        c.bench_function(
-            "ten_japanese_chars", 
-            |b| b.iter(|| char_count(_s))
-        );
-    }
-
-    #[criterion]
-    fn test_benchmark_valid_100k_ascii_chars(c: &mut Criterion) {
-        c.bench_function(
-            "100k_ascii_chars",
-            |b| b.iter(||
-                valid("0123456789".repeat(10000).as_bytes())
-            )
-        );
-    }   
- 
 }

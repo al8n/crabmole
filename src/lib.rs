@@ -4,9 +4,7 @@
 #![doc(html_logo_url = "https://raw.githubusercontent.com/al8n/crabmole/main/art/crabmole.jpg")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(docsrs, allow(unused_attributes))]
-#![feature(test)]
-#![feature(custom_test_frameworks)]
-#![test_runner(criterion::runner)]
+
 #[cfg(feature = "alloc")]
 extern crate alloc;
 

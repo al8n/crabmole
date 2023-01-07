@@ -230,8 +230,8 @@ mod tests {
                     j += 1;
                 } else {
                     assert!(j + 1 < tt.out.len(), "{}:ran out of tt.out", i);
-                    assert_eq!(r1, unsafe { core::mem::transmute::<_, char>(tt.out[j] as u32) });
-                    assert_eq!(r2, unsafe { core::mem::transmute::<_, char>(tt.out[j + 1] as u32) });
+                    assert_eq!(r1, unsafe { core::mem::transmute(tt.out[j] as u32) });
+                    assert_eq!(r2, unsafe { core::mem::transmute(tt.out[j + 1] as u32) });
                     j += 2;
                     let dec = decode_char(r1, r2);
                     assert_eq!(dec, tt._in[r]);
