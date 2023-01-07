@@ -26,7 +26,10 @@ fn ascii100000() -> String {
 
 fn bench_valid_100k_ascii_chars(c: &mut Criterion) {
     c.bench_function("valid_100k_ascii_chars", |b| {
-        b.iter(|| valid(ascii100000().as_bytes()))
+        b.iter_batched(|| {
+            ascii100000()
+        }, |x| { valid(x.as_bytes()) }, BatchSize::LargeInput)
+        
     });
 }
 
@@ -57,13 +60,21 @@ fn long_string_japanese() -> String {
 
 fn bench_valid_long_mostly_ascii_chars(c: &mut Criterion) {
     c.bench_function("valid_long_mostly_ascii_chars", |b| {
-        b.iter(|| valid(long_string_mostly_ascii().as_bytes()))
+        b.iter_batched(|| {
+            long_string_mostly_ascii()
+        }, |x| {
+            valid(x.as_bytes())
+        }, BatchSize::LargeInput)
     });
 }
 
 fn bench_valid_long_japanese(c: &mut Criterion) {
     c.bench_function("valid_long_japanese", |b| {
-        b.iter(|| valid(long_string_japanese().as_bytes()))
+        b.iter_batched(|| {
+            long_string_japanese()
+        }, |x| {
+            valid(x.as_bytes())
+        }, BatchSize::LargeInput) 
     });
 }
 
