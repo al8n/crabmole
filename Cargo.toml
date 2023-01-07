@@ -13,6 +13,10 @@ categories = ["development-tools", "no-std", "encoding"]
 [workspace]
 members = [".", "derive"]
 
+[[bench]]
+name = "utf8"
+harness = false
+
 [features]
 default = ["std", "derive"]
 derive = ["crabmole-derive"]
@@ -54,6 +58,8 @@ pollster = { version = "0.2", optional = true }
 [dev-dependencies]
 rand = "0.8"
 tokio = { version = "1.22", features = ["full"] }
+criterion = "0.4"
+
 
 [package.metadata.docs.rs]
 all-features = true
