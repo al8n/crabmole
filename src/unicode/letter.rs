@@ -425,3 +425,202 @@ const fn to_(case: CaseDelta, ch: char, case_range: &[CaseRange]) -> (char, bool
     }
     (ch, false)
 }
+
+#[cfg(test)]
+mod tests{
+    use alloc::vec;
+
+    use super::*;
+ 
+    fn upper_test() -> Vec<char> {
+        vec![
+            std::char::from_u32(0x41).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xc0).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xd8).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x100).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x139).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x14a).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x178).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x181).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x376).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x3cf).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x13bd).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1f2a).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2102).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2c00).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2c10).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2c20).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xa650).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xa722).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xff3a).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1d400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1d7ca).unwrap_or(char::REPLACEMENT_CHARACTER),
+        ]
+    }
+
+    fn not_upper_test() -> Vec<char> {
+        vec![
+            std::char::from_u32(0x40).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x5b).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x61).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x185).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1b0).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x377).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x387).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2150).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xab7d).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xffff).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x10000).unwrap_or(char::REPLACEMENT_CHARACTER),
+        ]
+    }
+
+    fn letter_test() -> Vec<char> {
+        vec![
+            std::char::from_u32(0x41).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x61).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xaa).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xba).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xc8).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xdb).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xf9).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2ec).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x535).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x620).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x6e6).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x93d).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xa15).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xb99).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xdc0).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xedd).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1000).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1200).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1312).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1401).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2c00).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xa800).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xf900).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xfa30).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xffda).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xffdc).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x10000).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x10300).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x20000).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2f800).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2fa1d).unwrap_or(char::REPLACEMENT_CHARACTER),
+        ]
+    }
+
+    fn not_letter_test() -> Vec<char> {
+        vec![
+            std::char::from_u32(0x20).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x35).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x375).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x619).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x700).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1885).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xfffe).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x1ffff).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x10ffff).unwrap_or(char::REPLACEMENT_CHARACTER),
+        ]
+    }
+
+    fn space_test() ->Vec<char> {
+        vec![
+            std::char::from_u32(0x09).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x0a).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x0b).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x0c).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x0d).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x20).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x85).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0xA0).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x2000).unwrap_or(char::REPLACEMENT_CHARACTER),
+            std::char::from_u32(0x3000).unwrap_or(char::REPLACEMENT_CHARACTER),
+        ]
+    }
+
+    pub struct CaseT{
+        cas: CaseDelta,
+        _in: char,
+        out: char,
+    }
+
+    fn case_test() -> Vec<CaseT> {
+        vec![
+            // ASCII (special-cased so test carefully)
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: '\n',
+                out: std::char::from_u32(0xFFFD).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: '\n',
+                out: '\n',
+            },
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: 'a',
+                out: 'A',
+            },
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: 'A',
+                out: 'A',
+            },
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: '7',
+                out: '7',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: '\n',
+                out: '\n',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: 'a',
+                out: 'a',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: 'A',
+                out: 'a',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: '7',
+                out: '7',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: '\n',
+                out: '\n',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: 'a',
+                out: 'a',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: 'A',
+                out: 'a',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: '7',
+                out: '7',
+            },
+            // Latin-1: easy to read the tests!
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: 0x80 as char,
+                out: 0x80 as char,
+            }
+        ]
+    }
+}
