@@ -31,7 +31,7 @@ impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         match self {
             Error::Length => write!(f, "encoding/hex: odd length hex string"),
-            Error::InvalidByte(byte) => write!(f, "encoding/hex: invalid byte {}", byte),
+            Error::InvalidByte(byte) => write!(f, "encoding/hex: invalid byte {byte}"),
         }
     }
 }
@@ -680,12 +680,12 @@ mod tests {
 
     #[test]
     fn test_dumper_early_close() {
-        let mut out = vec![];
+        let mut out:Vec<u8> = vec![];
         let mut dumper = Dumper::new(&mut out);
         dumper.close().unwrap();
         dumper.write_all(b"rustacean").unwrap_err();
 
-        assert_eq!(out, &[]);
+        assert_eq!(out, std::vec::Vec::<u8>::new());
     }
 
     #[test]

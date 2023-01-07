@@ -543,7 +543,6 @@ mod tests {
         for i in 0..n {
             raw[i] = ALPHA[i % ALPHA.len()];
         }
-
         let mut encoded = vec![];
         let mut encoder = Encoder::new(&mut encoded);
         let nn = encoder.write(&raw).unwrap();
@@ -553,6 +552,7 @@ mod tests {
         let mut decoded = String::new();
         let _n = decoder.read_to_string(&mut decoded).unwrap();
         assert_eq!(decoded.as_bytes(), raw);
+        
     }
 
     #[test]

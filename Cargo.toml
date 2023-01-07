@@ -54,8 +54,15 @@ pollster = { version = "0.2", optional = true }
 [dev-dependencies]
 rand = "0.8"
 tokio = { version = "1.22", features = ["full"] }
+criterion_bencher_compat = "0.4.0"
+criterion = "0.4.0"
+criterion-macro = "0.4.0"
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[[bench]]
+name = "utf8_benchmark"
+harness = false
 

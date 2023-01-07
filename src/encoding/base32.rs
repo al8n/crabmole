@@ -927,7 +927,7 @@ impl<R: std::io::Read> std::io::Read for Decoder<R> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use std::io::{Read, Write};
 
