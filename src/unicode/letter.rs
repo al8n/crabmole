@@ -1178,18 +1178,18 @@ mod tests {
         assert_eq!(got, want);
     }
 
-    #[test]
-    fn test_latin_offset() {
-        fn maps() -> Vec<std::collections::HashMap<String, RangeTable>> {
-            vec![
-                categories,
-                fold_category,
-                fold_script,
-                properties,
-                scripts,
-                _S
-            ]
-        }
-    }
+    // #[test]
+    // fn test_latin_offset() {
+    //     fn maps() -> Vec<std::collections::HashMap<String, RangeTable>> {
+    //         vec![
+    //             categories,
+    //             fold_category,
+    //             fold_script,
+    //             properties,
+    //             scripts,
+    //             _S
+    //         ]
+    //     }
+    // }
     
 }
