@@ -8,23 +8,23 @@ use super::{CaseRange, SpecialCase};
 /// Turkish case
 pub const TURKISH_CASE: SpecialCase<4> = SpecialCase([
     CaseRange {
-        lo: 0x49,
-        hi: 0x49,
+        lo: 0x0049,
+        hi: 0x0049,
         delta: [0, 0x131 - 0x49, 0],
     },
     CaseRange {
-        lo: 0x130,
-        hi: 0x130,
+        lo: 0x0069,
+        hi: 0x0069,
         delta: [0x130 - 0x69, 0, 0x130 - 0x69],
     },
     CaseRange {
-        lo: 0x4a,
-        hi: 0x4a,
+        lo: 0x0130,
+        hi: 0x0130,
         delta: [0, 0x69 - 0x130, 0],
     },
     CaseRange {
-        lo: 0x49,
-        hi: 0x130,
+        lo: 0x0131,
+        hi: 0x0131,
         delta: [0x49 - 0x131, 0, 0x49 - 0x131],
     },
 ]);

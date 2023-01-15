@@ -25,11 +25,17 @@ fn ascii100000() -> String {
 }
 
 fn bench_valid_100k_ascii_chars(c: &mut Criterion) {
+    let s = ascii100000();
     c.bench_function("valid_100k_ascii_chars", |b| {
-        b.iter_batched(|| {
-            ascii100000()
-        }, |x| { valid(x.as_bytes()) }, BatchSize::LargeInput)
-        
+<<<<<<< HEAD
+        b.iter_batched(
+            || ascii100000(),
+            |x| valid(x.as_bytes()),
+            BatchSize::LargeInput,
+        )
+=======
+        b.iter(|| { valid(s.as_bytes()) } )
+>>>>>>> 0fd20e73126600a7d1ccd4deeb9a1d01b78d3b70
     });
 }
 
@@ -60,21 +66,21 @@ fn long_string_japanese() -> String {
 
 fn bench_valid_long_mostly_ascii_chars(c: &mut Criterion) {
     c.bench_function("valid_long_mostly_ascii_chars", |b| {
-        b.iter_batched(|| {
-            long_string_mostly_ascii()
-        }, |x| {
-            valid(x.as_bytes())
-        }, BatchSize::LargeInput)
+        b.iter_batched(
+            || long_string_mostly_ascii(),
+            |x| valid(x.as_bytes()),
+            BatchSize::LargeInput,
+        )
     });
 }
 
 fn bench_valid_long_japanese(c: &mut Criterion) {
     c.bench_function("valid_long_japanese", |b| {
-        b.iter_batched(|| {
-            long_string_japanese()
-        }, |x| {
-            valid(x.as_bytes())
-        }, BatchSize::LargeInput) 
+        b.iter_batched(
+            || long_string_japanese(),
+            |x| valid(x.as_bytes()),
+            BatchSize::LargeInput,
+        )
     });
 }
 
@@ -93,14 +99,14 @@ fn bench_encode_japanese_char(c: &mut Criterion) {
 }
 
 fn bench_append_ascii_char(c: &mut Criterion) {
-    let mut buf = vec![0; UTF_MAX];
+    let mut buf = Vec::with_capacity(UTF_MAX);
     c.bench_function("append_ascii_char", |b| {
         b.iter(|| append_char(&mut buf, 'a'))
     });
 }
 
 fn bench_append_japanese_char(c: &mut Criterion) {
-    let mut buf = vec![0; UTF_MAX];
+    let mut buf = Vec::with_capacity(UTF_MAX);
     c.bench_function("append_japanese_char", |b| {
         b.iter(|| append_char(&mut buf, '本'))
     });

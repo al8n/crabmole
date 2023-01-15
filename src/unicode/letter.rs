@@ -388,7 +388,7 @@ const fn to_(case: CaseDelta, ch: char, case_range: &[CaseRange]) -> (char, bool
     let mut hi = case_range.len();
     while lo < hi {
         let m = lo + (hi - lo) / 2;
-        let cr = &CASE_RANGES[m];
+        let cr: &CaseRange = &case_range[m];
 
         if cr.lo <= (ch as u32) && (ch as u32) <= cr.hi {
             let delta = cr.delta[case as usize];
@@ -403,18 +403,15 @@ const fn to_(case: CaseDelta, ch: char, case_range: &[CaseRange]) -> (char, bool
                 // bit in the sequence offset.
                 // The constants UpperCase and TitleCase are even while LowerCase
                 // is odd so we take the low bit from _case.
-                let lou = cr.lo;
-                let chu = ch as u32;
-
+                let loi = cr.lo as i32;
                 return (
-                    unsafe { core::mem::transmute((lou + (chu - lou)) & !1 | ((case as u32) & 1)) },
+                    unsafe {
+                        core::mem::transmute(loi + (((ch as i32) - loi) & !1 | ((case as i32) & 1)))
+                    },
                     true,
                 );
             }
-            return (
-                unsafe { core::mem::transmute((ch as u32) + delta as u32) },
-                true,
-            );
+            return (unsafe { core::mem::transmute((ch as i32) + delta) }, true);
         }
 
         if (ch as u32) < cr.lo {
@@ -427,11 +424,11 @@ const fn to_(case: CaseDelta, ch: char, case_range: &[CaseRange]) -> (char, bool
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
+    use super::*;
+    use crate::unicode::*;
     use alloc::vec;
 
-    use super::*;
- 
     fn upper_test() -> Vec<char> {
         vec![
             std::char::from_u32(0x41).unwrap_or(char::REPLACEMENT_CHARACTER),
@@ -526,7 +523,7 @@ mod tests{
         ]
     }
 
-    fn space_test() ->Vec<char> {
+    fn space_test() -> Vec<char> {
         vec![
             std::char::from_u32(0x09).unwrap_or(char::REPLACEMENT_CHARACTER),
             std::char::from_u32(0x0a).unwrap_or(char::REPLACEMENT_CHARACTER),
@@ -541,7 +538,8 @@ mod tests{
         ]
     }
 
-    pub struct CaseT{
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+    pub struct CaseT {
         cas: CaseDelta,
         _in: char,
         out: char,
@@ -553,11 +551,6 @@ mod tests{
             CaseT {
                 cas: CaseDelta::Upper,
                 _in: '\n',
-                out: std::char::from_u32(0xFFFD).unwrap_or(char::REPLACEMENT_CHARACTER),
-            },
-            CaseT {
-                cas: CaseDelta::Upper,
-                _in: '\n',
                 out: '\n',
             },
             CaseT {
@@ -603,12 +596,12 @@ mod tests{
             CaseT {
                 cas: CaseDelta::Title,
                 _in: 'a',
-                out: 'a',
+                out: 'A',
             },
             CaseT {
                 cas: CaseDelta::Title,
                 _in: 'A',
-                out: 'a',
+                out: 'A',
             },
             CaseT {
                 cas: CaseDelta::Title,
@@ -617,10 +610,586 @@ mod tests{
             },
             // Latin-1: easy to read the tests!
             CaseT {
-                cas: CaseDelta::Upper,
+                //128
+                cas: CaseDelta::Lower,
                 _in: 0x80 as char,
                 out: 0x80 as char,
-            }
+            },
+            CaseT {
+                //197
+                cas: CaseDelta::Upper,
+                _in: 'Å',
+                out: 'Å',
+            },
+            CaseT {
+                //229 197
+                cas: CaseDelta::Upper,
+                _in: 'å',
+                out: 'Å',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: 0x80 as char,
+                out: 0x80 as char,
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: 'Å',
+                out: 'å',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: 'å',
+                out: 'å',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: 0x80 as char,
+                out: 0x80 as char,
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: 'Å',
+                out: 'Å',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: 'å',
+                out: 'Å',
+            },
+            // 0131;LATIN SMALL LETTER DOTLESS I;Ll;0;L;;;;;N;;;0049;;0049
+            CaseT {
+                //305 73
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x0131).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: 'I',
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x0131).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0131).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x0131).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: 'I',
+            },
+            // 0133;LATIN SMALL LIGATURE IJ;Ll;0;L;<compat> 0069 006A;;;;N;LATIN SMALL LETTER I J;;0132;;0132
+            CaseT {
+                //307 306
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x0133).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0132).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x0133).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0133).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x0133).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0132).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // 212A;KELVIN SIGN;Lu;0;L;004B;;;;N;DEGREES KELVIN;;;006B;
+            CaseT {
+                //8490
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x212A).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x212A).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                //8490 107
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x212A).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: 'k',
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x212A).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x212A).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // From an UpperLower sequence
+            // A640;CYRILLIC CAPITAL LETTER ZEMLYA;Lu;0;L;;;;;N;;;;A641;
+            CaseT {
+                //42560 42560
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                //42560 42561
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA641).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // A641;CYRILLIC SMALL LETTER ZEMLYA;Ll;0;L;;;;;N;;;A640;;A640
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0xA641).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0xA641).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA641).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0xA641).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA640).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // A64E;CYRILLIC CAPITAL LETTER NEUTRAL YER;Lu;0;L;;;;;N;;;;A64F;
+            CaseT {
+                //42574
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0xA64E).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA64E).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                //42574 42575
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0xA64E).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA64F).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0xA64E).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA64E).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // 65F;CYRILLIC SMALL LETTER YN;Ll;0;L;;;;;N;;;A65E;;A65E
+            CaseT {
+                //42591 42590
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0xA65F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA65E).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0xA65F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA65F).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0xA65F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xA65E).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // From another UpperLower sequence
+            // 0139;LATIN CAPITAL LETTER L WITH ACUTE;Lu;0;L;004C 0301;;;;N;LATIN CAPITAL LETTER L ACUTE;;;013A;
+            CaseT {
+                //313
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x0139).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0139).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x0139).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x013A).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x0139).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0139).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            //  013F;LATIN CAPITAL LETTER L WITH MIDDLE DOT;Lu;0;L;<compat> 004C 00B7;;;;N;;;;0140;
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x013F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x013F).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x013F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0140).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x013F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x013F).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // 0148;LATIN SMALL LETTER N WITH CARON;Ll;0;L;006E 030C;;;;N;LATIN SMALL LETTER N HACEK;;0147;;0147
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x0148).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0147).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x0148).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0148).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x0148).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0147).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // Lowercase lower than uppercase.
+            // AB78;CHEROKEE SMALL LETTER GE;Ll;0;L;;;;;N;;;13A8;;13A8
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0xAB78).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0xAB78).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xAB78).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0xAB78).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0xAB78).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x13A8).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // Last block in the 5.1.0 table
+            // 10400;DESERET CAPITAL LETTER LONG I;Lu;0;L;;;;;N;;;;10428;
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10428).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // 10427;DESERET CAPITAL LETTER EW;Lu;0;L;;;;;N;;;;1044F;
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x1044F).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // 10428;DESERET SMALL LETTER LONG I;Ll;0;L;;;;;N;;;10400;;10400
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x10428).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x10428).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10428).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x10428).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10400).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // 1044F;DESERET SMALL LETTER EW;Ll;0;L;;;;;N;;;10427;;10427
+            CaseT {
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x1044F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x1044F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x1044F).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x1044F).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10427).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // First one not in the 5.1.0 table
+            // 10450;SHAVIAN LETTER PEEP;Lo;0;L;;;;;N;;;;;
+            CaseT {
+                // 66639
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x10450).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10450).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x10450).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10450).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                cas: CaseDelta::Title,
+                _in: char::from_u32(0x10450).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x10450).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            // Non-letters with case.
+            CaseT {
+                //8545 8561
+                cas: CaseDelta::Lower,
+                _in: char::from_u32(0x2161).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x2171).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
+            CaseT {
+                //837 921
+                cas: CaseDelta::Upper,
+                _in: char::from_u32(0x0345).unwrap_or(char::REPLACEMENT_CHARACTER),
+                out: char::from_u32(0x0399).unwrap_or(char::REPLACEMENT_CHARACTER),
+            },
         ]
     }
+
+    #[test]
+    fn test_is_letter() {
+        for r in upper_test() {
+            assert!(is_letter(r));
+        }
+        for q in letter_test() {
+            assert!(is_letter(q));
+        }
+        for p in not_letter_test() {
+            assert!(!is_letter(p));
+        }
+    }
+
+    #[test]
+    fn test_is_upper() {
+        for r in upper_test() {
+            assert!(is_upper(r));
+        }
+        for q in not_upper_test() {
+            assert!(!is_upper(q));
+        }
+        for p in not_letter_test() {
+            assert!(!is_upper(p));
+        }
+    }
+
+    #[test]
+    fn test_to() {
+        let mut r: char;
+        for c in case_test() {
+            r = to(c.cas, c._in);
+            assert_eq!(r, c.out);
+        }
+    }
+
+    #[test]
+    fn test_to_upper_case() {
+        for c in case_test() {
+            if c.cas != CaseDelta::Upper {
+                continue;
+            }
+            let r = to_upper(c._in);
+            assert_eq!(r, c.out);
+        }
+    }
+
+    #[test]
+    fn test_to_lower_case() {
+        for c in case_test() {
+            if c.cas != CaseDelta::Lower {
+                continue;
+            }
+            let r = to_lower(c._in);
+            assert_eq!(r, c.out);
+        }
+    }
+
+    #[test]
+    fn test_to_title_case() {
+        for c in case_test() {
+            if c.cas != CaseDelta::Title {
+                continue;
+            }
+            let r = to_title(c._in);
+            assert_eq!(r, c.out);
+        }
+    }
+
+    #[test]
+    fn test_is_space() {
+        for c in space_test() {
+            assert!(is_space(c));
+        }
+        for c in letter_test() {
+            assert!(!is_space(c));
+        }
+    }
+
+    #[test]
+    fn test_letter_optimizations() {
+        let mut i: u32 = 0;
+        while i <= MAX_LATIN1 as u32 {
+            assert_eq!(
+                is(
+                    RangeTable::LETTER,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                is_letter(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                is(
+                    RangeTable::UPPER,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                is_upper(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                is(
+                    RangeTable::LOWER,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                is_lower(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                is(
+                    RangeTable::TITLE,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                is_title(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                is(
+                    RangeTable::WHITE_SPACE,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                is_space(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                to(
+                    CaseDelta::Upper,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                to_upper(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                to(
+                    CaseDelta::Lower,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                to_lower(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            assert_eq!(
+                to(
+                    CaseDelta::Title,
+                    char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER)
+                ),
+                to_title(char::from_u32(i).unwrap_or(char::REPLACEMENT_CHARACTER))
+            );
+            i += 1;
+        }
+    }
+
+    #[test]
+    fn test_turkish_case() {
+        let lower: Vec<char> = "abcçdefgğhıijklmnoöprsştuüvyz".chars().collect();
+        let upper: Vec<char> = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZ".chars().collect();
+
+        for (i, l) in lower.iter().enumerate() {
+            let u = upper[i];
+            assert_eq!(TURKISH_CASE.to_lower(*l), *l);
+            assert_eq!(TURKISH_CASE.to_upper(u), u);
+            assert_eq!(TURKISH_CASE.to_upper(*l), u);
+            assert_eq!(TURKISH_CASE.to_lower(u), *l);
+            assert_eq!(TURKISH_CASE.to_title(u), u);
+            assert_eq!(TURKISH_CASE.to_title(*l), u);
+        }
+    }
+
+    fn simple_fold_tests() -> Vec<&'static str> {
+        vec![
+            // SimpleFold(x) returns the next equivalent rune > x or wraps
+            // around to smaller values.
+
+            // Easy cases.
+            "Aa",
+            "δΔ",
+            // ASCII special cases.
+            "KkK",
+            "Ssſ",
+            // Non-ASCII special cases.
+            "ρϱΡ",
+            "ͅΙιι",
+            // Extra special cases: has lower/upper but no case fold.
+            "İ",
+            "ı",
+            // Upper comes before lower (Cherokee).
+            "\u{13b0}\u{ab80}",
+        ]
+    }
+
+    #[test]
+    fn test_simple_fold() {
+        for tt in simple_fold_tests() {
+            let cycle: Vec<char> = tt.chars().collect();
+            let mut r = cycle[cycle.len() - 1];
+            for out in cycle {
+                r = simple_fold(r);
+                assert_eq!(r, out);
+                r = out;
+            }
+        }
+    }
+
+    fn no_change_for_capital_a() -> CaseRange {
+        CaseRange {
+            lo: 'A' as u32,
+            hi: 'A' as u32,
+            delta: [0, 0, 0],
+        }
+    }
+
+    fn to_lower_special(c: crate::unicode::SpecialCase<1>, s: String) -> String {
+        s.chars().map(|x| c.to_lower(x)).collect::<String>()
+    }
+
+    #[test]
+    fn test_special_case_no_mapping() {
+        // Issue 25636
+        // no change for rune 'A', zero delta, under upper/lower/title case change.
+
+        let got = to_lower_special(
+            crate::unicode::SpecialCase([no_change_for_capital_a()]),
+            "ABC".to_string(),
+        );
+        let want = "Abc";
+        assert_eq!(got, want);
+    }
+
+    #[test]
+    fn test_latin_offset() {
+        fn maps() -> Vec<std::collections::HashMap<String, RangeTable>> {
+            vec![
+                categories,
+                fold_category,
+                fold_script,
+                properties,
+                scripts,
+                _S
+            ]
+        }
+    }
+    
 }
