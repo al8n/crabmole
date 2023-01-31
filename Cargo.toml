@@ -15,7 +15,7 @@ members = [".", "derive"]
 
 [features]
 default = ["std", "derive"]
-derive = []
+derive = ["crabmole-derive"]
 full = ["encoding", "io", "async-io", "std", "sort"]
 std = ["alloc"]
 alloc = []
