@@ -1,3 +1,355 @@
+/// Provide const encode functions for uvarint
+pub mod encode;
+
+/// Provide decode functions for uvarint
+pub mod decode;
+
+const U8_LEN: usize = 2;
+const U16_LEN: usize = 3;
+const U32_LEN: usize = 5;
+const U64_LEN: usize = 10;
+const U128_LEN: usize = 19;
+
+#[cfg(target_pointer_width = "64")]
+const USIZE_LEN: usize = U64_LEN;
+
+#[cfg(target_pointer_width = "32")]
+const USIZE_LEN: usize = U32_LEN;
+
+/// The possible size of u8 varint
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
+pub enum U8Size {
+    /// 1
+    One,
+    /// 2
+    Two,
+}
+
+impl U8Size {
+    /// Returns the val in usize
+    #[inline]
+    pub const fn val(self) -> usize {
+        match self {
+            Self::One => 1,
+            Self::Two => 2,
+        }
+    }
+
+    /// Returns the max size of u8 varint
+    #[inline]
+    pub const fn max() -> Self {
+        Self::Two
+    }
+
+    /// Returns the min size of u8 varint
+    #[inline]
+    pub const fn min() -> Self {
+        Self::One
+    }
+
+    #[inline]
+    const fn from(val: usize) -> Self {
+        match val {
+            1 => Self::One,
+            2 => Self::Two,
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// The possible size of u16 varint
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
+pub enum U16Size {
+    /// 1
+    One,
+    /// 2
+    Two,
+    /// 3
+    Three,
+}
+
+impl U16Size {
+    /// Returns the val in usize
+    #[inline]
+    pub const fn val(self) -> usize {
+        match self {
+            Self::One => 1,
+            Self::Two => 2,
+            Self::Three => 3,
+        }
+    }
+
+    /// Returns the max size of u16 varint
+    #[inline]
+    pub const fn max() -> Self {
+        Self::Three
+    }
+
+    /// Returns the min size of u16 varint
+    #[inline]
+    pub const fn min() -> Self {
+        Self::One
+    }
+
+    #[inline]
+    const fn from(val: usize) -> Self {
+        match val {
+            1 => Self::One,
+            2 => Self::Two,
+            3 => Self::Three,
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// The possible size of u32 varint
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
+pub enum U32Size {
+    /// 1
+    One,
+    /// 2
+    Two,
+    /// 3
+    Three,
+    /// 4
+    Four,
+    /// 5
+    Five,
+}
+
+impl U32Size {
+    /// Returns the val in usize
+    #[inline]
+    pub const fn val(self) -> usize {
+        match self {
+            Self::One => 1,
+            Self::Two => 2,
+            Self::Three => 3,
+            Self::Four => 4,
+            Self::Five => 5,
+        }
+    }
+
+    /// Returns the max size of u32 varint
+    #[inline]
+    pub const fn max() -> Self {
+        Self::Five
+    }
+
+    /// Returns the min size of u32 varint
+    #[inline]
+    pub const fn min() -> Self {
+        Self::One
+    }
+
+    #[inline]
+    const fn from(val: usize) -> Self {
+        match val {
+            1 => Self::One,
+            2 => Self::Two,
+            3 => Self::Three,
+            4 => Self::Four,
+            5 => Self::Five,
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// The possible size of u64 varint
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
+pub enum U64Size {
+    /// 1
+    One,
+    /// 2
+    Two,
+    /// 3
+    Three,
+    /// 4
+    Four,
+    /// 5
+    Five,
+    /// 6
+    Six,
+    /// 7
+    Seven,
+    /// 8
+    Eight,
+    /// 9
+    Nine,
+    /// 10
+    Ten,
+}
+
+impl U64Size {
+    /// Returns the val in usize
+    #[inline]
+    pub const fn val(&self) -> usize {
+        match self {
+            Self::One => 1,
+            Self::Two => 2,
+            Self::Three => 3,
+            Self::Four => 4,
+            Self::Five => 5,
+            Self::Six => 6,
+            Self::Seven => 7,
+            Self::Eight => 8,
+            Self::Nine => 9,
+            Self::Ten => 10,
+        }
+    }
+
+    /// Returns the max size of u64 varint
+    #[inline]
+    pub const fn max() -> Self {
+        Self::Ten
+    }
+
+    /// Returns the min size of u64 varint
+    #[inline]
+    pub const fn min() -> Self {
+        Self::One
+    }
+
+    #[inline]
+    const fn from(val: usize) -> Self {
+        match val {
+            1 => Self::One,
+            2 => Self::Two,
+            3 => Self::Three,
+            4 => Self::Four,
+            5 => Self::Five,
+            6 => Self::Six,
+            7 => Self::Seven,
+            8 => Self::Eight,
+            9 => Self::Nine,
+            10 => Self::Ten,
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// The possible size of u128 varint
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u8)]
+pub enum U128Size {
+    /// 1
+    One,
+    /// 2
+    Two,
+    /// 3
+    Three,
+    /// 4
+    Four,
+    /// 5
+    Five,
+    /// 6
+    Six,
+    /// 7
+    Seven,
+    /// 8
+    Eight,
+    /// 9
+    Nine,
+    /// 10
+    Ten,
+    /// 11
+    Eleven,
+    /// 12
+    Twelve,
+    /// 13
+    Thirteen,
+    /// 14
+    Fourteen,
+    /// 15
+    Fifteen,
+    /// 16
+    Sixteen,
+    /// 17
+    Seventeen,
+    /// 18
+    Eighteen,
+    /// 19
+    Nineteen,
+}
+
+impl U128Size {
+    /// Returns the val in usize
+    #[inline]
+    pub const fn val(&self) -> usize {
+        match self {
+            Self::One => 1,
+            Self::Two => 2,
+            Self::Three => 3,
+            Self::Four => 4,
+            Self::Five => 5,
+            Self::Six => 6,
+            Self::Seven => 7,
+            Self::Eight => 8,
+            Self::Nine => 9,
+            Self::Ten => 10,
+            Self::Eleven => 11,
+            Self::Twelve => 12,
+            Self::Thirteen => 13,
+            Self::Fourteen => 14,
+            Self::Fifteen => 15,
+            Self::Sixteen => 16,
+            Self::Seventeen => 17,
+            Self::Eighteen => 18,
+            Self::Nineteen => 19,
+        }
+    }
+
+    /// Returns the max size of u128 varint
+    #[inline]
+    pub const fn max() -> Self {
+        Self::Nineteen
+    }
+
+    /// Returns the min size of u128 varint
+    #[inline]
+    pub const fn min() -> Self {
+        Self::One
+    }
+
+    #[inline]
+    const fn from(val: usize) -> Self {
+        match val {
+            1 => Self::One,
+            2 => Self::Two,
+            3 => Self::Three,
+            4 => Self::Four,
+            5 => Self::Five,
+            6 => Self::Six,
+            7 => Self::Seven,
+            8 => Self::Eight,
+            9 => Self::Nine,
+            10 => Self::Ten,
+            11 => Self::Eleven,
+            12 => Self::Twelve,
+            13 => Self::Thirteen,
+            14 => Self::Fourteen,
+            15 => Self::Fifteen,
+            16 => Self::Sixteen,
+            17 => Self::Seventeen,
+            18 => Self::Eighteen,
+            19 => Self::Nineteen,
+            _ => unreachable!(),
+        }
+    }
+}
+
+/// The possible size of usize varint
+#[cfg(target_pointer_width = "64")]
+pub type Usize = U64Size;
+
+/// The possible size of usize varint
+#[cfg(target_pointer_width = "32")]
+pub type Usize = U32Size;
+
 /// The maximum length of a varint-encoded N-bit integer.
 const MAX_VARINT_LEN64: usize = 10;
 
