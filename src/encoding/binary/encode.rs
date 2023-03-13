@@ -18,7 +18,7 @@ macro_rules! impl_uvarint {
                     i += 1
                 }
                 debug_assert_eq!(n, 0);
-                $rst::from(i)
+                $rst::from(i + 1)
             }
         )*
     }
